@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/ordersFragment">
+
+    <fragment
+        android:id="@+id/goodsFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.GoodsFragment"
+        android:label="@string/goods_fragment_label"
+        tools:layout="@layout/fragment_goods" >
+        <action
+            android:id="@+id/action_goodsFragment_to_goodCard"
+            app:destination="@id/goodCard" />
+    </fragment>
+    <fragment
+        android:id="@+id/goodCard"
+        android:name="com.dzaitsev.marshmallow.fragments.GoodCardFragment"
+        android:label="@string/new_goods_card_label"
+        tools:layout="@layout/fragment_good_card" />
+    <fragment
+        android:id="@+id/ordersFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.OrdersFragment"
+        android:label="@string/orders_fragment_label"
+        tools:layout="@layout/fragment_orders" >
+        <action
+            android:id="@+id/action_ordersFragment_to_goodsFragment"
+            app:destination="@id/goodsFragment" />
+        <action
+            android:id="@+id/action_ordersFragment_to_orderCardFragment"
+            app:destination="@id/orderCardFragment" />
+        <action
+            android:id="@+id/action_ordersFragment_to_orderGoodsFragment"
+            app:destination="@id/orderGoodsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/orderCardFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.OrderCardFragment"
+        android:label="fragment_order_card"
+        tools:layout="@layout/fragment_order_card" />
+    <fragment
+        android:id="@+id/orderClientFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.OrderClientFragment"
+        android:label="@string/orders_client_info_label"
+        tools:layout="@layout/fragment_order_client" >
+        <action
+            android:id="@+id/action_orderClientFragment_to_ordersFragment"
+            app:destination="@id/ordersFragment" />
+        <action
+            android:id="@+id/action_orderClientFragment_to_orderGoodsFragment"
+            app:destination="@id/orderGoodsFragment" />
+        <action
+            android:id="@+id/action_orderClientFragment_to_findClientFragment"
+            app:destination="@id/findClientFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/orderGoodsFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.OrderGoodsFragment"
+        android:label="@string/orders_lines_label"
+        tools:layout="@layout/fragment_order_goods" >
+        <action
+            android:id="@+id/action_orderGoodsFragment_to_orderClientFragment"
+            app:destination="@id/orderClientFragment" />
+        <action
+            android:id="@+id/action_orderGoodsFragment_to_ordersFragment"
+            app:destination="@id/ordersFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/findClientFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.FindClientFragment"
+        android:label="fragment_find_client"
+        tools:layout="@layout/fragment_find_client" >
+        <action
+            android:id="@+id/action_findClientFragment_to_orderClientFragment"
+            app:destination="@id/orderClientFragment" />
+    </fragment>
+</navigation>

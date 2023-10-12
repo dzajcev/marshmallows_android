@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".fragments.OrderClientFragment">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.93"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="2pt"
+            android:paddingEnd="2pt"
+            android:paddingBottom="2pt">
+
+            <TextView
+                android:id="@+id/clientName"
+                android:layout_width="0pt"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="left|center_vertical"
+                android:hint="Выберите клиента"
+                android:textSize="8pt" />
+
+            <ImageButton
+                android:id="@+id/chooseClient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:src="@drawable/forward_32" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="2pt"
+            android:paddingEnd="2pt"
+            android:paddingBottom="2pt">
+
+            <TextView
+                android:id="@+id/phoneNumberLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Телефон" />
+
+            <TextView
+                android:id="@+id/phoneNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="start|center_vertical"
+                android:inputType="phone"
+                android:paddingStart="2pt"
+                android:paddingEnd="20pt"
+                android:text=""
+                android:textSize="8pt" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="2pt"
+            android:paddingEnd="2pt"
+            android:paddingBottom="2pt">
+
+            <TextView
+                android:id="@+id/deliveryLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Адрес" />
+
+            <EditText
+                android:id="@+id/delivery"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="start|center_vertical"
+                android:paddingStart="2pt"
+                android:paddingEnd="20pt"
+                android:textSize="8pt" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="2pt"
+            android:paddingEnd="2pt"
+            android:paddingBottom="2pt">
+
+            <TextView
+                android:id="@+id/deadlineLable"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Выполнить до" />
+
+
+            <TextView
+                android:id="@+id/deadline"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="end|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="20pt"
+                android:textAlignment="textEnd"
+                android:textSize="8pt" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="2pt"
+            android:paddingEnd="2pt"
+            android:paddingBottom="2pt">
+
+            <TextView
+                android:id="@+id/prePaymentLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Предоплата" />
+
+
+            <EditText
+                android:id="@+id/prePayment"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="end|center_vertical"
+                android:inputType="number|numberDecimal"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="20pt"
+                android:textAlignment="textEnd"
+                android:textSize="8pt" />
+
+        </LinearLayout>
+        <EditText
+            android:id="@+id/comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/field_background"
+            android:gravity="start|top"
+            android:hint="Введите комментарий"
+            android:minHeight="40pt"
+            android:textSize="8pt" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_weight="0.07"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/ordersClientBackward"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|left"
+            android:src="@drawable/backward_32" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0pt"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/ordersClientSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|end"
+            android:src="@android:drawable/ic_menu_save" />
+    </LinearLayout>
+
+</LinearLayout>
