@@ -20,10 +20,12 @@ import com.dzaitsev.marshmallow.databinding.FragmentOrderGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 
 public class OrderGoodsFragment extends Fragment {
@@ -39,10 +41,7 @@ public class OrderGoodsFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
         binding = FragmentOrderGoodsBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -59,8 +58,7 @@ public class OrderGoodsFragment extends Fragment {
                 Bundle bundle = new Bundle();
                 order.getOrderLines().removeIf(f -> f.getGood() == null);
                 bundle.putSerializable("order", order);
-                NavHostFragment.findNavController(OrderGoodsFragment.this)
-                        .navigate(R.id.action_orderGoodsFragment_to_orderClientFragment, bundle);
+                NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_orderClientFragment, bundle);
             }
         });
         binding.ordersGoodsBackward.setOnClickListener(view1 -> {
@@ -68,23 +66,16 @@ public class OrderGoodsFragment extends Fragment {
                 order.getOrderLines().removeIf(f -> f.getGood() == null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Есть не сохраненные данные. Продолжить?");
-                builder.setPositiveButton("Да", (dialog, id) -> NavHostFragment.findNavController(OrderGoodsFragment.this)
-                        .navigate(R.id.action_orderGoodsFragment_to_ordersFragment));
+                builder.setPositiveButton("Да", (dialog, id) -> NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_ordersFragment));
                 builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
                 builder.create().show();
             } else {
-                NavHostFragment.findNavController(OrderGoodsFragment.this)
-                        .navigate(R.id.action_orderGoodsFragment_to_ordersFragment);
+                NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_ordersFragment);
             }
-
         });
         binding.orderLineAdd.setOnClickListener(v -> {
             OrderLine orderLine = new OrderLine();
-            orderLine.setNum(mAdapter.getItems().stream()
-                    .max(Comparator.comparing(OrderLine::getNum))
-                    .map(OrderLine::getNum)
-                    .map(m -> m + 1)
-                    .orElse(1));
+            orderLine.setNum(mAdapter.getItems().stream().max(Comparator.comparing(OrderLine::getNum)).map(OrderLine::getNum).map(m -> m + 1).orElse(1));
             mAdapter.addLine(orderLine);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -98,12 +89,28 @@ public class OrderGoodsFragment extends Fragment {
             orderLinesList.setAdapter(mAdapter);
             mAdapter.setItems(items);
         });
+        mAdapter.setSelectGoodListener(orderLine -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("order", order);
+            bundle.putInt("orderline", orderLine.getNum());
+            NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_goodsFragment, bundle);
+        });
+        mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
+                .moneyWithCurrencyToString(calsSum(mAdapter.getItems()))));
         mAdapter.setItems(order.getOrderLines());
         orderLinesList.setAdapter(mAdapter);
-        binding.orderLineAdd.callOnClick();
+        binding.orderGoodsSum.setText(MoneyUtils.getInstance()
+                .moneyWithCurrencyToString(calsSum(mAdapter.getItems())));
+        if (order.getOrderLines().isEmpty()) {
+            binding.orderLineAdd.callOnClick();
+        }
 
     }
 
+    private Double calsSum(List<OrderLine> orderLines) {
+        return orderLines.stream().mapToDouble(m -> Optional.ofNullable(m.getPrice()).orElse(0d)
+                * Optional.ofNullable(m.getCount()).orElse(0)).sum();
+    }
 
     private OrderStatus getOrdersStatus(Order order) {
         if (order.getId() == null) {

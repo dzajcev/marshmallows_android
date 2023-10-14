@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow.utils;
+package com.dzaitsev.marshmallow.components;
 
 import android.content.Context;
 import android.view.View;

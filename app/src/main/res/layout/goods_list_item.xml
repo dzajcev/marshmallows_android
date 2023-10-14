@@ -1,45 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/goodItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:orientation="horizontal"
+    android:paddingTop="3sp"
+    android:paddingBottom="3sp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:paddingTop="3sp"
-        android:paddingBottom="3sp">
 
-        <TextView
-            android:id="@+id/goodsListName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".6"
-            android:gravity="start|center_vertical"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/goodsListName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_weight=".6"
+        android:gravity="start|center_vertical"
+        android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/goodListPrice"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.3"
-            android:gravity="center_vertical|end"
-            android:paddingStart="3sp"
-            android:paddingEnd="3sp"
-            android:text=""
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/goodListPrice"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|center_vertical"
+        android:layout_weight="0.3"
+        android:gravity="center_vertical|end"
+        android:paddingStart="3sp"
+        android:paddingEnd="3sp"
+        android:text=""
+        android:textSize="14sp" />
 
-        <ImageButton
-            android:id="@+id/goodItemEdit"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1"
-            android:background="@color/transparent"
-            android:src="@drawable/edit_32" />
+    <ImageButton
+        android:id="@+id/goodItemEdit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".1"
+        android:background="@color/transparent"
+        android:src="@drawable/edit_32" />
 
-    </LinearLayout>
 </LinearLayout>

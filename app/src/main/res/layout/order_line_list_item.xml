@@ -19,32 +19,31 @@
             android:textSize="14sp"
             android:tooltipText="Эываа" />
 
-        <Spinner
+        <TextView
             android:id="@+id/order_line_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_weight=".6"
             android:gravity="top"
+            android:hint="Выберите товар"
             android:textSize="14sp" />
 
-        <EditText
+        <TextView
             android:id="@+id/order_line_price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
             android:gravity="center_vertical|end"
-            android:inputType="numberDecimal"
             android:text=""
             android:textSize="14sp" />
 
-        <EditText
+        <TextView
             android:id="@+id/order_line_count"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
             android:gravity="end"
-            android:inputType="number"
             android:text=""
             android:textSize="14sp" />
 

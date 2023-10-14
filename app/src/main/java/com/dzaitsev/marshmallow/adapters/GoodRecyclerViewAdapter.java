@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -12,23 +13,26 @@ import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, GoodRecyclerViewAdapter.RecycleViewHolder> {
+
+    private EditItemListener editItemListener;
+    private SelectItemListener selectItemListener;
 
     public interface EditItemListener {
         void edit(Good item);
     }
 
-    private final List<EditItemListener> editItemListeners = new CopyOnWriteArrayList<>();
-
-    public void addEditItemListener(EditItemListener editItemListener) {
-        this.editItemListeners.add(editItemListener);
+    public interface SelectItemListener {
+        void selectItem(Good item);
     }
 
-    public void removeEditItemListener(EditItemListener editItemListener) {
-        this.editItemListeners.remove(editItemListener);
+
+    public void setEditItemListener(EditItemListener editItemListener) {
+        this.editItemListener = editItemListener;
+    }
+
+    public void setSelectItemListener(SelectItemListener selectItemListener) {
+        this.selectItemListener = selectItemListener;
     }
 
     @NonNull
@@ -47,13 +51,18 @@ public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, G
             super(itemView);
             name = itemView.findViewById(R.id.goodsListName);
             price = itemView.findViewById(R.id.goodListPrice);
+            LinearLayout layout = itemView.findViewById(R.id.goodItemLayout);
             ImageButton edit = itemView.findViewById(R.id.goodItemEdit);
-            edit.setOnClickListener(v -> {
-                if (!GoodRecyclerViewAdapter.this.editItemListeners.isEmpty()) {
-                    GoodRecyclerViewAdapter.this.editItemListeners
-                            .forEach(editItemListener -> editItemListener.edit(getItem()));
-                }
-            });
+            if (selectItemListener != null) {
+                edit.setVisibility(View.GONE);
+                layout.setOnClickListener(view -> selectItemListener.selectItem(getItem()));
+            } else {
+                edit.setOnClickListener(v -> {
+                    if (editItemListener != null) {
+                        editItemListener.edit(getItem());
+                    }
+                });
+            }
         }
 
         @Override

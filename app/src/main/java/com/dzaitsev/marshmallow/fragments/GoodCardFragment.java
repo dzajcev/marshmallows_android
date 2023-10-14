@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
+import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.service.NetworkExecutorCallback;
@@ -113,17 +114,29 @@ public class GoodCardFragment extends Fragment {
         binding.goodCardPrice.setOnKeyListener(keyListener);
 
         binding.goodCardPrice.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(good.getPrice()));
-        binding.goodCardPrice.setOnFocusChangeListener((view1, b) -> {
-            if (b) {
-                binding.goodCardPrice.setText(MoneyUtils.getInstance()
-                        .moneyToString(MoneyUtils.getInstance()
-                                .stringToDouble(binding.goodCardPrice.getText().toString())));
-            } else {
-                binding.goodCardPrice.setText(MoneyUtils.getInstance()
-                        .moneyWithCurrencyToString(MoneyUtils.getInstance()
-                                .stringToDouble(binding.goodCardPrice.getText().toString())));
-            }
-        });
+        binding.goodCardPrice.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
+                .setTitle("Укажите сумму")
+                .setInitialValue(good.getPrice())
+                .setMinValue(1)
+                .setMaxValue(100000)
+                .positiveButton(value -> {
+                    binding.goodCardPrice.setText(String.format("%s", MoneyUtils.getInstance()
+                            .moneyWithCurrencyToString(value)));
+                    good.setPrice(value);
+                })
+                .build()
+                .show());
+//        binding.goodCardPrice.setOnFocusChangeListener((view1, b) -> {
+//            if (b) {
+//                binding.goodCardPrice.setText(MoneyUtils.getInstance()
+//                        .moneyToString(MoneyUtils.getInstance()
+//                                .stringToDouble(binding.goodCardPrice.getText().toString())));
+//            } else {
+//                binding.goodCardPrice.setText(MoneyUtils.getInstance()
+//                        .moneyWithCurrencyToString(MoneyUtils.getInstance()
+//                                .stringToDouble(binding.goodCardPrice.getText().toString())));
+//            }
+//        });
         binding.goodCardDescription.setText(good.getDescription());
         ImageButton cancel = view.findViewById(R.id.goodCardCancel);
         cancel.setOnClickListener(v -> requireActivity().onBackPressed());

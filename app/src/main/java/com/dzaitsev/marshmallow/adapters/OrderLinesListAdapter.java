@@ -1,37 +1,31 @@
 package com.dzaitsev.marshmallow.adapters;
 
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.components.CustomNumberPicker;
+import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
-import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
-import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
-import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAdapter.OrderLinesViewHolder> {
+public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesListAdapter.OrderLinesViewHolder> {
     private List<OrderLine> orderLines = new ArrayList<>();
 
     private View view;
@@ -40,8 +34,21 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
 
     private RemoveListener removeListener;
 
+    private SelectGoodListener selectGoodListener;
+
+    private ChangeSumListener changeSumListener;
+
     public void setRemoveListener(RemoveListener removeListener) {
         this.removeListener = removeListener;
+    }
+
+
+    public void setSelectGoodListener(SelectGoodListener selectGoodListener) {
+        this.selectGoodListener = selectGoodListener;
+    }
+
+    public void setChangeSumListener(ChangeSumListener changeSumListener) {
+        this.changeSumListener = changeSumListener;
     }
 
     public OrderLinesListAdapter(OrderStatus orderStatus) {
@@ -52,111 +59,94 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
         void onRemove(int position);
     }
 
-    public class OrderLinesViewHolder extends RecyclerView.ViewHolder {
+    public interface SelectGoodListener {
+        void onSelectGood(OrderLine orderLine);
+    }
+
+    public interface ChangeSumListener {
+        void onChange();
+    }
+
+    public class OrderLinesViewHolder extends AbstractRecyclerViewHolder<OrderLine> {
         private final TextView npp;
-        private final Spinner good;
+        private final TextView good;
         private final TextView price;
         private final TextView count;
-        private final List<Good> goods;
-
-        private OrderLine orderLine;
 
 
-        public OrderLinesViewHolder(View itemView, List<Good> goods) {
+        public OrderLinesViewHolder(View itemView) {
             super(itemView);
-            this.goods = goods;
             npp = itemView.findViewById(R.id.order_line_npp);
             good = itemView.findViewById(R.id.order_line_name);
-            final GoodsSpinnerAdapter goodsSpinnerAdapter = new GoodsSpinnerAdapter(itemView.getContext(),
-                    R.layout.goods_list_item_spinner_dropdown, R.layout.goods_list_item_spinner_text, goods);
-
             price = itemView.findViewById(R.id.order_line_price);
-            price.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    EditText et = (EditText) v;
-                    orderLine.setPrice(MoneyUtils.getInstance().stringToDouble(et.getText().toString()));
+            price.setOnClickListener(v -> {
+                if (getItem().getGood() != null) {
+                    MoneyPicker.builder(view.getContext())
+                            .setTitle("Укажите сумму")
+                            .setInitialValue(getItem().getPrice())
+                            .setMinValue(1)
+                            .setMaxValue(100000)
+                            .positiveButton(value -> {
+                                price.setText(String.format("%s", MoneyUtils.getInstance()
+                                        .moneyWithCurrencyToString(value)));
+                                getItem().setPrice(value);
+                                changeSumListener.onChange();
+                            })
+                            .build()
+                            .show();
                 }
             });
             count = itemView.findViewById(R.id.order_line_count);
-            count.setOnFocusChangeListener((v, hasFocus) -> {
-                if (!hasFocus) {
-                    EditText et = (EditText) v;
-                    if (et.getText() != null && !et.getText().toString().isEmpty()) {
-                        orderLine.setCount(Integer.valueOf(et.getText().toString()));
-                    }
+            count.setOnClickListener(v -> {
+                if (getItem().getGood() != null) {
+                    CustomNumberPicker.builder(view.getContext())
+                            .setTitle("Укажите количество")
+                            .setInitialValue(getItem().getCount())
+                            .setMinValue(1)
+                            .setMaxValue(1000)
+                            .positiveButton(new Consumer<>() {
+                                @Override
+                                public void accept(Integer value) {
+                                    count.setText(String.format("%s", value));
+                                    getItem().setCount(value);
+                                    changeSumListener.onChange();
+                                }
+                            })
+                            .dialogShowListener(new BiConsumer<>() {
+                                @Override
+                                public void accept(DialogInterface dialogInterface, NumberPicker numberPicker) {
+                                    if (getItem().getGood() != null) {
+                                        int s = Integer.parseInt(count.getText().toString());
+                                        if (s < numberPicker.getMinValue()) {
+                                            numberPicker.setValue(numberPicker.getMinValue());
+                                        } else {
+                                            numberPicker.setValue(s);
+                                        }
+                                    }
+                                }
+                            })
+                            .build()
+                            .show();
                 }
             });
-            good.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                int iCurrentSelection = good.getSelectedItemPosition();
-
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    if (iCurrentSelection == -1) {
-                        iCurrentSelection = position;
-                        return;
-                    }
-                    if (iCurrentSelection != position) {
-                        Good good = goods.get(position);
-                        orderLine.setGood(good);
-                        orderLine.setPrice(good.getPrice());
-                        orderLine.setCount(1);
-                        bind(orderLine);
-                    }
-                    iCurrentSelection = position;
-
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
+            good.setOnClickListener(view -> {
+                selectGoodListener.onSelectGood(getItem());
             });
-            good.setAdapter(goodsSpinnerAdapter);
             ImageButton delete = itemView.findViewById(R.id.orderLineDelete);
             delete.setOnClickListener(v -> removeListener.onRemove(getAdapterPosition()));
         }
 
         public void bind(OrderLine orderLine) {
-            this.orderLine = orderLine;
-            if (orderLine.getGood() != null) {
-                good.setSelection(goods.indexOf(orderLine.getGood()));
-            }
+            super.bind(orderLine);
             npp.setText(String.format("#%s", orderLine.getNum()));
-            price.setText(MoneyUtils.getInstance().moneyToString(orderLine.getPrice()));
-
+            good.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
+            price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(orderLine.getPrice()));
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
+            if (orderLine.getGood() == null) {
+                price.setFocusable(false);
+                count.setFocusable(false);
+            }
         }
-    }
-
-    private List<Good> getGoods() {
-        final List<Good> internalGoods = new ArrayList<>();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        try {
-            NetworkService.getInstance().getMarshmallowApi().getGoods().enqueue(new Callback<>() {
-                @Override
-                public void onResponse(Call<GoodsResponse> call, Response<GoodsResponse> response) {
-                    internalGoods.clear();
-                    internalGoods.addAll(Optional.ofNullable(response.body())
-                            .map(GoodsResponse::getGoods).orElse(new ArrayList<>()));
-                    countDownLatch.countDown();
-                }
-
-                @Override
-                public void onFailure(Call<GoodsResponse> call, Throwable t) {
-                    countDownLatch.countDown();
-                    new StringUtils.ErrorDialog(view.getContext(), t.getMessage()).show();
-                }
-            });
-
-        } catch (Exception e) {
-            new StringUtils.ErrorDialog(view.getContext(), e.getMessage()).show();
-        }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return internalGoods;
     }
 
     @NonNull
@@ -166,7 +156,7 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
         view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.order_line_list_item, parent, false);
 
-        return new OrderLinesViewHolder(view, getGoods());
+        return new OrderLinesViewHolder(view);
     }
 
     @Override

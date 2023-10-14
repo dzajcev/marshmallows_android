@@ -4,8 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.OrderGoodsFragment"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingLeft="3sp"
+    android:paddingRight="3sp"
+    tools:context=".fragments.OrderGoodsFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
@@ -15,12 +17,24 @@
         android:layout_weight="0.93"
         android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/orderLineAdd"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/transparent"
-            android:src="@drawable/create_32" />
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/orderLineAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:src="@drawable/create_32" />
+
+            <TextView
+                android:id="@+id/orderGoodsSum"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|end" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/orderLinesList"
@@ -39,12 +53,12 @@
             android:id="@+id/ordersGoodsBackward"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center|left"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:layout_gravity="center|start"
+            android:background="@color/transparent"
+            android:src="@drawable/ban_50" />
 
         <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
@@ -53,7 +67,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|end"
-            android:src="@drawable/forward_32" />
+            android:background="@color/transparent"
+            android:padding="5sp"
+            android:src="@drawable/forward_50" />
     </LinearLayout>
 
 </LinearLayout>
