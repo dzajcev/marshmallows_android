@@ -1,63 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/goodCardFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginStart="5sp"
+    android:layout_marginEnd="5sp"
+    android:layout_marginBottom="5sp"
     android:orientation="vertical"
     tools:context=".fragments.GoodCardFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/goodCardName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginBottom="5sp"
+        android:background="@color/field_background"
+        android:ems="10"
+        android:gravity="top|start"
+        android:hint="Название зефирки"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:maxLines="5"
+        android:minLines="2"
+        android:scrollbars="vertical"
+        android:textSize="14sp" />
 
-        <TextView
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight=".2"
-            android:text="@string/good_card_name_text" />
-
-        <EditText
-            android:id="@+id/goodCardName"
-            android:layout_width="0pt"
-            android:layout_height="100dp"
-            android:layout_weight=".8"
-            android:ems="10"
-            android:gravity="top|start"
-            android:inputType="textMultiLine"
-            android:lines="4"
-            android:maxLines="5"
-            android:minLines="2"
-            android:scrollbars="vertical" />
-
-    </LinearLayout>
-
-    <LinearLayout
+    <EditText
+        android:id="@+id/goodCardPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_marginBottom="5sp"
+        android:background="@color/field_background"
+        android:ems="10"
+        android:gravity="top|start"
+        android:hint="Цена зефирки"
+        android:inputType="numberDecimal"
+        android:lines="1"
+        android:scrollbars="vertical"
+        android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/good_card_price_text" />
+    <EditText
+        android:id="@+id/goodCardDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/field_background"
+        android:ems="10"
+        android:gravity="top|start"
+        android:hint="Описание зефирки"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:maxLines="5"
+        android:minLines="2"
+        android:scrollbars="vertical"
+        android:textSize="14sp" />
 
-        <EditText
-            android:id="@+id/goodCardPrice"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:ems="10"
-            android:gravity="top|start"
-            android:inputType="numberDecimal"
-            android:lines="1"
-            android:scrollbars="vertical" />
-    </LinearLayout>
+    <androidx.constraintlayout.widget.Barrier
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:barrierDirection="top" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -68,15 +72,42 @@
             android:id="@+id/goodCardCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:background="@color/transparent"
+            android:src="@drawable/cancel_32" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0pt"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/goodCardSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@android:drawable/ic_menu_save" />
+            android:layout_gravity="center_horizontal|center_vertical|end"
+            android:background="@color/transparent"
+            android:src="@drawable/save_32" />
+
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/goodsCardPriceHistoryLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="История цен"
+        android:textSize="16sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/goodCardPriceHistoryList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
 
 </LinearLayout>

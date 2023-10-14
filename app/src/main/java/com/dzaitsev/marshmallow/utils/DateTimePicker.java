@@ -1,6 +1,5 @@
-package com.dzaitsev.marshmallow;
+package com.dzaitsev.marshmallow.utils;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.view.View;
 import android.widget.DatePicker;
@@ -8,14 +7,13 @@ import android.widget.LinearLayout;
 
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 public class DateTimePicker extends View {
     private final Calendar calendar = Calendar.getInstance(new Locale("RU", "ru"));
     private final DatePicker datePicker;
-    private final AlertDialog alertDialog;
+    private final android.app.AlertDialog alertDialog;
 
     public DateTimePicker(Context context, Consumer<LocalDate> dateConsumer, String title, String message) {
         super(context);
@@ -24,7 +22,7 @@ public class DateTimePicker extends View {
         datePicker = new DatePicker(context);
         datePicker.setMinDate(System.currentTimeMillis());
         datePicker.setFirstDayOfWeek(Calendar.MONDAY);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
 
 
         builder.setTitle(title);

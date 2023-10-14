@@ -10,24 +10,30 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="5sp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingTop="3sp"
+        android:paddingBottom="3sp">
 
         <TextView
-            android:id="@+id/good_list_spinner_dropdown_name"
+            android:id="@+id/priceListDateCreate"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight=".6"
-            android:text=""
-            android:textSize="20sp" />
+            android:gravity="start|center_vertical"
+            android:paddingStart="6sp"
+            android:paddingEnd="3sp"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/good_list_spinner_dropdown_price"
+            android:id="@+id/priceListPrice"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="0.3"
+            android:gravity="center_vertical|end"
+            android:paddingStart="3sp"
+            android:paddingEnd="3sp"
             android:text=""
-            android:textSize="20sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 </LinearLayout>

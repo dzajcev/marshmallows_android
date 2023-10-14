@@ -6,29 +6,29 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.adapters.GoodsListAdapter;
+import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
+import com.dzaitsev.marshmallow.service.NetworkExecutorCallback;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
+import java.util.Comparator;
 import java.util.Optional;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.stream.Collectors;
 
 public class GoodsFragment extends Fragment {
 
     private FragmentGoodsBinding binding;
-    private GoodsListAdapter mAdapter;
+    private GoodRecyclerViewAdapter mAdapter;
 
     @Override
     public View onCreateView(
@@ -50,32 +50,42 @@ public class GoodsFragment extends Fragment {
             NavHostFragment.findNavController(GoodsFragment.this)
                     .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
         });
-        try {
-            NetworkService.getInstance().getMarshmallowApi().getGoods().enqueue(new Callback<>() {
-                @Override
-                public void onResponse(Call<GoodsResponse> call, Response<GoodsResponse> response) {
-                    requireActivity().runOnUiThread(() -> mAdapter.setItems(Optional.ofNullable(response.body())
-                            .orElse(new GoodsResponse()).getGoods()));
-                }
+        NetworkService.getInstance().getMarshmallowApi().getGoods().enqueue(new NetworkExecutorCallback<>(requireActivity(),
+                response -> Optional.ofNullable(response.body())
+                        .ifPresent(goodsResponse -> {
+                            mAdapter.setItems(Optional.of(goodsResponse)
+                                    .orElse(new GoodsResponse()).getGoods().stream()
+                                    .sorted(Comparator.comparing(Good::getName)).collect(Collectors.toList()));
+                            if (!StringUtils.isEmpty(binding.searchGood.getQuery().toString())) {
+                                mAdapter.filter(binding.searchGood.getQuery().toString());
+                            }
+                        })));
 
-                @Override
-                public void onFailure(Call<GoodsResponse> call, Throwable t) {
-                    new ErrorDialog(requireActivity(), t.getMessage()).show();
-                }
-            });
-
-        } catch (Exception e) {
-            new ErrorDialog(requireActivity(), e.getMessage()).show();
-        }
         goodsList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        mAdapter = new GoodsListAdapter();
-        mAdapter.setSelectGoodItemListener(good -> {
+        mAdapter = new GoodRecyclerViewAdapter();
+        mAdapter.addEditItemListener(good -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", good);
             NavHostFragment.findNavController(GoodsFragment.this)
                     .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
         });
+
+        mAdapter.setFilterPredicate(s -> good -> good.getName().toLowerCase().contains(s.toLowerCase()));
+
         goodsList.setAdapter(mAdapter);
+        binding.searchGood.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mAdapter.filter(newText);
+                return false;
+            }
+        });
+
     }
 
     @Override

@@ -13,7 +13,7 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/client_list_name"
+            android:id="@+id/goodsListName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".6"
@@ -23,7 +23,7 @@
             android:textSize="8pt" />
 
         <ImageButton
-            android:id="@+id/client_list_edit"
+            android:id="@+id/goodItemEdit"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight=".1"

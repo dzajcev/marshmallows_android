@@ -13,19 +13,16 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.dzaitsev.marshmallow.DateTimePicker;
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.DateTimePicker;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,7 +32,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class OrderClientFragment extends Fragment {
-    private final NumberFormat formatter = new DecimalFormat("#0.00");
     private FragmentOrderClientBinding binding;
 
     private Order order;
@@ -96,13 +92,7 @@ public class OrderClientFragment extends Fragment {
         binding.prePayment.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus) {
                 EditText e = (EditText) v;
-                try {
-                    if (e.getText() != null && !e.getText().toString().isEmpty()) {
-                        order.setPrePaymentSum(Objects.requireNonNull(formatter.parse(e.getText().toString())).doubleValue());
-                    }
-                } catch (ParseException ex) {
-                    throw new RuntimeException(ex);
-                }
+                order.setPrePaymentSum(MoneyUtils.getInstance().stringToDouble(e.getText().toString()));
             }
         });
         bind(order);
@@ -167,7 +157,7 @@ public class OrderClientFragment extends Fragment {
             throw new RuntimeException(e);
         }
         if (!result.get()) {
-            new ErrorDialog(requireActivity(), errMessage.toString()).show();
+            new StringUtils.ErrorDialog(requireActivity(), errMessage.toString()).show();
         }
         return result.get();
     }

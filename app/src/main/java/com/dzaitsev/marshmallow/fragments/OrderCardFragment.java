@@ -16,12 +16,12 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -40,7 +40,6 @@ public class OrderCardFragment extends Fragment {
     private Order incomingOrder;
     private EditText goodName;
     private EditText goodPrice;
-    private final NumberFormat formatter = new DecimalFormat("#0.00");
 
     private final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -174,7 +173,7 @@ public class OrderCardFragment extends Fragment {
         }
         incomingOrder = order;
         if (!result.get()) {
-            new ErrorDialog(requireActivity(), errMessage.toString()).show();
+            new StringUtils.ErrorDialog(requireActivity(), errMessage.toString()).show();
         }
         return result.get();
     }

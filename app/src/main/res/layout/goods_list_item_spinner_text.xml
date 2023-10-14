@@ -12,6 +12,6 @@
         android:layout_weight=".6"
         android:gravity="start|center_vertical"
         android:text=""
-        android:textSize="8pt" />
+        android:textSize="14sp" />
 
 </LinearLayout>

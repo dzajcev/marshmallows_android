@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.activity.OnBackPressedCallback;
@@ -15,35 +14,25 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
+import com.dzaitsev.marshmallow.service.NetworkExecutorCallback;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import java.util.stream.Collectors;
 
 public class GoodCardFragment extends Fragment {
 
     private FragmentGoodCardBinding binding;
-
-
     private Good incomingGood;
-    private EditText goodName;
-    private EditText goodPrice;
-    private final NumberFormat formatter = new DecimalFormat("#0.00");
 
     private final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -115,13 +104,27 @@ public class GoodCardFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Good good = requireArguments().getSerializable("good", Good.class);
+        if (good == null || good.getPrices().isEmpty()) {
+            binding.goodsCardPriceHistoryLabel.setVisibility(View.GONE);
+        }
         incomingGood = Objects.requireNonNull(good).clone();
-        goodName = view.findViewById(R.id.goodCardName);
-        goodName.setOnKeyListener(keyListener);
-        goodName.setText(good.getName());
-        goodPrice = view.findViewById(R.id.goodCardPrice);
-        goodPrice.setOnKeyListener(keyListener);
-        goodPrice.setText(Optional.ofNullable(good.getPrice()).map(formatter::format).orElse(""));
+        binding.goodCardName.setOnKeyListener(keyListener);
+        binding.goodCardName.setText(good.getName());
+        binding.goodCardPrice.setOnKeyListener(keyListener);
+
+        binding.goodCardPrice.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(good.getPrice()));
+        binding.goodCardPrice.setOnFocusChangeListener((view1, b) -> {
+            if (b) {
+                binding.goodCardPrice.setText(MoneyUtils.getInstance()
+                        .moneyToString(MoneyUtils.getInstance()
+                                .stringToDouble(binding.goodCardPrice.getText().toString())));
+            } else {
+                binding.goodCardPrice.setText(MoneyUtils.getInstance()
+                        .moneyWithCurrencyToString(MoneyUtils.getInstance()
+                                .stringToDouble(binding.goodCardPrice.getText().toString())));
+            }
+        });
+        binding.goodCardDescription.setText(good.getDescription());
         ImageButton cancel = view.findViewById(R.id.goodCardCancel);
         cancel.setOnClickListener(v -> requireActivity().onBackPressed());
         ImageButton save = view.findViewById(R.id.goodCardSave);
@@ -130,17 +133,22 @@ public class GoodCardFragment extends Fragment {
                 requireActivity().onBackPressed();
             }
         });
+        binding.goodCardPriceHistoryList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        PriceHistoryRecyclerViewAdapter priceHistoryRecyclerViewAdapter = new PriceHistoryRecyclerViewAdapter();
+        binding.goodCardPriceHistoryList.setAdapter(priceHistoryRecyclerViewAdapter);
 
+        priceHistoryRecyclerViewAdapter.setItems(good.getPrices().stream()
+                .sorted((price, t1) -> t1.getCreateDate().compareTo(price.getCreateDate())).collect(Collectors.toList()));
     }
 
     private boolean save() {
         boolean fail = false;
-        if (goodName.getText() == null || goodName.getText().toString().isEmpty()) {
-            goodName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+        if (binding.goodCardName.getText() == null || binding.goodCardName.getText().toString().isEmpty()) {
+            binding.goodCardName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (goodPrice.getText() == null || goodPrice.getText().toString().isEmpty()) {
-            goodPrice.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+        if (binding.goodCardPrice.getText() == null || binding.goodCardPrice.getText().toString().isEmpty()) {
+            binding.goodCardPrice.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (fail) {
@@ -149,49 +157,25 @@ public class GoodCardFragment extends Fragment {
         Good good = constructGood();
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        AtomicBoolean result = new AtomicBoolean(true);
-        final StringBuffer errMessage = new StringBuffer();
-        NetworkService.getInstance()
-                .getMarshmallowApi().saveGood(good).enqueue(new Callback<>() {
-                    @Override
-                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                        if (!response.isSuccessful()) {
-                            result.set(false);
-                            errMessage.append(response.message());
-                        }
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                        result.set(false);
-                        errMessage.append(t.getMessage());
-                        countDownLatch.countDown();
-                    }
-                });
+        NetworkExecutorCallback<Void> callback = new NetworkExecutorCallback<>(requireActivity(),
+                response -> countDownLatch.countDown(), countDownLatch);
+        NetworkService.getInstance().getMarshmallowApi().saveGood(good)
+                .enqueue(callback);
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         incomingGood = good;
-        if (!result.get()) {
-            new ErrorDialog(requireActivity(), errMessage.toString()).show();
-        }
-        return result.get();
+        return callback.isSuccess();
     }
 
     private Good constructGood() {
         Good good = new Good();
         good.setId(incomingGood == null ? null : incomingGood.getId());
-        good.setName(goodName.getText().toString());
-        try {
-            if (goodPrice.getText() != null && !goodPrice.getText().toString().isEmpty()) {
-                good.setPrice(Optional.ofNullable(formatter.parse(goodPrice.getText().toString())).orElse(-1d).doubleValue());
-            }
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        good.setName(binding.goodCardName.getText().toString());
+        good.setDescription(binding.goodCardDescription.getText().toString());
+        good.setPrice(MoneyUtils.getInstance().stringToDouble(binding.goodCardPrice.getText().toString()));
         return good;
     }
 

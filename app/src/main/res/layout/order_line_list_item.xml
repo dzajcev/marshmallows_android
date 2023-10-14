@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_weight=".1"
             android:text=""
-            android:textSize="8pt"
+            android:textSize="14sp"
             android:tooltipText="Эываа" />
 
         <Spinner
@@ -26,16 +26,17 @@
             android:layout_gravity="center"
             android:layout_weight=".6"
             android:gravity="top"
-            android:textSize="8pt" />
+            android:textSize="14sp" />
 
         <EditText
             android:id="@+id/order_line_price"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
+            android:gravity="center_vertical|end"
             android:inputType="numberDecimal"
             android:text=""
-            android:textSize="8pt" />
+            android:textSize="14sp" />
 
         <EditText
             android:id="@+id/order_line_count"
@@ -45,7 +46,7 @@
             android:gravity="end"
             android:inputType="number"
             android:text=""
-            android:textSize="8pt" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -56,16 +57,9 @@
 
         <ImageButton
             android:id="@+id/orderLineDelete"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1"
-            app:srcCompat="@android:drawable/ic_menu_delete" />
-
-        <ImageButton
-            android:id="@+id/orderLineDone"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".1"
-            app:srcCompat="@drawable/done_32" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/transparent"
+            app:srcCompat="@drawable/delete_32" />
     </LinearLayout>
 </LinearLayout>

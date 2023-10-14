@@ -14,13 +14,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.ClientsListAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentFindClientBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.ClientResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Optional;
 
@@ -100,7 +100,7 @@ public class FindClientFragment extends Fragment {
     }
 
     private void showError(String text) {
-        requireActivity().runOnUiThread(() -> new ErrorDialog(requireActivity(), text).show());
+        requireActivity().runOnUiThread(() -> new StringUtils.ErrorDialog(requireActivity(), text).show());
     }
 
     @Override

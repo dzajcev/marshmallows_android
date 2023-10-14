@@ -14,13 +14,13 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesListAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -54,7 +54,7 @@ public class OrderGoodsFragment extends Fragment {
         orderLinesList = view.findViewById(R.id.orderLinesList);
         binding.ordersGoodsForward.setOnClickListener(view1 -> {
             if (order.getOrderLines().isEmpty() || order.getOrderLines().stream().noneMatch(f -> f.getGood() != null)) {
-                new ErrorDialog(requireActivity(), "Не заполнен перечень товаров").show();
+                new StringUtils.ErrorDialog(requireActivity(), "Не заполнен перечень товаров").show();
             } else {
                 Bundle bundle = new Bundle();
                 order.getOrderLines().removeIf(f -> f.getGood() == null);
@@ -100,7 +100,7 @@ public class OrderGoodsFragment extends Fragment {
         });
         mAdapter.setItems(order.getOrderLines());
         orderLinesList.setAdapter(mAdapter);
-
+        binding.orderLineAdd.callOnClick();
 
     }
 

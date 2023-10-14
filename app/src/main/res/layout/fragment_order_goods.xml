@@ -17,9 +17,10 @@
 
         <ImageButton
             android:id="@+id/orderLineAdd"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_add" />
+            android:background="@color/transparent"
+            android:src="@drawable/create_32" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/orderLinesList"

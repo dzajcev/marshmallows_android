@@ -15,9 +15,8 @@ import androidx.annotation.Nullable;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Good;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,6 @@ public class GoodsSpinnerAdapter extends ArrayAdapter<Good> {
     private final List<Good> list;
     private final LayoutInflater inflator;
 
-    private final NumberFormat formatter = new DecimalFormat("#0.00");
 
     public GoodsSpinnerAdapter(@NonNull Context context, @LayoutRes int resource,
                                @LayoutRes int textViewResourceId, @NonNull List<Good> list) {
@@ -58,7 +56,8 @@ public class GoodsSpinnerAdapter extends ArrayAdapter<Good> {
         TextView name = itemView.findViewById(R.id.good_list_spinner_dropdown_name);
         name.setText(list.get(position).getName());
         TextView price = itemView.findViewById(R.id.good_list_spinner_dropdown_price);
-        price.setText(Optional.ofNullable(list.get(position).getPrice()).map(formatter::format).orElse(""));
+        price.setText(Optional.ofNullable(list.get(position).getPrice())
+                .map(m-> MoneyUtils.getInstance().moneyWithCurrencyToString(m)).orElse(""));
         WindowManager windowManager = (WindowManager) itemView.getContext().getSystemService(Context.WINDOW_SERVICE);
         Rect bounds = windowManager.getCurrentWindowMetrics().getBounds();
         itemView.setMinimumWidth(bounds.right);

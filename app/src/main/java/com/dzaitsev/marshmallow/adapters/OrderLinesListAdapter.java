@@ -9,23 +9,21 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.ErrorDialog;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
@@ -63,7 +61,6 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
 
         private OrderLine orderLine;
 
-        private final NumberFormat formatter = new DecimalFormat("#0.00");
 
         public OrderLinesViewHolder(View itemView, List<Good> goods) {
             super(itemView);
@@ -77,13 +74,7 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
             price.setOnFocusChangeListener((v, hasFocus) -> {
                 if (!hasFocus) {
                     EditText et = (EditText) v;
-                    if (et.getText() != null && !et.getText().toString().isEmpty()) {
-                        try {
-                            orderLine.setPrice(Objects.requireNonNull(formatter.parse(et.getText().toString())).doubleValue());
-                        } catch (ParseException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                    orderLine.setPrice(MoneyUtils.getInstance().stringToDouble(et.getText().toString()));
                 }
             });
             count = itemView.findViewById(R.id.order_line_count);
@@ -123,15 +114,6 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
             good.setAdapter(goodsSpinnerAdapter);
             ImageButton delete = itemView.findViewById(R.id.orderLineDelete);
             delete.setOnClickListener(v -> removeListener.onRemove(getAdapterPosition()));
-            ImageButton done = itemView.findViewById(R.id.orderLineDone);
-            if (orderStatus == OrderStatus.NEW) {
-                done.setVisibility(View.GONE);
-            }
-            if (orderStatus == OrderStatus.DONE) {
-                delete.setVisibility(View.GONE);
-                done.setVisibility(View.GONE);
-            }
-
         }
 
         public void bind(OrderLine orderLine) {
@@ -140,7 +122,8 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
                 good.setSelection(goods.indexOf(orderLine.getGood()));
             }
             npp.setText(String.format("#%s", orderLine.getNum()));
-            price.setText(Optional.ofNullable(orderLine.getPrice()).map(formatter::format).orElse(""));
+            price.setText(MoneyUtils.getInstance().moneyToString(orderLine.getPrice()));
+
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
         }
     }
@@ -161,12 +144,12 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
                 @Override
                 public void onFailure(Call<GoodsResponse> call, Throwable t) {
                     countDownLatch.countDown();
-                    new ErrorDialog(view.getContext(), t.getMessage()).show();
+                    new StringUtils.ErrorDialog(view.getContext(), t.getMessage()).show();
                 }
             });
 
         } catch (Exception e) {
-            new ErrorDialog(view.getContext(), e.getMessage()).show();
+            new StringUtils.ErrorDialog(view.getContext(), e.getMessage()).show();
         }
         try {
             countDownLatch.await();
@@ -176,6 +159,7 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
         return internalGoods;
     }
 
+    @NonNull
     @Override
     public OrderLinesViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
@@ -186,11 +170,11 @@ public class OrderLinesListAdapter extends RecyclerView.Adapter<OrderLinesListAd
     }
 
     @Override
-    public void onBindViewHolder(OrderLinesViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull OrderLinesViewHolder holder, int position) {
         if (position % 2 == 0) {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.grey));
+            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_1));
         } else {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.grey_1));
+            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_2));
         }
         holder.bind(orderLines.get(position));
 

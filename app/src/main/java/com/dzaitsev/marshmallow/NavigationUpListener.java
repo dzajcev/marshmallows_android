@@ -1,5 +1,5 @@
 package com.dzaitsev.marshmallow;
 
-public interface NavListener {
+public interface NavigationUpListener {
     boolean accept();
 }

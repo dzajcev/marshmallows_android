@@ -10,30 +10,36 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingTop="3sp"
+        android:paddingBottom="3sp">
 
         <TextView
-            android:id="@+id/client_list_name"
+            android:id="@+id/goodsListName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".6"
-            android:text=""
-            android:textSize="12pt" />
+            android:gravity="start|center_vertical"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/good_list_price"
+            android:id="@+id/goodListPrice"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.3"
-            android:textSize="12pt"
-            android:text="" />
+            android:gravity="center_vertical|end"
+            android:paddingStart="3sp"
+            android:paddingEnd="3sp"
+            android:text=""
+            android:textSize="14sp" />
 
         <ImageButton
-            android:id="@+id/client_list_edit"
+            android:id="@+id/goodItemEdit"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight=".1"
-            app:srcCompat="@android:drawable/ic_menu_edit" />
+            android:background="@color/transparent"
+            android:src="@drawable/edit_32" />
 
     </LinearLayout>
 </LinearLayout>

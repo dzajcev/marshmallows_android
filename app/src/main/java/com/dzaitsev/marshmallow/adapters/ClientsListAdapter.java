@@ -38,7 +38,7 @@ public class ClientsListAdapter extends RecyclerView.Adapter<ClientsListAdapter.
 
         public ClientListViewHolder(View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.client_list_name);
+            name = itemView.findViewById(R.id.goodsListName);
             name.setOnClickListener(v -> onItemClickListener.onItemClick(client));
         }
 
@@ -74,9 +74,9 @@ public class ClientsListAdapter extends RecyclerView.Adapter<ClientsListAdapter.
     @Override
     public void onBindViewHolder(@NonNull ClientListViewHolder holder, int position) {
         if (position % 2 == 0) {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.grey));
+            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_1));
         } else {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.grey_1));
+            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_2));
         }
         holder.bind(showList.get(position));
 

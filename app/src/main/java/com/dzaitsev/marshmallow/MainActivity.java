@@ -13,15 +13,14 @@ import com.dzaitsev.marshmallow.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
 
-    private NavListener navigationBackListener;
+    private NavigationUpListener navigationBackListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -30,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
     }
 
-    public void setNavigationBackListener(NavListener navigationBackListener) {
+    public void setNavigationBackListener(NavigationUpListener navigationBackListener) {
         this.navigationBackListener = navigationBackListener;
     }
 
