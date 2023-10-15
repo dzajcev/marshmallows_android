@@ -3,23 +3,28 @@ package com.dzaitsev.marshmallow.components;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class MoneyPicker {
+public class MoneyPicker extends View{
     private final AlertDialog.Builder builder;
     private final EditText money;
 
@@ -33,6 +38,7 @@ public class MoneyPicker {
 
 
     public MoneyPicker(Context context) {
+        super(context);
         this.builder = new AlertDialog.Builder(context);
         this.money = new EditText(context);
         this.money.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED);
@@ -45,8 +51,6 @@ public class MoneyPicker {
         });
         builder.setPositiveButton("Ok", null);
         builder.setView(money);
-
-
     }
 
     public static Builder builder(Context context) {
@@ -55,10 +59,12 @@ public class MoneyPicker {
 
     public void show() {
         alertDialog = builder.create();
+
         alertDialog.setOnShowListener(onShowListener);
         alertDialog.show();
         Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         button.setOnClickListener(positiveButton);
+        money.requestFocus();
     }
 
     public class Builder {
@@ -77,35 +83,38 @@ public class MoneyPicker {
             MoneyPicker.this.maxValue = maxValue;
             return this;
         }
+
         public Builder setInitialValue(Double maxValue) {
             MoneyPicker.this.money.setText(MoneyUtils.getInstance().moneyToString(maxValue));
             return this;
         }
+
+        @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public Builder positiveButton(Consumer<Double> supplier) {
             positiveButton = view -> {
-                Double val = MoneyUtils.getInstance().stringToDouble(money.getText().toString());
-                boolean badValue = minValue != null && val < minValue;
-                if (maxValue != null && val > maxValue) {
-                    badValue = true;
-                }
-                if (badValue) {
-                    String intervalMessage;
-                    if (minValue != null && maxValue == null) {
-                        intervalMessage = "Значение должно быть больше или равно " + minValue;
-                    } else if (minValue == null) {
-                        intervalMessage = "Значение должно быть меньше или равно " + maxValue;
-                    } else {
-                        intervalMessage = "Значение должно быть меньше или равно " + maxValue +
-                                " и больше или равно " + minValue;
+                Optional.ofNullable(MoneyUtils.getInstance()
+                        .stringToDouble(money.getText().toString())).ifPresent(val -> {
+                    boolean badValue = minValue != null && val < minValue;
+                    if (maxValue != null && val > maxValue) {
+                        badValue = true;
                     }
-                    Toast.makeText(money.getContext(), String.format(intervalMessage,
-                                    MoneyPicker.this.minValue, MoneyPicker.this.maxValue),
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                    if (badValue) {
+                        String intervalMessage;
+                        if (minValue != null && maxValue == null) {
+                            intervalMessage = "Значение должно быть больше или равно " + minValue;
+                        } else if (minValue == null) {
+                            intervalMessage = "Значение должно быть меньше или равно " + maxValue;
+                        } else {
+                            intervalMessage = "Значение должно быть меньше или равно " + maxValue + " и больше или равно " + minValue;
+                        }
+                        Toast.makeText(money.getContext(), String.format(intervalMessage, MoneyPicker.this.minValue, MoneyPicker.this.maxValue), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    supplier.accept(val);
+                });
                 MoneyPicker.this.alertDialog.dismiss();
-                supplier.accept(val);
             };
+
             return this;
         }
 

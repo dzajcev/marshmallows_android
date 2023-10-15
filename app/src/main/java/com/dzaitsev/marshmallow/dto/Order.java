@@ -1,5 +1,10 @@
 package com.dzaitsev.marshmallow.dto;
 
+import androidx.annotation.NonNull;
+
+import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.google.gson.Gson;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -7,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Order implements Serializable {
+public class Order implements Serializable,Cloneable {
 
     private Integer id;
 
@@ -117,5 +122,12 @@ public class Order implements Serializable {
 
     public void setDeadline(LocalDate deadline) {
         this.deadline = deadline;
+    }
+
+    @NonNull
+    @Override
+    public Order clone() {
+        Gson gson = GsonExt.getGson();
+        return gson.fromJson(gson.toJson(this), Order.class);
     }
 }

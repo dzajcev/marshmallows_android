@@ -49,7 +49,7 @@ public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, G
 
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.goodsListName);
+            name = itemView.findViewById(R.id.goodListName);
             price = itemView.findViewById(R.id.goodListPrice);
             LinearLayout layout = itemView.findViewById(R.id.goodItemLayout);
             ImageButton edit = itemView.findViewById(R.id.goodItemEdit);

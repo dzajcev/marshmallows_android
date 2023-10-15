@@ -20,17 +20,10 @@ import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class OrderCardFragment extends Fragment {
 
@@ -144,38 +137,13 @@ public class OrderCardFragment extends Fragment {
             return false;
         }
         Order order = constructOrder();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        AtomicBoolean result = new AtomicBoolean(true);
-        final StringBuffer errMessage = new StringBuffer();
-        NetworkService.getInstance()
-                .getMarshmallowApi().saveOrder(order).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (!response.isSuccessful()) {
-                            result.set(false);
-                            errMessage.append(response.message());
-                        }
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        result.set(false);
-                        errMessage.append(t.getMessage());
-                        countDownLatch.countDown();
-                    }
-                });
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        CountDownLatch countDownLatch = new CountDownLatch(1);
+//        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+//                response -> countDownLatch.countDown(), countDownLatch);
+//        NetworkService.getInstance().getMarshmallowApi().saveOrder(order)
+//                .enqueue(callback);
         incomingOrder = order;
-        if (!result.get()) {
-            new StringUtils.ErrorDialog(requireActivity(), errMessage.toString()).show();
-        }
-        return result.get();
+        return true;
     }
 
     private Order constructOrder() {

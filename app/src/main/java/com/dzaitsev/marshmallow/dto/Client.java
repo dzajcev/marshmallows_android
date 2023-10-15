@@ -1,10 +1,17 @@
 package com.dzaitsev.marshmallow.dto;
 
+import androidx.annotation.NonNull;
+
+import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.google.gson.Gson;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Client implements Serializable {
+public class Client implements Serializable, Cloneable {
     private Integer id;
 
     private String name;
@@ -15,7 +22,9 @@ public class Client implements Serializable {
 
     private String phone;
 
-    private List<LinkChannel> linkChannels;
+    private String comment;
+
+    private List<LinkChannel> linkChannels=new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -64,4 +73,35 @@ public class Client implements Serializable {
     public void setLinkChannels(List<LinkChannel> linkChannels) {
         this.linkChannels = linkChannels;
     }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Client client = (Client) o;
+        return name.equals(client.name) && Objects.equals(defaultDeliveryAddress,
+                client.defaultDeliveryAddress) && phone.equals(client.phone) && linkChannels.equals(client.linkChannels)
+                && Objects.equals(comment, client.comment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, defaultDeliveryAddress, phone, linkChannels, comment);
+    }
+
+    @NonNull
+    @Override
+    public Client clone() {
+        Gson gson = GsonExt.getGson();
+        return gson.fromJson(gson.toJson(this), Client.class);
+    }
+
 }

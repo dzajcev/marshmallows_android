@@ -22,12 +22,12 @@ import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.service.NetworkExecutorCallback;
+import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Objects;
-import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 public class GoodCardFragment extends Fragment {
@@ -62,7 +62,7 @@ public class GoodCardFragment extends Fragment {
 
     private boolean hasChanges() {
         Good good = constructGood();
-        if ((good.getName() == null || good.getName().isEmpty()) && good.getPrice() == null) {
+        if (StringUtils.isEmpty(good.getName()) && good.getPrice() == null) {
             return false;
         }
         return !good.equals(incomingGood);
@@ -126,22 +126,9 @@ public class GoodCardFragment extends Fragment {
                 })
                 .build()
                 .show());
-//        binding.goodCardPrice.setOnFocusChangeListener((view1, b) -> {
-//            if (b) {
-//                binding.goodCardPrice.setText(MoneyUtils.getInstance()
-//                        .moneyToString(MoneyUtils.getInstance()
-//                                .stringToDouble(binding.goodCardPrice.getText().toString())));
-//            } else {
-//                binding.goodCardPrice.setText(MoneyUtils.getInstance()
-//                        .moneyWithCurrencyToString(MoneyUtils.getInstance()
-//                                .stringToDouble(binding.goodCardPrice.getText().toString())));
-//            }
-//        });
         binding.goodCardDescription.setText(good.getDescription());
-        ImageButton cancel = view.findViewById(R.id.goodCardCancel);
-        cancel.setOnClickListener(v -> requireActivity().onBackPressed());
-        ImageButton save = view.findViewById(R.id.goodCardSave);
-        save.setOnClickListener(v -> {
+        binding.goodCardCancel.setOnClickListener(v -> requireActivity().onBackPressed());
+        binding.goodCardSave.setOnClickListener(v -> {
             if (save()) {
                 requireActivity().onBackPressed();
             }
@@ -156,11 +143,11 @@ public class GoodCardFragment extends Fragment {
 
     private boolean save() {
         boolean fail = false;
-        if (binding.goodCardName.getText() == null || binding.goodCardName.getText().toString().isEmpty()) {
+        if (StringUtils.isEmpty(binding.goodCardName.getText().toString())) {
             binding.goodCardName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (binding.goodCardPrice.getText() == null || binding.goodCardPrice.getText().toString().isEmpty()) {
+        if (StringUtils.isEmpty(binding.goodCardPrice.getText().toString())) {
             binding.goodCardPrice.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
@@ -168,17 +155,10 @@ public class GoodCardFragment extends Fragment {
             return false;
         }
         Good good = constructGood();
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        NetworkExecutorCallback<Void> callback = new NetworkExecutorCallback<>(requireActivity(),
-                response -> countDownLatch.countDown(), countDownLatch);
-        NetworkService.getInstance().getMarshmallowApi().saveGood(good)
-                .enqueue(callback);
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getMarshmallowApi().saveGood(good),
+                true);
+        callback.invoke();
         incomingGood = good;
         return callback.isSuccess();
     }

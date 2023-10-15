@@ -6,34 +6,6 @@
     tools:context=".fragments.GoodsFragment"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/newOrder"
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/new_order_label" />
-
-        <Button
-            android:id="@+id/goods"
-            android:layout_width="0pt"
-            android:layout_weight="0.5"
-            android:layout_height="wrap_content"
-            android:text="@string/goods_list_label" />
-
-        <Button
-            android:id="@+id/goods2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.5"
-            android:text="@string/clients_list_label" />
-
-    </LinearLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ordersList"
         android:layout_width="match_parent"

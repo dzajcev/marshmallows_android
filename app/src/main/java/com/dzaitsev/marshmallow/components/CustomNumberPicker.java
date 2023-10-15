@@ -3,18 +3,20 @@ package com.dzaitsev.marshmallow.components;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.view.View;
 import android.widget.NumberPicker;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class CustomNumberPicker {
+public class CustomNumberPicker extends View {
     private final AlertDialog.Builder builder;
     final NumberPicker numberPicker;
 
     private DialogInterface.OnShowListener onShowListener;
 
     public CustomNumberPicker(Context context) {
+        super(context);
         this.builder = new AlertDialog.Builder(context);
         this.numberPicker = new NumberPicker(context);
         this.numberPicker.setWrapSelectorWheel(false);

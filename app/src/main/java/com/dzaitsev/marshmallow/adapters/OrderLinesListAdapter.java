@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.content.DialogInterface;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
@@ -30,8 +32,6 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
 
     private View view;
 
-    private final OrderStatus orderStatus;
-
     private RemoveListener removeListener;
 
     private SelectGoodListener selectGoodListener;
@@ -49,10 +49,6 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
 
     public void setChangeSumListener(ChangeSumListener changeSumListener) {
         this.changeSumListener = changeSumListener;
-    }
-
-    public OrderLinesListAdapter(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
     }
 
     public interface RemoveListener {
@@ -74,6 +70,7 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
         private final TextView count;
 
 
+        @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public OrderLinesViewHolder(View itemView) {
             super(itemView);
             npp = itemView.findViewById(R.id.order_line_npp);
@@ -149,6 +146,7 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @NonNull
     @Override
     public OrderLinesViewHolder onCreateViewHolder(ViewGroup parent,

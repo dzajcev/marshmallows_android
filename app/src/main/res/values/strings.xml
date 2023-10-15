@@ -5,14 +5,14 @@
     <string name="goods_fragment_label">Зефирки и другое</string>
     <string name="orders_fragment_label">Заказы</string>
     <string name="new_goods_fragment_label">Новая зефирка</string>
-    <string name="new_goods_card_label">Карточка зефирки</string>
+    <string name="goods_card_label">Карточка зефирки</string>
     <string name="good_card_name_text">Название</string>
     <string name="good_card_price_text">Цена</string>
     <string name="goods_list_label">Зефирки</string>
     <string name="clients_list_label">Клиенты</string>
+    <string name="client_card_label">Карточка клиента</string>
     <string name="new_order_label">Заказ</string>
     <string name="orders_lines_label">Позиции заказа</string>
     <string name="orders_client_info_label">Информация по заказу</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

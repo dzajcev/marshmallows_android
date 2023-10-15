@@ -41,7 +41,7 @@ public class OrderGoodsFragment extends Fragment {
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
         binding = FragmentOrderGoodsBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -79,7 +79,7 @@ public class OrderGoodsFragment extends Fragment {
             mAdapter.addLine(orderLine);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        mAdapter = new OrderLinesListAdapter(getOrdersStatus(order));
+        mAdapter = new OrderLinesListAdapter();
         mAdapter.setRemoveListener(position -> {
             List<OrderLine> items = mAdapter.getItems();
             items.remove(position);
@@ -112,15 +112,6 @@ public class OrderGoodsFragment extends Fragment {
                 * Optional.ofNullable(m.getCount()).orElse(0)).sum();
     }
 
-    private OrderStatus getOrdersStatus(Order order) {
-        if (order.getId() == null) {
-            return OrderStatus.NEW;
-        } else if (order.getShipped()) {
-            return OrderStatus.DONE;
-        } else {
-            return OrderStatus.IN_PROGRESS;
-        }
-    }
 
     @Override
     public void onDestroyView() {

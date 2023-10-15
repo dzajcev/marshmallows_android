@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.service;
 
 
+import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
@@ -22,8 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkService {
 
-    DateTimeFormatter localDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
-    DateTimeFormatter localDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
     private static NetworkService mInstance;
     private Retrofit mRetrofit;
 
@@ -49,26 +49,11 @@ public class NetworkService {
                 .writeTimeout(15, TimeUnit.SECONDS)
                 .build();
 
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class,
-                        (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context)
-                                -> new JsonPrimitive(localDateTimeFormatter.format(src)))
-                .registerTypeAdapter(LocalDate.class,
-                        (JsonSerializer<LocalDate>) (src, typeOfSrc, context)
-                                -> new JsonPrimitive(localDateFormatter.format(src)))
-                .registerTypeAdapter(LocalDateTime.class,
-                        (JsonDeserializer<LocalDateTime>) (json, type,
-                                                           jsonDeserializationContext) ->
-                                LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), localDateTimeFormatter))
-                .registerTypeAdapter(LocalDate.class,
-                        (JsonDeserializer<LocalDate>) (json, type,
-                                                       jsonDeserializationContext) ->
-                                LocalDate.parse(json.getAsJsonPrimitive().getAsString(), localDateFormatter))
-                .create();
+
         mRetrofit = new Retrofit.Builder()
                 .baseUrl("http://192.168.1.45:8080/")
                 .callbackExecutor(Executors.newSingleThreadExecutor())
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
                 .client(okHttpClient)
                 .build();
     }

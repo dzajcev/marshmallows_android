@@ -20,30 +20,21 @@ import com.dzaitsev.marshmallow.databinding.FragmentGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutorCallback;
+import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GoodsFragment extends Fragment {
 
     private FragmentGoodsBinding binding;
     private GoodRecyclerViewAdapter mAdapter;
-
-    private final GoodRecyclerViewAdapter.EditItemListener editItemListener = good -> {
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("good", good);
-        NavHostFragment.findNavController(GoodsFragment.this)
-                .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
-    };
-
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
+            @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
         binding = FragmentGoodsBinding.inflate(inflater, container, false);
@@ -54,15 +45,15 @@ public class GoodsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final RecyclerView goodsList = view.findViewById(R.id.goodsList);
-
         binding.newGood.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", new Good());
             NavHostFragment.findNavController(GoodsFragment.this)
                     .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
         });
-        NetworkService.getInstance().getMarshmallowApi().getGoods().enqueue(new NetworkExecutorCallback<>(requireActivity(),
+        mAdapter = new GoodRecyclerViewAdapter();
+        new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getMarshmallowApi().getGoods(),
                 response -> Optional.ofNullable(response.body())
                         .ifPresent(goodsResponse -> {
                             mAdapter.setItems(Optional.of(goodsResponse)
@@ -71,11 +62,17 @@ public class GoodsFragment extends Fragment {
                             if (!StringUtils.isEmpty(binding.searchGood.getQuery().toString())) {
                                 mAdapter.filter(binding.searchGood.getQuery().toString());
                             }
-                        })));
+                        })).invoke();
+        binding.goodsList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        goodsList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        mAdapter = new GoodRecyclerViewAdapter();
-        mAdapter.setEditItemListener(editItemListener);
+        mAdapter.setEditItemListener(good -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("good", good);
+            NavHostFragment.findNavController(GoodsFragment.this)
+                    .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
+        });
+        mAdapter.setFilterPredicate(s -> good -> good.getName().toLowerCase().contains(s.toLowerCase()));
+        binding.goodsList.setAdapter(mAdapter);
         Optional.ofNullable(getArguments())
                 .ifPresent(bundle -> {
                     Integer orderline = getArguments().getSerializable("orderline", Integer.class);
@@ -98,10 +95,6 @@ public class GoodsFragment extends Fragment {
                         });
                     }
                 });
-
-        mAdapter.setFilterPredicate(s -> good -> good.getName().toLowerCase().contains(s.toLowerCase()));
-
-        goodsList.setAdapter(mAdapter);
         binding.searchGood.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {

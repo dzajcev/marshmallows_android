@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/ordersFragment">
-
+    <activity
+        android:id="@+id/main_frame"
+        android:name="com.dzaitsev.marshmallow.MainActivity"
+        android:label="MainActivity"
+        tools:layout="@layout/activity_main" />
     <fragment
         android:id="@+id/goodsFragment"
         android:name="com.dzaitsev.marshmallow.fragments.GoodsFragment"
@@ -20,7 +24,7 @@
     <fragment
         android:id="@+id/goodCard"
         android:name="com.dzaitsev.marshmallow.fragments.GoodCardFragment"
-        android:label="@string/new_goods_card_label"
+        android:label="@string/goods_card_label"
         tools:layout="@layout/fragment_good_card" />
     <fragment
         android:id="@+id/ordersFragment"
@@ -36,6 +40,9 @@
         <action
             android:id="@+id/action_ordersFragment_to_orderGoodsFragment"
             app:destination="@id/orderGoodsFragment" />
+        <action
+            android:id="@+id/action_ordersFragment_to_clientsFragment"
+            app:destination="@id/clientsFragment" />
     </fragment>
     <fragment
         android:id="@+id/orderCardFragment"
@@ -54,8 +61,8 @@
             android:id="@+id/action_orderClientFragment_to_orderGoodsFragment"
             app:destination="@id/orderGoodsFragment" />
         <action
-            android:id="@+id/action_orderClientFragment_to_findClientFragment"
-            app:destination="@id/findClientFragment" />
+            android:id="@+id/action_orderClientFragment_to_clientsFragment"
+            app:destination="@id/clientsFragment" />
     </fragment>
     <fragment
         android:id="@+id/orderGoodsFragment"
@@ -73,12 +80,20 @@
             app:destination="@id/goodsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/findClientFragment"
-        android:name="com.dzaitsev.marshmallow.fragments.FindClientFragment"
-        android:label="fragment_find_client"
-        tools:layout="@layout/fragment_find_client" >
+        android:id="@+id/clientsFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.ClientsFragment"
+        android:label="@string/clients_list_label"
+        tools:layout="@layout/fragment_clients" >
         <action
-            android:id="@+id/action_findClientFragment_to_orderClientFragment"
+            android:id="@+id/action_clientsFragment_to_orderClientFragment"
             app:destination="@id/orderClientFragment" />
+        <action
+            android:id="@+id/action_clientsFragment_to_clientCardFragment"
+            app:destination="@id/clientCardFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/clientCardFragment"
+        android:name="com.dzaitsev.marshmallow.fragments.ClientCardFragment"
+        android:label="@string/client_card_label"
+        tools:layout="@layout/fragment_client_card" />
 </navigation>

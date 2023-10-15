@@ -3,6 +3,7 @@ package com.dzaitsev.marshmallow.dto;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.dto.response.Price;
+import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
 
 import java.io.Serializable;
@@ -75,7 +76,7 @@ public class Good implements Serializable, Cloneable {
     @NonNull
     @Override
     public Good clone() {
-        Gson gson = new Gson();
+        Gson gson = GsonExt.getGson();
         return gson.fromJson(gson.toJson(this), Good.class);
     }
 }

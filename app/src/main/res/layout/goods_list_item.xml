@@ -9,7 +9,7 @@
 
 
     <TextView
-        android:id="@+id/goodsListName"
+        android:id="@+id/goodListName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="start|center_vertical"

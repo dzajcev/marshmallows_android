@@ -14,23 +14,18 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.components.DateTimePicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.components.DateTimePicker;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
-import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class OrderClientFragment extends Fragment {
     private FragmentOrderClientBinding binding;
@@ -67,7 +62,7 @@ public class OrderClientFragment extends Fragment {
         binding.clientName.setOnClickListener(v -> {
             bundle.putSerializable("order", order);
             NavHostFragment.findNavController(OrderClientFragment.this)
-                    .navigate(R.id.action_orderClientFragment_to_findClientFragment, bundle);
+                    .navigate(R.id.action_orderClientFragment_to_clientsFragment, bundle);
         });
         binding.deadline.setOnClickListener(v -> {
             DateTimePicker dateTimePicker = new DateTimePicker(requireActivity(),
@@ -137,36 +132,11 @@ public class OrderClientFragment extends Fragment {
             return false;
         }
         CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        AtomicBoolean result = new AtomicBoolean(true);
-        final StringBuffer errMessage = new StringBuffer();
-        NetworkService.getInstance()
-                .getMarshmallowApi().saveOrder(order).enqueue(new Callback<>() {
-                    @Override
-                    public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                        if (!response.isSuccessful()) {
-                            result.set(false);
-                            errMessage.append(response.message());
-                        }
-                        countDownLatch.countDown();
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                        result.set(false);
-                        errMessage.append(t.getMessage());
-                        countDownLatch.countDown();
-                    }
-                });
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        if (!result.get()) {
-            new StringUtils.ErrorDialog(requireActivity(), errMessage.toString()).show();
-        }
-        return result.get();
+        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getMarshmallowApi().saveOrder(order), response -> {
+        }, true);
+        callback.invoke();
+        return callback.isSuccess();
     }
 
 }
