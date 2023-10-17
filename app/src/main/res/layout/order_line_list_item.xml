@@ -1,64 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/orderItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_marginStart="3sp"
+    android:layout_marginEnd="3sp"
+    android:orientation="horizontal">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/orderLineDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/transparent"
+        android:minHeight="40sp"
+        app:srcCompat="@drawable/delete_32" />
+
+    <TextView
+        android:id="@+id/order_line_npp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_weight=".1"
+        android:gravity="center_horizontal|center_vertical"
+        android:minHeight="40sp"
+        android:paddingStart="3sp"
+        android:paddingEnd="3sp"
+        android:text=""
+        android:textSize="16sp"
+        android:tooltipText="Эываа" />
 
-        <TextView
-            android:id="@+id/order_line_npp"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".1"
-            android:text=""
-            android:textSize="14sp"
-            android:tooltipText="Эываа" />
-
-        <TextView
-            android:id="@+id/order_line_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_weight=".6"
-            android:gravity="top"
-            android:hint="Выберите товар"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/order_line_price"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.2"
-            android:gravity="center_vertical|end"
-            android:text=""
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/order_line_count"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:gravity="end"
-            android:text=""
-            android:textSize="14sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/order_line_name"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_gravity="center"
+        android:layout_weight=".55"
+        android:gravity="center_vertical"
+        android:hint="Выберите товар"
+        android:minHeight="40sp"
+        android:paddingStart="3sp"
+        android:paddingEnd="3sp"
+        android:textSize="16sp" />
 
-        <ImageButton
-            android:id="@+id/orderLineDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@color/transparent"
-            app:srcCompat="@drawable/delete_32" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/order_line_price"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.25"
+        android:gravity="center_vertical|end"
+        android:minHeight="40sp"
+        android:paddingStart="3sp"
+        android:paddingEnd="3sp"
+        android:text=""
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/order_line_count"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:gravity="center_vertical|end"
+        android:minHeight="40sp"
+        android:paddingStart="3sp"
+        android:paddingEnd="3sp"
+        android:text=""
+        android:textSize="16sp" />
+
+    <ImageButton
+        android:id="@+id/orderLineDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:background="@color/transparent"
+        android:src="@drawable/done_32"
+        android:visibility="gone" />
+
 </LinearLayout>

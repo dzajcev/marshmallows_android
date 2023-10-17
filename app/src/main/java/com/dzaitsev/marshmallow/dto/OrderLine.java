@@ -1,9 +1,14 @@
 package com.dzaitsev.marshmallow.dto;
 
+import androidx.annotation.NonNull;
+
+import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.google.gson.Gson;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class OrderLine implements Serializable {
+public class OrderLine implements Serializable, Cloneable {
 
     private Integer id;
 
@@ -73,5 +78,12 @@ public class OrderLine implements Serializable {
 
     public void setCount(Integer count) {
         this.count = count;
+    }
+
+    @NonNull
+    @Override
+    public OrderLine clone() {
+        Gson gson = GsonExt.getGson();
+        return gson.fromJson(gson.toJson(this), OrderLine.class);
     }
 }

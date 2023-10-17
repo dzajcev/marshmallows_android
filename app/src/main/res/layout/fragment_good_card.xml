@@ -25,6 +25,7 @@
         android:inputType="textMultiLine"
         android:lines="4"
         android:maxLines="5"
+        android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
         android:textSize="14sp" />
@@ -37,6 +38,7 @@
         android:background="@color/field_background"
         android:gravity="top|start"
         android:hint="Цена зефирки"
+        android:minHeight="40sp"
         android:scrollbars="vertical"
         android:textSize="14sp" />
 
@@ -51,6 +53,7 @@
         android:inputType="textMultiLine"
         android:lines="4"
         android:maxLines="5"
+        android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
         android:textSize="14sp" />

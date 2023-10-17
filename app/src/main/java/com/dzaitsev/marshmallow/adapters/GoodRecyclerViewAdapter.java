@@ -1,5 +1,6 @@
 package com.dzaitsev.marshmallow.adapters;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.components.ExtendOnTouchListener;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
@@ -47,21 +49,23 @@ public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, G
         private final TextView name;
         private final TextView price;
 
+        @SuppressLint("ClickableViewAccessibility")
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.goodListName);
             price = itemView.findViewById(R.id.goodListPrice);
             LinearLayout layout = itemView.findViewById(R.id.goodItemLayout);
             ImageButton edit = itemView.findViewById(R.id.goodItemEdit);
+            edit.setOnTouchListener(new ExtendOnTouchListener(() -> {
+                if (editItemListener!=null){
+                    editItemListener.edit(getItem());
+                }
+            }));
+
             if (selectItemListener != null) {
                 edit.setVisibility(View.GONE);
-                layout.setOnClickListener(view -> selectItemListener.selectItem(getItem()));
-            } else {
-                edit.setOnClickListener(v -> {
-                    if (editItemListener != null) {
-                        editItemListener.edit(getItem());
-                    }
-                });
+                layout.setOnTouchListener(new ExtendOnTouchListener(()
+                        -> selectItemListener.selectItem(getItem())));
             }
         }
 

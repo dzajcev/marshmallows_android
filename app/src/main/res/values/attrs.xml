@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LinkChannelSelectorComponent">
+        <attr name="linkChannelType" format="enum">
+            <enum name="phone" value="0" />
+            <enum name="sms" value="1" />
+            <enum name="whatsapp" value="2" />
+            <enum name="telegram" value="3" />
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="LinkChannelSelector">
+        <attr name="iconWidth" format="dimension" />
+        <attr name="iconHeight" format="dimension" />
+        <attr name="mode" format="enum" >
+            <enum name="checkbox" value="0" />
+            <enum name="button" value="1" />
+        </attr>
+    </declare-styleable>
+</resources>

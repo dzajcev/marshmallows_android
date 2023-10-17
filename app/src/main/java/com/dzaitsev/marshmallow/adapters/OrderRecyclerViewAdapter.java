@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.time.format.DateTimeFormatter;
@@ -45,6 +46,8 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
         private final TextView createDate;
         private final TextView toPay;
 
+        private final TextView status;
+
 
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -52,7 +55,7 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
             deadline = itemView.findViewById(R.id.orderItemDeadline);
             createDate = itemView.findViewById(R.id.orderItemDateCreate);
             toPay = itemView.findViewById(R.id.orderItemToPay);
-
+            status = itemView.findViewById(R.id.ordertemStatus);
             LinearLayout layout = itemView.findViewById(R.id.orderItemLayout);
             ImageButton edit = itemView.findViewById(R.id.orderItemEdit);
             if (selectItemListener != null) {
@@ -77,7 +80,19 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
                     .mapToDouble(m -> m.getPrice() * m.getCount()).sum();
             toPay.setText(MoneyUtils.getInstance()
                     .moneyWithCurrencyToString(sumOrder - Optional.ofNullable(getItem().getPrePaymentSum()).orElse(0d)));
+            status.setText(getOrderStatus().getText());
 
+        }
+
+        private OrderStatus getOrderStatus() {
+            Order item = getItem();
+            if (Boolean.TRUE.equals(item.getShipped())) {
+                return OrderStatus.SHIPPED;
+            }
+            if (item.getOrderLines().stream().allMatch(orderLine -> Boolean.TRUE.equals(orderLine.getDone()))) {
+                return OrderStatus.DONE;
+            }
+            return OrderStatus.IN_PROGRESS;
         }
     }
 

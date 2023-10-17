@@ -83,7 +83,7 @@ public class NetworkExecutor<T> implements Callback<T> {
             }
         } else {
             release();
-            showError("Ошибка сохранения клиента");
+            showError("Ошибка выполнения");
 
         }
     }

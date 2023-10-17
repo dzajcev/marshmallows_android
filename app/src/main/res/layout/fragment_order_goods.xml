@@ -23,7 +23,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/orderLineAdd"
+                android:id="@+id/orderGoodsLineAdd"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@color/transparent"
@@ -33,11 +33,13 @@
                 android:id="@+id/orderGoodsSum"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center_vertical|end" />
+                android:gravity="center_vertical|end"
+                android:textSize="16sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/orderLinesList"
+            android:id="@+id/orderGoodsLinesList"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>

@@ -2,6 +2,7 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,14 +16,21 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class OrderCardFragment extends Fragment {
@@ -33,6 +41,10 @@ public class OrderCardFragment extends Fragment {
     private Order incomingOrder;
     private EditText goodName;
     private EditText goodPrice;
+
+    private Order order;
+
+    private OrderLinesRecyclerViewAdapter mAdapter;
 
     private final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
         @Override
@@ -61,35 +73,13 @@ public class OrderCardFragment extends Fragment {
 
     private boolean hasChanges() {
         Order order = constructOrder();
-//        if ((order.getName() == null || order.getName().isEmpty()) && order.getPrice() == null) {
-//            return false;
-//        }
         return !order.equals(incomingOrder);
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-//        FragmentActivity fragmentActivity = requireActivity();
-//        if (fragmentActivity instanceof MainActivity) {
-//            MainActivity ma = (MainActivity) fragmentActivity;
-//            ma.setNavigationBackListener(() -> {
-//                if (hasChanges()) {
-//                    requireActivity().onBackPressed();
-//                    return false;
-//                } else {
-//                    return true;
-//                }
-//            });
-//        }
-//
-//        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
-    }
-
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        order = requireArguments().getSerializable("order", Order.class);
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
@@ -103,60 +93,68 @@ public class OrderCardFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-//
-//        Good good = requireArguments().getSerializable("good", Good.class);
-//        incomingGood = Objects.requireNonNull(good).clone();
-//        goodName = view.findViewById(R.id.goodCardName);
-//        goodName.setOnKeyListener(keyListener);
-//        goodName.setText(good.getName());
-//        goodPrice = view.findViewById(R.id.goodCardPrice);
-//        goodPrice.setOnKeyListener(keyListener);
-//        goodPrice.setText(Optional.ofNullable(good.getPrice()).map(formatter::format).orElse(""));
-//        ImageButton cancel = view.findViewById(R.id.goodCardCancel);
-//        cancel.setOnClickListener(v -> requireActivity().onBackPressed());
-//        ImageButton save = view.findViewById(R.id.goodCardSave);
-//        save.setOnClickListener(v -> {
-//            if (save()) {
-//                requireActivity().onBackPressed();
-//            }
-//        });
-
+        RecyclerView orderLinesList = view.findViewById(R.id.orderLinesList);
+        orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        mAdapter = new OrderLinesRecyclerViewAdapter();
+        mAdapter.setRemoveListener(position -> {
+            List<OrderLine> items = mAdapter.getItems();
+            items.remove(position);
+            for (int i = position; i < items.size(); i++) {
+                items.get(i).setNum(items.get(i).getNum() - 1);
+            }
+            orderLinesList.setAdapter(mAdapter);
+            mAdapter.setItems(items);
+        });
+//        mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
+//                .moneyWithCurrencyToString(calsSum(mAdapter.getItems()))));
+        mAdapter.setDoneListener(new OrderLinesRecyclerViewAdapter.DoneListener() {
+            @Override
+            public void onDone(OrderLine orderLine, View v) {
+                Drawable background = v.getBackground();
+                System.out.println();
+            }
+        });
+        orderLinesList.setAdapter(mAdapter);
+        order.getOrderLines().sort(Comparator.comparing(OrderLine::getNum));
+        mAdapter.setItems(order.getOrderLines());
     }
 
     private boolean save() {
-        boolean fail = false;
-        if (goodName.getText() == null || goodName.getText().toString().isEmpty()) {
-            goodName.setBackgroundColor(Color.parseColor("#fa8c8c"));
-            fail = true;
-        }
-        if (goodPrice.getText() == null || goodPrice.getText().toString().isEmpty()) {
-            goodPrice.setBackgroundColor(Color.parseColor("#fa8c8c"));
-            fail = true;
-        }
-        if (fail) {
-            return false;
-        }
-        Order order = constructOrder();
-//        CountDownLatch countDownLatch = new CountDownLatch(1);
-//        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-//                response -> countDownLatch.countDown(), countDownLatch);
-//        NetworkService.getInstance().getMarshmallowApi().saveOrder(order)
-//                .enqueue(callback);
-        incomingOrder = order;
         return true;
+//        boolean fail = false;
+//        if (goodName.getText() == null || goodName.getText().toString().isEmpty()) {
+//            goodName.setBackgroundColor(Color.parseColor("#fa8c8c"));
+//            fail = true;
+//        }
+//        if (goodPrice.getText() == null || goodPrice.getText().toString().isEmpty()) {
+//            goodPrice.setBackgroundColor(Color.parseColor("#fa8c8c"));
+//            fail = true;
+//        }
+//        if (fail) {
+//            return false;
+//        }
+//        Order order = constructOrder();
+////        CountDownLatch countDownLatch = new CountDownLatch(1);
+////        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+////                response -> countDownLatch.countDown(), countDownLatch);
+////        NetworkService.getInstance().getMarshmallowApi().saveOrder(order)
+////                .enqueue(callback);
+//        incomingOrder = order;
+//        return true;
     }
 
     private Order constructOrder() {
         Order good = new Order();
-//        good.setId(incomingOrder == null ? null : incomingOrder.getId());
-//        good.setName(goodName.getText().toString());
-//        try {
-//            if (goodPrice.getText() != null && !goodPrice.getText().toString().isEmpty()) {
-//                good.setPrice(Optional.ofNullable(formatter.parse(goodPrice.getText().toString())).orElse(-1d).doubleValue());
-//            }
-//        } catch (ParseException e) {
-//            throw new RuntimeException(e);
-//        }
+////        good.setId(incomingOrder == null ? null : incomingOrder.getId());
+////        good.setName(goodName.getText().toString());
+////        try {
+////            if (goodPrice.getText() != null && !goodPrice.getText().toString().isEmpty()) {
+////                good.setPrice(Optional.ofNullable(formatter.parse(goodPrice.getText().toString())).orElse(-1d).doubleValue());
+////            }
+////        } catch (ParseException e) {
+////            throw new RuntimeException(e);
+////        }
+//        return good;
         return good;
     }
 

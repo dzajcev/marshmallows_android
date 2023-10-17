@@ -41,6 +41,7 @@ public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Clien
             name = itemView.findViewById(R.id.orderItemClientName);
             LinearLayout layout = itemView.findViewById(R.id.clientItemLayout);
             ImageButton edit = itemView.findViewById(R.id.clientItemEdit);
+
             if (selectItemListener != null) {
                 edit.setVisibility(View.GONE);
                 layout.setOnClickListener(view -> selectItemListener.selectItem(getItem()));

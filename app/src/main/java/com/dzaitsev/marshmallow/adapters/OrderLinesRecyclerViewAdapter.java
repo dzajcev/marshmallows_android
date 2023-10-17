@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +19,6 @@ import com.dzaitsev.marshmallow.components.CustomNumberPicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
-import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesListAdapter.OrderLinesViewHolder> {
+public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.OrderLinesViewHolder> {
     private List<OrderLine> orderLines = new ArrayList<>();
 
     private View view;
@@ -37,6 +37,8 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
     private SelectGoodListener selectGoodListener;
 
     private ChangeSumListener changeSumListener;
+
+    private DoneListener doneListener;
 
     public void setRemoveListener(RemoveListener removeListener) {
         this.removeListener = removeListener;
@@ -51,12 +53,20 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
         this.changeSumListener = changeSumListener;
     }
 
+    public void setDoneListener(DoneListener doneListener) {
+        this.doneListener = doneListener;
+    }
+
     public interface RemoveListener {
         void onRemove(int position);
     }
 
     public interface SelectGoodListener {
         void onSelectGood(OrderLine orderLine);
+    }
+
+    public interface DoneListener {
+        void onDone(OrderLine orderLine, View view);
     }
 
     public interface ChangeSumListener {
@@ -68,6 +78,7 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
         private final TextView good;
         private final TextView price;
         private final TextView count;
+        private int colorId;
 
 
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -76,6 +87,12 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
             npp = itemView.findViewById(R.id.order_line_npp);
             good = itemView.findViewById(R.id.order_line_name);
             price = itemView.findViewById(R.id.order_line_price);
+
+            itemView.setOnClickListener(v -> {
+                if (selectGoodListener != null) {
+                    selectGoodListener.onSelectGood(getItem());
+                }
+            });
             price.setOnClickListener(v -> {
                 if (getItem().getGood() != null) {
                     MoneyPicker.builder(view.getContext())
@@ -126,15 +143,28 @@ public class OrderLinesListAdapter extends AbstractRecyclerViewAdapter<OrderLine
                             .show();
                 }
             });
-            good.setOnClickListener(view -> {
-                selectGoodListener.onSelectGood(getItem());
-            });
+
             ImageButton delete = itemView.findViewById(R.id.orderLineDelete);
             delete.setOnClickListener(v -> removeListener.onRemove(getAdapterPosition()));
+            ImageButton done = itemView.findViewById(R.id.orderLineDone);
+            if (doneListener != null) {
+                done.setVisibility(View.VISIBLE);
+                done.setOnClickListener(v -> {
+                    getItem().setDone(getItem().getDone() == null || !getItem().getDone());
+                    if (getItem().getDone()) {
+                        getView().setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.green));
+                    } else {
+                        getView().setBackgroundColor(colorId);
+                    }
+                    doneListener.onDone(getItem(), itemView);
+                });
+            }
         }
 
         public void bind(OrderLine orderLine) {
             super.bind(orderLine);
+            ColorDrawable viewColor = (ColorDrawable) getView().getBackground();
+            colorId = viewColor.getColor();
             npp.setText(String.format("#%s", orderLine.getNum()));
             good.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
             price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(orderLine.getPrice()));

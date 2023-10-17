@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.LinkChannelSelector;
+import com.dzaitsev.marshmallow.components.LinkChannelSelectorComponent;
 import com.dzaitsev.marshmallow.databinding.FragmentClientCardBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
@@ -24,7 +25,6 @@ import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -104,8 +104,9 @@ public class ClientCardFragment extends Fragment {
     };
     LinkChannelSelector.OnCheckedChangeListener selectorChangeListener = new LinkChannelSelector.OnCheckedChangeListener() {
         @Override
-        public void onCheckedChanged(LinkChannelSelector linkChannelSelector, boolean isChecked) {
-            binding.linkSelectorLayout.setBackgroundColor(ContextCompat.getColor(linkChannelSelector.getContext(), R.color.field_background));
+        public void onCheckedChanged(LinkChannelSelectorComponent linkChannelSelectorComponent, boolean isChecked) {
+//            binding.lickChannelSelector.setBackgroundColor(ContextCompat.getColor(linkChannelSelectorComponent.getContext(), R.color.field_background));
+            binding.lickChannelSelector.restoreBackgroundColor();
         }
     };
 
@@ -132,19 +133,9 @@ public class ClientCardFragment extends Fragment {
                 requireActivity().onBackPressed();
             }
         });
-        binding.phoneSelector.setChecked(client.getLinkChannels().contains(LinkChannel.PHONE));
-        binding.smsSelector.setChecked(client.getLinkChannels().contains(LinkChannel.SMS));
-        binding.whatsappSelector.setChecked(client.getLinkChannels().contains(LinkChannel.WHATSAPP));
-        binding.telegramSelector.setChecked(client.getLinkChannels().contains(LinkChannel.TELEGRAM));
+        binding.lickChannelSelector.setOnCheckedChangeListener(selectorChangeListener);
+        binding.lickChannelSelector.setChecked(client.getLinkChannels());
 
-        binding.phoneSelector.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.phone_64));
-        binding.smsSelector.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.sms_64));
-        binding.whatsappSelector.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.whatsapp_64));
-        binding.telegramSelector.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.telegram_64));
-        binding.phoneSelector.setOnCheckedChangeListener(selectorChangeListener);
-        binding.smsSelector.setOnCheckedChangeListener(selectorChangeListener);
-        binding.whatsappSelector.setOnCheckedChangeListener(selectorChangeListener);
-        binding.telegramSelector.setOnCheckedChangeListener(selectorChangeListener);
     }
 
     private boolean save() {
@@ -157,11 +148,8 @@ public class ClientCardFragment extends Fragment {
             binding.clientCardPhone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (!binding.phoneSelector.isChecked()
-                && !binding.smsSelector.isChecked()
-                && !binding.whatsappSelector.isChecked()
-                && !binding.telegramSelector.isChecked()) {
-            binding.linkSelectorLayout.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+        if (binding.lickChannelSelector.isEmpty()) {
+            binding.lickChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (fail) {
@@ -188,21 +176,7 @@ public class ClientCardFragment extends Fragment {
     }
 
     private List<LinkChannel> getLinkChannels() {
-        List<LinkChannel> list = new ArrayList<>();
-        if (binding.telegramSelector.isChecked()) {
-            list.add(LinkChannel.TELEGRAM);
-        }
-        if (binding.whatsappSelector.isChecked()) {
-            list.add(LinkChannel.WHATSAPP);
-        }
-        if (binding.phoneSelector.isChecked()) {
-            list.add(LinkChannel.PHONE);
-        }
-        if (binding.smsSelector.isChecked()) {
-            list.add(LinkChannel.SMS);
-        }
-        list.sort(Enum::compareTo);
-        return list;
+        return binding.lickChannelSelector.getSelectedChannels();
     }
 
     @Override

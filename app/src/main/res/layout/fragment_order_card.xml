@@ -1,14 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.OrderCardFragment">
+    android:orientation="vertical"
+    tools:context=".fragments.OrderClientFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="5sp"
+            android:paddingEnd="5sp"
+            android:paddingBottom="5sp">
+
+            <TextView
+                android:id="@+id/clientName"
+                android:layout_width="0pt"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="left|center_vertical"
+                android:hint="Выберите клиента"
+                android:minHeight="40sp"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="5sp"
+            android:paddingEnd="5sp"
+            android:paddingBottom="5sp">
+
+            <TextView
+                android:id="@+id/phoneNumberLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Телефон"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/phoneNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5sp"
+                android:layout_marginEnd="5sp"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="start|center_vertical"
+                android:inputType="phone"
+                android:minHeight="30sp"
+                android:paddingEnd="20pt"
+                android:text=""
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="5sp"
+            android:paddingEnd="5sp"
+            android:paddingBottom="5sp">
+
+            <TextView
+                android:id="@+id/deliveryLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Адрес"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/delivery"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5sp"
+                android:layout_marginEnd="5sp"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="start|center_vertical"
+                android:minHeight="40sp"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="5sp"
+            android:paddingEnd="5sp"
+            android:paddingBottom="5sp">
+
+            <TextView
+                android:id="@+id/deadlineLable"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Выполнить до"
+                android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/deadline"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5sp"
+                android:layout_marginEnd="5sp"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="end|center_vertical"
+                android:minHeight="30sp"
+                android:textAlignment="textEnd"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="5sp"
+            android:paddingEnd="5sp"
+            android:paddingBottom="5sp">
+
+            <TextView
+                android:id="@+id/prePaymentLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="start|center_vertical"
+                android:minHeight="16pt"
+                android:paddingStart="2pt"
+                android:paddingEnd="2pt"
+                android:text="Предоплата"
+                android:textSize="16sp" />
+
+
+            <TextView
+                android:id="@+id/prePayment"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="5sp"
+                android:layout_marginEnd="5sp"
+                android:layout_weight="1"
+                android:background="@color/field_background"
+                android:gravity="end|center_vertical"
+                android:minHeight="40sp"
+                android:paddingEnd="20pt"
+                android:textAlignment="textEnd"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5sp"
+            android:layout_marginEnd="5sp"
+            android:background="@color/field_background"
+            android:gravity="start|top"
+            android:hint="Введите комментарий"
+            android:minHeight="40sp"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/orderLinesList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="hello" />
-
-</FrameLayout>
+        android:layout_gravity="top" />
+</LinearLayout>

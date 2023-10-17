@@ -59,6 +59,12 @@ public class OrdersFragment extends Fragment {
                         })).invoke();
         binding.ordersList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
+        binding.orderCreate.setOnClickListener(view1 -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("order", new Order());
+            NavHostFragment.findNavController(OrdersFragment.this)
+                    .navigate(R.id.action_ordersFragment_to_orderGoodsFragment, bundle);
+        });
 //        mAdapter.setEditItemListener(good -> {
 //            Bundle bundle = new Bundle();
 //            bundle.putSerializable("good", good);
@@ -67,6 +73,12 @@ public class OrdersFragment extends Fragment {
 //        });
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
+        mAdapter.setEditItemListener(item -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("order",item);
+            NavHostFragment.findNavController(OrdersFragment.this)
+                    .navigate(R.id.action_ordersFragment_to_orderCardFragment, bundle);
+        });
         binding.ordersList.setAdapter(mAdapter);
 
     }

@@ -1,22 +1,21 @@
 package com.dzaitsev.marshmallow;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.View;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.dzaitsev.marshmallow.databinding.ActivityMainBinding;
-import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.dzaitsev.marshmallow.dto.Order;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private NavigationUpListener navigationBackListener;
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,27 +37,20 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
-//        bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
-//            @Override
-//            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//
-//                if (item.getItemId() == R.id.orders) {
-//                    NavHostFragment.findNavController(OrdersFragment.this)
-//                            .navigate(R.id.action_ordersFragment_to_orderGoodsFragment, bundle);
-//                }
-//                return true;
-//            }
-//        });
-//        viewById.setOnNavigationItemSelectedListener {
-//            when(it.itemId){
-//                R.id.home->setCurrentFragment(firstFragment)
-//                R.id.person->setCurrentFragment(secondFragment)
-//                R.id.settings->setCurrentFragment(thirdFragment)
-//
-//            }
-//
-//        }
+        navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
+                        if (navDestination.getId() == R.id.ordersFragment
+                                || (navDestination.getId() == R.id.goodsFragment
+                                && (bundle==null || bundle.getSerializable("order", Order.class) == null))
+                                || navDestination.getId() == R.id.clientsFragment) {
+                            bottomNavigationView.setVisibility(View.VISIBLE);
+
+                        } else {
+                            bottomNavigationView.setVisibility(View.GONE);
+                        }
+                }
+        );
     }
+
 
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
