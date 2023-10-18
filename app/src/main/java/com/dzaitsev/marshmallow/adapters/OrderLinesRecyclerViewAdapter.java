@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.content.DialogInterface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,17 +20,12 @@ import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.OrderLinesViewHolder> {
-    private List<OrderLine> orderLines = new ArrayList<>();
-
+public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.RecyclerViewHolder> {
     private View view;
-
     private RemoveListener removeListener;
 
     private SelectGoodListener selectGoodListener;
@@ -73,16 +67,16 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
         void onChange();
     }
 
-    public class OrderLinesViewHolder extends AbstractRecyclerViewHolder<OrderLine> {
+    public class RecyclerViewHolder extends AbstractRecyclerViewHolder<OrderLine> {
         private final TextView npp;
         private final TextView good;
         private final TextView price;
         private final TextView count;
-        private int colorId;
 
+        private final ImageButton done;
 
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-        public OrderLinesViewHolder(View itemView) {
+        public RecyclerViewHolder(View itemView) {
             super(itemView);
             npp = itemView.findViewById(R.id.order_line_npp);
             good = itemView.findViewById(R.id.order_line_name);
@@ -95,16 +89,18 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             });
             price.setOnClickListener(v -> {
                 if (getItem().getGood() != null) {
-                    MoneyPicker.builder(view.getContext())
+                    MoneyPicker.builder(getView().getContext())
                             .setTitle("Укажите сумму")
                             .setInitialValue(getItem().getPrice())
                             .setMinValue(1)
                             .setMaxValue(100000)
                             .positiveButton(value -> {
-                                price.setText(String.format("%s", MoneyUtils.getInstance()
-                                        .moneyWithCurrencyToString(value)));
-                                getItem().setPrice(value);
-                                changeSumListener.onChange();
+                                if (changeSumListener != null) {
+                                    price.setText(String.format("%s", MoneyUtils.getInstance()
+                                            .moneyWithCurrencyToString(value)));
+                                    getItem().setPrice(value);
+                                    changeSumListener.onChange();
+                                }
                             })
                             .build()
                             .show();
@@ -113,7 +109,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             count = itemView.findViewById(R.id.order_line_count);
             count.setOnClickListener(v -> {
                 if (getItem().getGood() != null) {
-                    CustomNumberPicker.builder(view.getContext())
+                    CustomNumberPicker.builder(getView().getContext())
                             .setTitle("Укажите количество")
                             .setInitialValue(getItem().getCount())
                             .setMinValue(1)
@@ -121,9 +117,11 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                             .positiveButton(new Consumer<>() {
                                 @Override
                                 public void accept(Integer value) {
-                                    count.setText(String.format("%s", value));
-                                    getItem().setCount(value);
-                                    changeSumListener.onChange();
+                                    if (changeSumListener != null) {
+                                        count.setText(String.format("%s", value));
+                                        getItem().setCount(value);
+                                        changeSumListener.onChange();
+                                    }
                                 }
                             })
                             .dialogShowListener(new BiConsumer<>() {
@@ -145,30 +143,29 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             });
 
             ImageButton delete = itemView.findViewById(R.id.orderLineDelete);
-            delete.setOnClickListener(v -> removeListener.onRemove(getAdapterPosition()));
-            ImageButton done = itemView.findViewById(R.id.orderLineDone);
+            delete.setOnClickListener(v -> {
+                if (removeListener != null) {
+                    int adapterPosition = getAdapterPosition();
+                    removeItem(adapterPosition);
+                    removeListener.onRemove(adapterPosition);
+                }
+            });
+            done = itemView.findViewById(R.id.orderLineDone);
             if (doneListener != null) {
                 done.setVisibility(View.VISIBLE);
-                done.setOnClickListener(v -> {
-                    getItem().setDone(getItem().getDone() == null || !getItem().getDone());
-                    if (getItem().getDone()) {
-                        getView().setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.green));
-                    } else {
-                        getView().setBackgroundColor(colorId);
-                    }
-                    doneListener.onDone(getItem(), itemView);
-                });
+                done.setOnClickListener(v -> doneListener.onDone(getItem(), itemView));
             }
         }
 
         public void bind(OrderLine orderLine) {
             super.bind(orderLine);
-            ColorDrawable viewColor = (ColorDrawable) getView().getBackground();
-            colorId = viewColor.getColor();
             npp.setText(String.format("#%s", orderLine.getNum()));
             good.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
             price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(orderLine.getPrice()));
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
+            if (orderLine.getGood() == null) {
+                done.setVisibility(View.GONE);
+            }
             if (orderLine.getGood() == null) {
                 price.setFocusable(false);
                 count.setFocusable(false);
@@ -179,43 +176,20 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @NonNull
     @Override
-    public OrderLinesViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+    public RecyclerViewHolder onCreateViewHolder(ViewGroup parent,
+                                                 int viewType) {
         view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.order_line_list_item, parent, false);
-
-        return new OrderLinesViewHolder(view);
+        return new RecyclerViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull OrderLinesViewHolder holder, int position) {
-        if (position % 2 == 0) {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_1));
-        } else {
-            view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.row_2));
+    public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
+        if (getShowItems().get(position).isDone()) {
+            holder.getView().setBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
-        holder.bind(orderLines.get(position));
 
-    }
-
-    public void setItems(List<OrderLine> items) {
-        orderLines = items;
-        notifyDataSetChanged();
-    }
-
-    public void addLine(OrderLine orderLine) {
-        orderLines.add(orderLine);
-        notifyItemInserted(orderLines.size() - 1);
-    }
-
-    // Return the size of your dataset (invoked by the layout manager)
-    @Override
-    public int getItemCount() {
-        return orderLines.size();
-    }
-
-    public List<OrderLine> getItems() {
-        return orderLines;
     }
 
 }

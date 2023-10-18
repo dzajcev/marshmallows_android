@@ -59,7 +59,6 @@ public class MoneyPicker extends View{
 
     public void show() {
         alertDialog = builder.create();
-
         alertDialog.setOnShowListener(onShowListener);
         alertDialog.show();
         Button button = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
@@ -73,7 +72,10 @@ public class MoneyPicker extends View{
             MoneyPicker.this.builder.setTitle(title);
             return this;
         }
-
+        public Builder setMessage(String message) {
+            MoneyPicker.this.builder.setMessage(message);
+            return this;
+        }
         public Builder setMinValue(Integer minValue) {
             MoneyPicker.this.minValue = minValue;
             return this;

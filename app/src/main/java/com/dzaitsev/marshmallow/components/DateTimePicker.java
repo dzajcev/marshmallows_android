@@ -33,7 +33,7 @@ public class DateTimePicker extends View {
             calendar.set(Calendar.YEAR, datePicker.getYear());
             calendar.set(Calendar.MONTH, datePicker.getMonth());
             calendar.set(Calendar.DAY_OF_MONTH, datePicker.getDayOfMonth());
-            dateConsumer.accept(LocalDate.of(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth()));
+            dateConsumer.accept(LocalDate.of(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth()));
         });
 
         builder.setNegativeButton("CANCEL", (dialog, which) -> {

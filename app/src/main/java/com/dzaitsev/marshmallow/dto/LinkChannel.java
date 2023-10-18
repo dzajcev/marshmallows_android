@@ -3,8 +3,7 @@ package com.dzaitsev.marshmallow.dto;
 public enum LinkChannel {
     PHONE(0),
     SMS(1),
-    WHATSAPP(2),
-    TELEGRAM(3);
+    WHATSAPP(2);
 
 
     private int idx;

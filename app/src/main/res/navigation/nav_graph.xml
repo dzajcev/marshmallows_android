@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_goodsFragment_to_orderGoodsFragment"
             app:destination="@id/orderGoodsFragment" />
+        <action
+            android:id="@+id/action_goodsFragment_to_orderCardFragment"
+            app:destination="@id/orderCardFragment" />
     </fragment>
     <fragment
         android:id="@+id/goodCard"
@@ -32,23 +35,24 @@
         android:label="@string/orders_fragment_label"
         tools:layout="@layout/fragment_orders" >
         <action
-            android:id="@+id/action_ordersFragment_to_goodsFragment"
-            app:destination="@id/goodsFragment" />
-        <action
             android:id="@+id/action_ordersFragment_to_orderCardFragment"
             app:destination="@id/orderCardFragment" />
         <action
             android:id="@+id/action_ordersFragment_to_orderGoodsFragment"
             app:destination="@id/orderGoodsFragment" />
-        <action
-            android:id="@+id/action_ordersFragment_to_clientsFragment"
-            app:destination="@id/clientsFragment" />
     </fragment>
     <fragment
         android:id="@+id/orderCardFragment"
         android:name="com.dzaitsev.marshmallow.fragments.OrderCardFragment"
-        android:label="fragment_order_card"
-        tools:layout="@layout/fragment_order_card" />
+        android:label="@string/order_card_label"
+        tools:layout="@layout/fragment_order_card" >
+        <action
+            android:id="@+id/action_orderCardFragment_to_goodsFragment"
+            app:destination="@id/goodsFragment" />
+        <action
+            android:id="@+id/action_orderCardFragment_to_ordersFragment"
+            app:destination="@id/ordersFragment" />
+    </fragment>
     <fragment
         android:id="@+id/orderClientFragment"
         android:name="com.dzaitsev.marshmallow.fragments.OrderClientFragment"

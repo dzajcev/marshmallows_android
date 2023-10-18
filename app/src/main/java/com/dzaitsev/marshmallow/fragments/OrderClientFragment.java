@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -22,10 +21,10 @@ import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 
 public class OrderClientFragment extends Fragment {
     private FragmentOrderClientBinding binding;
@@ -68,23 +67,12 @@ public class OrderClientFragment extends Fragment {
             DateTimePicker dateTimePicker = new DateTimePicker(requireActivity(),
                     date -> {
                         order.setDeadline(date);
-                        bind(order);
+                        binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date));
+                        binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                     }, "Выбор даты", "Укажите дату выдачи");
             dateTimePicker.show();
         });
-
-        binding.comment.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                EditText e = (EditText) v;
-                order.setComment(e.getText().toString());
-            }
-        });
-        binding.delivery.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                EditText e = (EditText) v;
-                order.setDeliveryAddress(e.getText().toString());
-            }
-        });
+        binding.delivery.setOnClickListener(v -> binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background)));
         binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                 .setTitle("Укажите сумму")
                 .setMinValue(1)
@@ -105,11 +93,19 @@ public class OrderClientFragment extends Fragment {
         binding.delivery.setText(Optional.ofNullable(order.getDeliveryAddress()).orElse(""));
         binding.comment.setText(Optional.ofNullable(order.getComment()).orElse(""));
         binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(order.getPrePaymentSum()));
+        binding.orderClientsNeedDelivery.setChecked(order.isNeedDelivery());
         Optional.ofNullable(order.getDeadline())
                 .ifPresent(o -> {
                     binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(o));
                     binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                 });
+    }
+
+    private void fillOrder() {
+        order.setComment(binding.comment.getText().toString());
+        order.setDeliveryAddress(binding.delivery.getText().toString());
+        order.setPhone(binding.phoneNumber.getRawText());
+        order.setNeedDelivery(binding.orderClientsNeedDelivery.isChecked());
     }
 
     @Override
@@ -119,6 +115,7 @@ public class OrderClientFragment extends Fragment {
     }
 
     private boolean save() {
+        fillOrder();
         boolean fail = false;
         if (order.getClient() == null) {
             binding.clientName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
@@ -128,10 +125,13 @@ public class OrderClientFragment extends Fragment {
             binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
+        if (order.isNeedDelivery() && StringUtils.isEmpty(order.getDeliveryAddress())) {
+            binding.delivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            fail = true;
+        }
         if (fail) {
             return false;
         }
-        CountDownLatch countDownLatch = new CountDownLatch(1);
         NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
                 NetworkService.getInstance().getMarshmallowApi().saveOrder(order), response -> {
         }, true);

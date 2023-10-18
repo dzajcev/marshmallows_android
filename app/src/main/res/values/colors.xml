@@ -12,5 +12,6 @@
     <color name="row_1">#E2F8F8</color>
     <color name="row_2">#F5FBFB</color>
     <color name="transparent">#00000000</color>
-    <color name="green">#71CC8F</color>
+    <color name="green">#3CCE6C</color>
+    <color name="light_green">#95CDA8</color>
 </resources>

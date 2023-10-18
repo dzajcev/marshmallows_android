@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class OrderLine implements Serializable, Cloneable {
 
@@ -20,7 +21,7 @@ public class OrderLine implements Serializable, Cloneable {
 
     private Double price;
 
-    private Boolean done;
+    private boolean done;
 
     private Integer count;
 
@@ -64,11 +65,11 @@ public class OrderLine implements Serializable, Cloneable {
         this.price = price;
     }
 
-    public Boolean getDone() {
+    public boolean isDone() {
         return done;
     }
 
-    public void setDone(Boolean done) {
+    public void setDone(boolean done) {
         this.done = done;
     }
 
@@ -78,6 +79,21 @@ public class OrderLine implements Serializable, Cloneable {
 
     public void setCount(Integer count) {
         this.count = count;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderLine orderLine = (OrderLine) o;
+        return Objects.equals(num, orderLine.num) && Objects.equals(good, orderLine.good)
+                && Objects.equals(price, orderLine.price) && Objects.equals(done, orderLine.done)
+                && Objects.equals(count, orderLine.count);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(num, good, price, done, count);
     }
 
     @NonNull

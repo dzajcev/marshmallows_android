@@ -9,8 +9,10 @@ import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface MarshmallowApi {
     @GET("goods")
@@ -22,6 +24,9 @@ public interface MarshmallowApi {
     Call<OrderResponse> getOrders();
     @POST("orders")
     Call<Void> saveOrder(@Body Order order);
+
+    @DELETE("orders/{id}")
+    Call<Void> deleteOrder(@Path("id") Integer orderId);
 
     @GET("clients")
     Call<ClientResponse> getClients();

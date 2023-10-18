@@ -5,7 +5,6 @@
             <enum name="phone" value="0" />
             <enum name="sms" value="1" />
             <enum name="whatsapp" value="2" />
-            <enum name="telegram" value="3" />
         </attr>
     </declare-styleable>
     <declare-styleable name="LinkChannelSelector">

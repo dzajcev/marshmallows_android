@@ -27,7 +27,6 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
             holder.getView().setBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.row_2));
         }
         holder.bind(showItems.get(position));
-
     }
 
     public void filter(String namePart) {
@@ -55,6 +54,27 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
         originalItems = items;
         showItems = new ArrayList<>(originalItems);
         notifyDataSetChanged();
+    }
+
+    public List<T> getShowItems() {
+        return showItems;
+    }
+
+    public List<T> getOriginalItems() {
+        return originalItems;
+    }
+
+    public void removeItem(int position) {
+        T orderLine = getShowItems().get(position);
+        getOriginalItems().remove(orderLine);
+        showItems = new ArrayList<>(originalItems);
+        notifyDataSetChanged();
+    }
+
+    public void addItem(T orderLine) {
+        originalItems.add(orderLine);
+        showItems.add(orderLine);
+        notifyItemInserted(showItems.size() - 1);
     }
 
     @Override

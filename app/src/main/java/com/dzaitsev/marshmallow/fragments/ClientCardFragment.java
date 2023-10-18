@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentActivity;
 import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.LinkChannelSelector;
-import com.dzaitsev.marshmallow.components.LinkChannelSelectorComponent;
 import com.dzaitsev.marshmallow.databinding.FragmentClientCardBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
@@ -102,13 +101,12 @@ public class ClientCardFragment extends Fragment {
         v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background));
         return false;
     };
-    LinkChannelSelector.OnCheckedChangeListener selectorChangeListener = new LinkChannelSelector.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(LinkChannelSelectorComponent linkChannelSelectorComponent, boolean isChecked) {
-//            binding.lickChannelSelector.setBackgroundColor(ContextCompat.getColor(linkChannelSelectorComponent.getContext(), R.color.field_background));
-            binding.lickChannelSelector.restoreBackgroundColor();
-        }
-    };
+//    LinkChannelSelector.OnCheckedChangeListener selectorChangeListener = new LinkChannelSelector.OnCheckedChangeListener() {
+//        @Override
+//        public void onCheckedChanged(LinkChannelSelectorComponent linkChannelSelectorComponent, boolean isChecked) {
+//            binding.lickChannelSelector.restoreBackgroundColor();
+//        }
+//    };
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -133,8 +131,10 @@ public class ClientCardFragment extends Fragment {
                 requireActivity().onBackPressed();
             }
         });
-        binding.lickChannelSelector.setOnCheckedChangeListener(selectorChangeListener);
-        binding.lickChannelSelector.setChecked(client.getLinkChannels());
+        binding.linkChannelSelector.setChecked(client.getLinkChannels());
+        binding.linkChannelSelector.setOnCheckedChangeListener((linkChannelSelector, channels)
+                -> linkChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.transparent)));
+
 
     }
 
@@ -144,12 +144,12 @@ public class ClientCardFragment extends Fragment {
             binding.clientCardName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (StringUtils.isEmpty(binding.clientCardPhone.getText().toString())) {
+        if (StringUtils.isEmpty(binding.clientCardPhone.getRawText())) {
             binding.clientCardPhone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (binding.lickChannelSelector.isEmpty()) {
-            binding.lickChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+        if (binding.linkChannelSelector.isEmpty()) {
+            binding.linkChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (fail) {
@@ -171,12 +171,12 @@ public class ClientCardFragment extends Fragment {
         client.setComment(binding.clientCardComment.getText().toString());
         client.setLinkChannels(getLinkChannels());
         client.setDefaultDeliveryAddress(binding.clientCardDelivery.getText().toString());
-        client.setPhone(binding.clientCardPhone.getText().toString());
+        client.setPhone(binding.clientCardPhone.getRawText());
         return client;
     }
 
     private List<LinkChannel> getLinkChannels() {
-        return binding.lickChannelSelector.getSelectedChannels();
+        return binding.linkChannelSelector.getSelectedChannels();
     }
 
     @Override

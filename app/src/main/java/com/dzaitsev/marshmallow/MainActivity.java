@@ -1,14 +1,18 @@
 package com.dzaitsev.marshmallow;
 
+import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavGraph;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -33,7 +37,10 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+        appBarConfiguration = new AppBarConfiguration.Builder(R.id.ordersFragment, R.id.orderCardFragment).build();
+
+        //, R.id.clientsFragment, R.id.goodsFragment,
+        //                R.id.orderGoodsFragment, R.id.orderClientFragment
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
@@ -41,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
                         if (navDestination.getId() == R.id.ordersFragment
                                 || (navDestination.getId() == R.id.goodsFragment
                                 && (bundle==null || bundle.getSerializable("order", Order.class) == null))
-                                || navDestination.getId() == R.id.clientsFragment) {
+                                || (bundle==null || bundle.getSerializable("order", Order.class) == null)
+                                && navDestination.getId() == R.id.clientsFragment) {
                             bottomNavigationView.setVisibility(View.VISIBLE);
 
                         } else {
@@ -49,6 +57,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                 }
         );
+        ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                result -> {
+                }
+        );
+        requestPermissionLauncher.launch(Manifest.permission.CALL_PHONE);
+        requestPermissionLauncher.launch(Manifest.permission.READ_CONTACTS);
+        requestPermissionLauncher.launch(Manifest.permission.SEND_SMS);
     }
 
 

@@ -12,7 +12,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
@@ -32,6 +31,7 @@ public class GoodsFragment extends Fragment {
 
     private FragmentGoodsBinding binding;
     private GoodRecyclerViewAdapter mAdapter;
+
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -75,23 +75,37 @@ public class GoodsFragment extends Fragment {
         binding.goodsList.setAdapter(mAdapter);
         Optional.ofNullable(getArguments())
                 .ifPresent(bundle -> {
-                    Integer orderline = getArguments().getSerializable("orderline", Integer.class);
-                    Order order = getArguments().getSerializable("order", Order.class);
+                    Integer orderline = bundle.getSerializable("orderline", Integer.class);
+                    Order order = bundle.getSerializable("order", Order.class);
+                    String source = bundle.getString("source");
                     if (orderline != null && order != null) {
                         binding.newGood.setVisibility(View.GONE);
                         mAdapter.setSelectItemListener(item -> {
                             Bundle newBundle = new Bundle();
                             order.getOrderLines().stream()
-                                    .filter(f -> f.getNum().equals(orderline))
-                                    .findAny()
-                                    .ifPresent(orderLine -> {
-                                        orderLine.setGood(item);
-                                        orderLine.setPrice(item.getPrice());
-                                        orderLine.setCount(1);
-                                        newBundle.putSerializable("order", order);
-                                    });
-                            NavHostFragment.findNavController(GoodsFragment.this)
-                                    .navigate(R.id.action_goodsFragment_to_orderGoodsFragment, newBundle);
+                                    .filter(f -> f.getGood() != null)
+                                    .filter(f -> f.getGood().getId().equals(item.getId()))
+                                    .findAny().ifPresentOrElse(orderLine -> {
+                                        orderLine.setCount(orderLine.getCount() + 1);
+                                        order.getOrderLines().removeIf(f -> f.getNum().equals(orderline));
+                                    }, () -> order.getOrderLines().stream()
+                                            .filter(f -> f.getNum().equals(orderline))
+                                            .findAny()
+                                            .ifPresent(orderLine -> {
+                                                orderLine.setGood(item);
+                                                orderLine.setPrice(item.getPrice());
+                                                orderLine.setCount(1);
+                                                newBundle.putSerializable("order", order);
+                                            }));
+                            newBundle.putSerializable("order", order);
+                            if ("orderCard".equals(source)) {
+                                NavHostFragment.findNavController(GoodsFragment.this)
+                                        .navigate(R.id.action_goodsFragment_to_orderCardFragment, newBundle);
+                            }
+                            if ("orderGoods".equals(source)) {
+                                NavHostFragment.findNavController(GoodsFragment.this)
+                                        .navigate(R.id.action_goodsFragment_to_orderGoodsFragment, newBundle);
+                            }
                         });
                     }
                 });

@@ -9,10 +9,12 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 
-public class Order implements Serializable,Cloneable {
+public class Order implements Serializable, Cloneable {
 
     private Integer id;
 
@@ -20,19 +22,23 @@ public class Order implements Serializable,Cloneable {
 
     private LocalDate deadline;
 
-    private LinkChannel linkChannel;
-
     private String comment;
 
     private String deliveryAddress;
 
+    private String phone;
+
+    private boolean needDelivery;
+
     private Client client;
 
-    private List<OrderLine> orderLines=new ArrayList<>();
+    private List<OrderLine> orderLines = new ArrayList<>();
 
     private Double prePaymentSum;
 
-    private Boolean shipped;
+    private Double paySum;
+
+    private boolean shipped;
 
     private LocalDateTime completeDate;
 
@@ -50,14 +56,6 @@ public class Order implements Serializable,Cloneable {
 
     public void setCreateDate(LocalDateTime createDate) {
         this.createDate = createDate;
-    }
-
-    public LinkChannel getLinkChannel() {
-        return linkChannel;
-    }
-
-    public void setLinkChannel(LinkChannel linkChannel) {
-        this.linkChannel = linkChannel;
     }
 
     public String getComment() {
@@ -100,13 +98,6 @@ public class Order implements Serializable,Cloneable {
         this.prePaymentSum = prePaymentSum;
     }
 
-    public Boolean getShipped() {
-        return shipped;
-    }
-
-    public void setShipped(Boolean shipped) {
-        this.shipped = shipped;
-    }
 
     public LocalDateTime getCompleteDate() {
         return completeDate;
@@ -124,10 +115,71 @@ public class Order implements Serializable,Cloneable {
         this.deadline = deadline;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public boolean isNeedDelivery() {
+        return needDelivery;
+    }
+
+    public void setNeedDelivery(boolean needDelivery) {
+        this.needDelivery = needDelivery;
+    }
+
+    public boolean isShipped() {
+        return shipped;
+    }
+
+    public void setShipped(boolean shipped) {
+        this.shipped = shipped;
+    }
+
+    public Double getPaySum() {
+        return paySum;
+    }
+
+    public void setPaySum(Double paySum) {
+        this.paySum = paySum;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Objects.equals(deadline, order.deadline) && Objects.equals(comment, order.comment)
+                && Objects.equals(deliveryAddress, order.deliveryAddress) && Objects.equals(phone, order.phone)
+                && Objects.equals(needDelivery, order.needDelivery) && Objects.equals(client, order.client)
+                && new HashSet<>(orderLines).equals(new HashSet<>(order.orderLines)) && Objects.equals(prePaymentSum, order.prePaymentSum)
+                && Objects.equals(paySum, order.paySum)
+                && Objects.equals(shipped, order.shipped) && Objects.equals(completeDate, order.completeDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(deadline, comment, deliveryAddress, phone, needDelivery, client, orderLines,
+                prePaymentSum, paySum, shipped, completeDate);
+    }
+
     @NonNull
     @Override
     public Order clone() {
         Gson gson = GsonExt.getGson();
         return gson.fromJson(gson.toJson(this), Order.class);
+    }
+
+    public OrderStatus getStatus() {
+        if (isShipped()) {
+            return OrderStatus.SHIPPED;
+        }
+        if (getOrderLines().stream().allMatch(OrderLine::isDone)) {
+            return OrderStatus.DONE;
+        }
+        return OrderStatus.IN_PROGRESS;
     }
 }

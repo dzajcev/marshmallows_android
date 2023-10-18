@@ -67,7 +67,7 @@ public class OrderGoodsFragment extends Fragment {
                                     orderLine.setCount(0);
                                 }
                                 if (!orderLine.getPrice().equals(orderLine2.getPrice())) {
-                                    Toast.makeText(getContext(),"На один и тот же товар заданы разные цены", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "На один и тот же товар заданы разные цены", Toast.LENGTH_SHORT).show();
                                     throw new RuntimeException("different prices");
                                 }
                                 orderLine.setCount(orderLine.getCount()
@@ -102,32 +102,33 @@ public class OrderGoodsFragment extends Fragment {
         });
         binding.orderGoodsLineAdd.setOnClickListener(v -> {
             OrderLine orderLine = new OrderLine();
-            orderLine.setNum(mAdapter.getItems().stream().max(Comparator.comparing(OrderLine::getNum)).map(OrderLine::getNum).map(m -> m + 1).orElse(1));
-            mAdapter.addLine(orderLine);
+            orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum)).map(OrderLine::getNum).map(m -> m + 1).orElse(1));
+            mAdapter.addItem(orderLine);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
         mAdapter = new OrderLinesRecyclerViewAdapter();
         mAdapter.setRemoveListener(position -> {
-            List<OrderLine> items = mAdapter.getItems();
-            items.remove(position);
-            for (int i = position; i < items.size(); i++) {
-                items.get(i).setNum(items.get(i).getNum() - 1);
+            if (position >= 0) {
+                for (int i = position; i < mAdapter.getOriginalItems().size(); i++) {
+                    mAdapter.getOriginalItems().get(i).setNum(mAdapter.getOriginalItems().get(i).getNum() - 1);
+                }
             }
             orderLinesList.setAdapter(mAdapter);
-            mAdapter.setItems(items);
+            mAdapter.setItems(mAdapter.getOriginalItems());
         });
         mAdapter.setSelectGoodListener(orderLine -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", order);
             bundle.putInt("orderline", orderLine.getNum());
+            bundle.putString("source", "orderGoods");
             NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_goodsFragment, bundle);
         });
         mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
-                .moneyWithCurrencyToString(calsSum(mAdapter.getItems()))));
+                .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));
         mAdapter.setItems(order.getOrderLines());
         orderLinesList.setAdapter(mAdapter);
         binding.orderGoodsSum.setText(MoneyUtils.getInstance()
-                .moneyWithCurrencyToString(calsSum(mAdapter.getItems())));
+                .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems())));
         if (order.getOrderLines().isEmpty()) {
             binding.orderGoodsLinesList.callOnClick();
         }
