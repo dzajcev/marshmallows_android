@@ -27,7 +27,7 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 import java.util.List;
 import java.util.Objects;
 
-public class ClientCardFragment extends Fragment {
+public class ClientCardFragment extends Fragment implements Identity{
 
 
     private FragmentClientCardBinding binding;
@@ -73,20 +73,6 @@ public class ClientCardFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        FragmentActivity fragmentActivity = requireActivity();
-        if (fragmentActivity instanceof MainActivity ma) {
-            ma.setNavigationBackListener(() -> {
-                if (hasChanges()) {
-                    requireActivity().onBackPressed();
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-        }
-
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     @Override
@@ -111,7 +97,7 @@ public class ClientCardFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        requireActivity().setTitle("Карточка клиента");
         Client client = requireArguments().getSerializable("client", Client.class);
         Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
         incomingClient = Objects.requireNonNull(client).clone();
@@ -183,10 +169,9 @@ public class ClientCardFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        FragmentActivity fragmentActivity = requireActivity();
-        if (fragmentActivity instanceof MainActivity ma) {
-            ma.setNavigationBackListener(null);
-        }
     }
-
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
+    }
 }

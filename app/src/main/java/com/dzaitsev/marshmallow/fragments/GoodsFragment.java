@@ -26,7 +26,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class GoodsFragment extends Fragment {
+public class GoodsFragment extends Fragment implements Identity{
 
     private FragmentGoodsBinding binding;
     private GoodRecyclerViewAdapter mAdapter;
@@ -119,5 +119,9 @@ public class GoodsFragment extends Fragment {
         super.onDestroyView();
         mAdapter = null;
         binding = null;
+    }
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
     }
 }

@@ -9,16 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.MainActivity;
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
@@ -34,6 +31,7 @@ import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
+import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
@@ -41,7 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Optional;
 
-public class OrderCardFragment extends Fragment {
+public class OrderCardFragment extends Fragment implements Identity{
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
@@ -50,29 +48,26 @@ public class OrderCardFragment extends Fragment {
     private Order order;
 
     private OrderLinesRecyclerViewAdapter mAdapter;
-
-    private final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+    Navigation.OnBackListener backListener = new Navigation.OnBackListener() {
         @Override
-        public void handleOnBackPressed() {
-            if (hasChanges()) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Запись изменена. Сохранить?");
-                builder.setPositiveButton("Да", (dialog, id) -> {
-                    if (save()) {
-                        setEnabled(false);
-                        requireActivity().onBackPressed();
-                    }
-                });
-                builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> {
-                    setEnabled(false);
-                    requireActivity().onBackPressed();
-                });
-                builder.create().show();
-            } else {
-                setEnabled(false);
-                requireActivity().onBackPressed();
+        public boolean onBack(Fragment fragment) {
+            if (OrderCardFragment.this == fragment) {
+                if (OrderCardFragment.this.hasChanges()) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(OrderCardFragment.this.getActivity());
+                    builder.setTitle("Запись изменена. Сохранить?");
+                    builder.setPositiveButton("Да", (dialog, id) -> {
+                        if (OrderCardFragment.this.save()) {
+                            Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
+                        }
+                    });
+                    builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
+                    builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back());
+                    builder.create().show();
+                } else {
+                    Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
+                }
             }
+            return false;
         }
     };
 
@@ -85,6 +80,7 @@ public class OrderCardFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
+        requireActivity().setTitle("Информация о заказе");
         incomingOrder = order.clone();
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -99,29 +95,18 @@ public class OrderCardFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        FragmentActivity fragmentActivity = requireActivity();
-//        if (fragmentActivity instanceof MainActivity ma) {
-//            ma.setNavigationBackListener(() -> {
-//                if (hasChanges()) {
-//                    requireActivity().onBackPressed();
-//                    return false;
-//                } else {
-//                    return true;
-//                }
-//            });
-//        }
-//
-//        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        Navigation.getNavigation(requireActivity()).setOnBackListener(backListener);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().setTitle("Заказ");
         binding.clientName.setText(order.getClient().getName());
-        binding.phoneNumber.setText(order.getPhone());
-        binding.comment.setText(order.getComment());
-        binding.delivery.setText(order.getDeliveryAddress());
+        EditTextUtil.setText(binding.phoneNumber, order.getPhone());
+        EditTextUtil.setText(binding.comment, order.getComment());
+        EditTextUtil.setText(binding.delivery, order.getDeliveryAddress());
+
         binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
         binding.orderCardNeedDelivery.setChecked(order.isNeedDelivery());
         binding.deadline.setText(dateTimeFormatter.format(order.getDeadline()));
@@ -243,20 +228,16 @@ public class OrderCardFragment extends Fragment {
                     bindSums();
                 }).build().show());
         binding.orderCardShipped.setOnClickListener(v -> {
+            //todo:
             order.setShipped(true);
         });
-        binding.orderCardCancel.setOnClickListener(v -> {
-            if (!hasChanges()) {
-                //todo:
-//                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
-            }
-        });
+        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
 
         binding.orderCardSave.setOnClickListener(v -> {
             if (save()) {
                 if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getStatus() != OrderStatus.SHIPPED) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Запись полностью выполнен");
+                    builder.setTitle("Заказ полностью выполнен");
                     builder.setMessage("Оповестить клиента?");
                     builder.setPositiveButton("Да", (dialog, id) -> {
                         sendNotification(order);
@@ -265,9 +246,7 @@ public class OrderCardFragment extends Fragment {
                     builder.setNegativeButton("Нет", (dialog, id) -> dialog.dismiss());
                     builder.create().show();
                 }
-
-                //todo:
-//                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
+                Navigation.getNavigation(requireActivity()).back();
             }
         });
 
@@ -277,7 +256,7 @@ public class OrderCardFragment extends Fragment {
     }
 
     private void sendNotification(Order order) {
-
+//todo:
     }
 
     private void bindSums() {
@@ -343,10 +322,10 @@ public class OrderCardFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        FragmentActivity fragmentActivity = requireActivity();
-        if (fragmentActivity instanceof MainActivity ma) {
-            ma.setNavigationBackListener(null);
-        }
+        Navigation.getNavigation(requireActivity()).setOnBackListener(null);
     }
-
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
+    }
 }

@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-public class OrderGoodsFragment extends Fragment {
+public class OrderGoodsFragment extends Fragment implements Identity{
 
     private FragmentOrderGoodsBinding binding;
 
@@ -145,5 +145,10 @@ public class OrderGoodsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
     }
 }

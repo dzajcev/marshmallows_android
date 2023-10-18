@@ -26,7 +26,7 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Optional;
 
-public class ClientsFragment extends Fragment {
+public class ClientsFragment extends Fragment implements Identity{
 
     private FragmentClientsBinding binding;
 
@@ -35,7 +35,7 @@ public class ClientsFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
+            @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
         binding = FragmentClientsBinding.inflate(inflater, container, false);
@@ -45,7 +45,7 @@ public class ClientsFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        requireActivity().setTitle("Клиенты");
         new NetworkExecutor<>(requireActivity(),
                 NetworkService.getInstance().getMarshmallowApi().getClients(),
                 response -> Optional.ofNullable(response.body())
@@ -97,5 +97,9 @@ public class ClientsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
     }
 }

@@ -25,7 +25,7 @@ import com.dzaitsev.marshmallow.service.NetworkService;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class OrdersFragment extends Fragment {
+public class OrdersFragment extends Fragment implements Identity{
 
     private FragmentOrdersBinding binding;
 
@@ -101,5 +101,10 @@ public class OrdersFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
     }
 }

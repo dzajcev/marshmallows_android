@@ -7,6 +7,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.dzaitsev.marshmallow.fragments.Identity;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -14,16 +16,19 @@ import java.util.Map;
 public class Navigation {
 
     private final FragmentManager fragmentManager;
-
+    private final FragmentActivity fragmentActivity;
 
     private final LinkedList<Fragment> backStack = new LinkedList<>();
-    private final Map<Integer, Bundle> incomingBundles = new HashMap<>();
+    private final Map<String, Bundle> incomingBundles = new HashMap<>();
 
+    private OnBackListener onBackListener;
 
     private static Navigation navigation;
 
+
     public Navigation(FragmentActivity activity) {
         this.fragmentManager = activity.getSupportFragmentManager();
+        this.fragmentActivity = activity;
     }
 
 
@@ -40,9 +45,11 @@ public class Navigation {
 
     public void goForward(Fragment fragment, Bundle bundle) {
         backStack.add(fragment);
-        incomingBundles.put(fragment.getId(), bundle);
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        if (fragment instanceof Identity identity) {
+            incomingBundles.put(identity.getUniqueName(), bundle);
+        }
 
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragment.setArguments(bundle);
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
@@ -54,12 +61,32 @@ public class Navigation {
 
     public void back(Bundle bundle) {
         backStack.removeLast();
-
+        if (backStack.isEmpty()) {
+            fragmentActivity.finish();
+            System.exit(0);
+        }
         Fragment last = backStack.getLast();
         if (bundle == null) {
-            bundle = incomingBundles.get(last.getId());
+            if (last instanceof Identity identity) {
+                bundle = incomingBundles.get(identity.getUniqueName());
+            }
         }
         goForward(last, bundle);
         backStack.remove(last);
+
+    }
+
+    public void callbackBack() {
+        if (onBackListener == null || onBackListener.onBack(backStack.getLast())) {
+            back();
+        }
+    }
+
+    public void setOnBackListener(OnBackListener onBackListener) {
+        this.onBackListener = onBackListener;
+    }
+
+    public interface OnBackListener {
+        boolean onBack(Fragment fragment);
     }
 }

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -21,13 +22,15 @@ import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-public class OrderClientFragment extends Fragment {
+public class OrderClientFragment extends Fragment implements Identity {
     private FragmentOrderClientBinding binding;
 
     private Order order;
@@ -70,7 +73,7 @@ public class OrderClientFragment extends Fragment {
                     }, "Выбор даты", "Укажите дату выдачи");
             dateTimePicker.show();
         });
-        binding.delivery.setOnClickListener(v -> binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background)));
+        binding.orderClientDelivery.setOnClickListener(v -> Toast.makeText(requireContext(), ((EditText) v).getText(), Toast.LENGTH_SHORT).show());
         binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                 .setTitle("Укажите сумму")
                 .setMinValue(1)
@@ -86,10 +89,11 @@ public class OrderClientFragment extends Fragment {
     }
 
     private void bind(Order order) {
+        EditTextUtil.setText(binding.orderClientDelivery, Optional.ofNullable(order.getClient()).map(Client::getDefaultDeliveryAddress).orElse(""));
+        EditTextUtil.setText(binding.phoneNumber, Optional.ofNullable(order.getClient()).map(Client::getPhone).orElse(""));
         binding.clientName.setText(Optional.ofNullable(order.getClient()).map(Client::getName).orElse(""));
-        binding.phoneNumber.setText(Optional.ofNullable(order.getClient()).map(Client::getPhone).orElse(""));
-        binding.delivery.setText(Optional.ofNullable(order.getDeliveryAddress()).orElse(""));
-        binding.comment.setText(Optional.ofNullable(order.getComment()).orElse(""));
+
+        EditTextUtil.setText(binding.comment,Optional.ofNullable(order.getComment()).orElse(""));
         binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(order.getPrePaymentSum()));
         binding.orderClientsNeedDelivery.setChecked(order.isNeedDelivery());
         Optional.ofNullable(order.getDeadline())
@@ -97,11 +101,13 @@ public class OrderClientFragment extends Fragment {
                     binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(o));
                     binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                 });
+        binding.orderClientDelivery.requestLayout();
+        binding.phoneNumber.requestLayout();
     }
 
     private void fillOrder() {
         order.setComment(binding.comment.getText().toString());
-        order.setDeliveryAddress(binding.delivery.getText().toString());
+        order.setDeliveryAddress(binding.orderClientDelivery.getText().toString());
         order.setPhone(binding.phoneNumber.getRawText());
         order.setNeedDelivery(binding.orderClientsNeedDelivery.isChecked());
     }
@@ -124,7 +130,7 @@ public class OrderClientFragment extends Fragment {
             fail = true;
         }
         if (order.isNeedDelivery() && StringUtils.isEmpty(order.getDeliveryAddress())) {
-            binding.delivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            binding.orderClientDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (fail) {
@@ -137,4 +143,8 @@ public class OrderClientFragment extends Fragment {
         return callback.isSuccess();
     }
 
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
+    }
 }

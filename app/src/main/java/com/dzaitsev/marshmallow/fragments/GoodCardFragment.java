@@ -30,7 +30,7 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class GoodCardFragment extends Fragment {
+public class GoodCardFragment extends Fragment implements Identity{
 
     private FragmentGoodCardBinding binding;
     private Good incomingGood;
@@ -71,20 +71,6 @@ public class GoodCardFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        FragmentActivity fragmentActivity = requireActivity();
-        if (fragmentActivity instanceof MainActivity ma) {
-            ma.setNavigationBackListener(() -> {
-                if (hasChanges()) {
-                    requireActivity().onBackPressed();
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-        }
-
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
     @Override
@@ -103,7 +89,7 @@ public class GoodCardFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        requireActivity().setTitle("Карточка зефирки");
         Good good = requireArguments().getSerializable("good", Good.class);
         if (good == null || good.getPrices().isEmpty()) {
             binding.goodsCardPriceHistoryLabel.setVisibility(View.GONE);
@@ -176,11 +162,10 @@ public class GoodCardFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        FragmentActivity fragmentActivity = requireActivity();
-        if (fragmentActivity instanceof MainActivity ma) {
-            ma.setNavigationBackListener(null);
-        }
     }
-
+    @Override
+    public String getUniqueName() {
+        return getClass().getSimpleName();
+    }
 }
 
