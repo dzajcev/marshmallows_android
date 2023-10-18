@@ -10,10 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Good;
@@ -44,12 +43,11 @@ public class GoodsFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        requireActivity().setTitle("Зефирки и прочее");
         binding.newGood.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", new Good());
-            NavHostFragment.findNavController(GoodsFragment.this)
-                    .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
         });
         mAdapter = new GoodRecyclerViewAdapter();
         new NetworkExecutor<>(requireActivity(),
@@ -68,8 +66,7 @@ public class GoodsFragment extends Fragment {
         mAdapter.setEditItemListener(good -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", good);
-            NavHostFragment.findNavController(GoodsFragment.this)
-                    .navigate(R.id.action_goodsFragment_to_goodCard, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
         });
         mAdapter.setFilterPredicate(s -> good -> good.getName().toLowerCase().contains(s.toLowerCase()));
         binding.goodsList.setAdapter(mAdapter);
@@ -98,14 +95,7 @@ public class GoodsFragment extends Fragment {
                                                 newBundle.putSerializable("order", order);
                                             }));
                             newBundle.putSerializable("order", order);
-                            if ("orderCard".equals(source)) {
-                                NavHostFragment.findNavController(GoodsFragment.this)
-                                        .navigate(R.id.action_goodsFragment_to_orderCardFragment, newBundle);
-                            }
-                            if ("orderGoods".equals(source)) {
-                                NavHostFragment.findNavController(GoodsFragment.this)
-                                        .navigate(R.id.action_goodsFragment_to_orderGoodsFragment, newBundle);
-                            }
+                            Navigation.getNavigation(requireActivity()).back();
                         });
                     }
                 });

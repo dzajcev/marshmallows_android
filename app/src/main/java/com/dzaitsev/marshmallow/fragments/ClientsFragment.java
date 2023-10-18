@@ -10,10 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.ClientRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentClientsBinding;
@@ -63,18 +63,15 @@ public class ClientsFragment extends Fragment {
                 .map(m -> m.getSerializable("order", Order.class))
                 .map(m -> (ClientRecyclerViewAdapter.SelectItemListener) item -> {
                     m.setClient(item);
-                    m.setDeliveryAddress(item.getDefaultDeliveryAddress());
                     Bundle bundle = new Bundle();
                     bundle.putSerializable("order", m);
-                    NavHostFragment.findNavController(ClientsFragment.this)
-                            .navigate(R.id.action_clientsFragment_to_orderClientFragment, bundle);
+                    Navigation.getNavigation(requireActivity()).back(bundle);
                 }).orElse(null));
         mAdapter.setFilterPredicate(s -> client -> client.getName().toLowerCase().contains(s.toLowerCase()));
         mAdapter.setEditItemListener(client -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("client", client);
-            NavHostFragment.findNavController(ClientsFragment.this)
-                    .navigate(R.id.action_clientsFragment_to_clientCardFragment, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
         });
         clientList.setAdapter(mAdapter);
         binding.searchClientFld.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -90,10 +87,9 @@ public class ClientsFragment extends Fragment {
             }
         });
         binding.clientListCreate.setOnClickListener(view1 -> {
-            Bundle newBundle = new Bundle();
-            newBundle.putSerializable("client", new Client());
-            NavHostFragment.findNavController(ClientsFragment.this)
-                    .navigate(R.id.action_clientsFragment_to_clientCardFragment, newBundle);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("client", new Client());
+            Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
         });
     }
 

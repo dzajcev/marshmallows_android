@@ -10,9 +10,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
@@ -62,40 +63,35 @@ public class OrdersFragment extends Fragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().setTitle("Заказы");
         fillItems();
         binding.ordersList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
         binding.orderCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", new Order());
-            NavHostFragment.findNavController(OrdersFragment.this)
-                    .navigate(R.id.action_ordersFragment_to_orderGoodsFragment, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new OrderGoodsFragment(), bundle);
         });
-//        });
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
         mAdapter.setEditItemListener(item -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", item);
-            NavHostFragment.findNavController(OrdersFragment.this)
-                    .navigate(R.id.action_ordersFragment_to_orderCardFragment, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new OrderCardFragment(), bundle);
         });
-        mAdapter.setDeleteItemListener(new OrderRecyclerViewAdapter.DeleteItemListener() {
-            @Override
-            public void deleteItem(Order item) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Вы уверены?");
-                builder.setPositiveButton("Да", (dialog, id) -> {
-                    NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                            NetworkService.getInstance().getMarshmallowApi().deleteOrder(item.getId()), response -> {
-                    }, true);
-                    callback.invoke();
-                    binding.ordersList.setAdapter(mAdapter);
-                    fillItems();
-                });
-                builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-                builder.create().show();
-            }
+        mAdapter.setDeleteItemListener(item -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Вы уверены?");
+            builder.setPositiveButton("Да", (dialog, id) -> {
+                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+                        NetworkService.getInstance().getMarshmallowApi().deleteOrder(item.getId()), response -> {
+                }, true);
+                callback.invoke();
+                binding.ordersList.setAdapter(mAdapter);
+                fillItems();
+            });
+            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+            builder.create().show();
         });
         binding.ordersList.setAdapter(mAdapter);
 

@@ -5,13 +5,14 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.DateTimePicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
@@ -46,22 +47,19 @@ public class OrderClientFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle bundle = new Bundle();
-
+        requireActivity().setTitle("Информация по заказу");
         binding.ordersClientBackward.setOnClickListener(view1 -> {
             bundle.putSerializable("order", order);
-            NavHostFragment.findNavController(OrderClientFragment.this)
-                    .navigate(R.id.action_orderClientFragment_to_orderGoodsFragment, bundle);
+            Navigation.getNavigation(requireActivity()).back();
         });
         binding.ordersClientSave.setOnClickListener(view1 -> {
             if (save()) {
-                NavHostFragment.findNavController(OrderClientFragment.this)
-                        .navigate(R.id.action_orderClientFragment_to_ordersFragment, bundle);
+                Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment(), bundle);
             }
         });
         binding.clientName.setOnClickListener(v -> {
             bundle.putSerializable("order", order);
-            NavHostFragment.findNavController(OrderClientFragment.this)
-                    .navigate(R.id.action_orderClientFragment_to_clientsFragment, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new ClientsFragment(), bundle);
         });
         binding.deadline.setOnClickListener(v -> {
             DateTimePicker dateTimePicker = new DateTimePicker(requireActivity(),

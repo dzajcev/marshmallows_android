@@ -10,9 +10,6 @@
     android:layout_marginBottom="5sp"
     android:orientation="vertical"
     tools:context=".fragments.GoodCardFragment">
-
-    <!-- TODO: Update blank fragment layout -->
-
     <EditText
         android:id="@+id/goodCardName"
         android:layout_width="match_parent"

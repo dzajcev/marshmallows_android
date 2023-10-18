@@ -15,11 +15,11 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dzaitsev.marshmallow.MainActivity;
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DateTimePicker;
@@ -159,7 +159,7 @@ public class OrderCardFragment extends Fragment {
                 bundle.putSerializable("order", order);
                 bundle.putInt("orderline", orderLine.getNum());
                 bundle.putString("source", "orderCard");
-                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_goodsFragment, bundle);
+                Navigation.getNavigation(requireActivity()).goForward(new GoodsFragment(), bundle);
             });
             mAdapter.setChangeSumListener(this::bindSums);
 
@@ -247,7 +247,8 @@ public class OrderCardFragment extends Fragment {
         });
         binding.orderCardCancel.setOnClickListener(v -> {
             if (!hasChanges()) {
-                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
+                //todo:
+//                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
             }
         });
 
@@ -264,7 +265,9 @@ public class OrderCardFragment extends Fragment {
                     builder.setNegativeButton("Нет", (dialog, id) -> dialog.dismiss());
                     builder.create().show();
                 }
-                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
+
+                //todo:
+//                NavHostFragment.findNavController(OrderCardFragment.this).navigate(R.id.action_orderCardFragment_to_ordersFragment);
             }
         });
 

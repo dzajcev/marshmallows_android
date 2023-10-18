@@ -11,10 +11,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderGoodsBinding;
@@ -37,7 +37,6 @@ public class OrderGoodsFragment extends Fragment {
 
     private OrderLinesRecyclerViewAdapter mAdapter;
 
-
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -49,6 +48,7 @@ public class OrderGoodsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().setTitle("Позиции заказа");
         RecyclerView orderLinesList = view.findViewById(R.id.orderGoodsLinesList);
         binding.ordersGoodsForward.setOnClickListener(view1 -> {
             if (order.getOrderLines().isEmpty() || order.getOrderLines().stream().noneMatch(f -> f.getGood() != null)) {
@@ -81,7 +81,7 @@ public class OrderGoodsFragment extends Fragment {
                         }
                     }
                     bundle.putSerializable("order", order);
-                    NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_orderClientFragment, bundle);
+                    Navigation.getNavigation(requireActivity()).goForward(new OrderClientFragment(), bundle);
                 } catch (Exception e) {
 //do nothing
                 }
@@ -93,11 +93,11 @@ public class OrderGoodsFragment extends Fragment {
                 order.getOrderLines().removeIf(f -> f.getGood() == null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Есть не сохраненные данные. Продолжить?");
-                builder.setPositiveButton("Да", (dialog, id) -> NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_ordersFragment));
+                builder.setPositiveButton("Да", (dialog, id) -> Navigation.getNavigation(requireActivity()).back());
                 builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
                 builder.create().show();
             } else {
-                NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_ordersFragment);
+                Navigation.getNavigation(requireActivity()).back();
             }
         });
         binding.orderGoodsLineAdd.setOnClickListener(v -> {
@@ -121,7 +121,7 @@ public class OrderGoodsFragment extends Fragment {
             bundle.putSerializable("order", order);
             bundle.putInt("orderline", orderLine.getNum());
             bundle.putString("source", "orderGoods");
-            NavHostFragment.findNavController(OrderGoodsFragment.this).navigate(R.id.action_orderGoodsFragment_to_goodsFragment, bundle);
+            Navigation.getNavigation(requireActivity()).goForward(new GoodsFragment(), bundle);
         });
         mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
                 .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));
