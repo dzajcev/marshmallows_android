@@ -7,11 +7,18 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.dzaitsev.marshmallow.fragments.Identity;
+import com.dzaitsev.marshmallow.fragments.ClientsFragment;
+import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
+import com.dzaitsev.marshmallow.fragments.GoodsFragment;
+import com.dzaitsev.marshmallow.fragments.IdentityFragment;
+import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Navigation {
 
@@ -21,7 +28,7 @@ public class Navigation {
     private final LinkedList<Fragment> backStack = new LinkedList<>();
     private final Map<String, Bundle> incomingBundles = new HashMap<>();
 
-    private OnBackListener onBackListener;
+    private final LinkedList<OnBackListener> onBackListeners = new LinkedList<>();
 
     private static Navigation navigation;
 
@@ -29,6 +36,16 @@ public class Navigation {
     public Navigation(FragmentActivity activity) {
         this.fragmentManager = activity.getSupportFragmentManager();
         this.fragmentActivity = activity;
+        fragmentManager.addFragmentOnAttachListener((fragmentManager, fragment) -> {
+            if (fragment instanceof IdentityFragment identityFragment) {
+                if ((getRootFragments().stream()
+                        .anyMatch(a -> a.equals(identityFragment.getUniqueName())))
+                        && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
+                    backStack.clear();
+                    backStack.add(fragment);
+                }
+            }
+        });
     }
 
 
@@ -39,16 +56,20 @@ public class Navigation {
         return navigation;
     }
 
+    public List<String> getRootFragments() {
+        return Stream.of(OrdersFragment.IDENTITY, GoodsFragment.IDENTITY, ClientsFragment.IDENTITY, DeliveriesFragment.IDENTITY)
+                .collect(Collectors.toList());
+    }
+
     public void goForward(Fragment fragment) {
         goForward(fragment, null);
     }
 
     public void goForward(Fragment fragment, Bundle bundle) {
         backStack.add(fragment);
-        if (fragment instanceof Identity identity) {
-            incomingBundles.put(identity.getUniqueName(), bundle);
+        if (fragment instanceof IdentityFragment identityFragment) {
+            incomingBundles.put(identityFragment.getUniqueName(), bundle);
         }
-
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragment.setArguments(bundle);
         fragmentTransaction.replace(R.id.frame, fragment);
@@ -60,30 +81,42 @@ public class Navigation {
     }
 
     public void back(Bundle bundle) {
-        backStack.removeLast();
-        if (backStack.isEmpty()) {
-            fragmentActivity.finish();
-            System.exit(0);
+        Fragment l = backStack.getLast();
+        if (l instanceof IdentityFragment identityFragment) {
+            if (getRootFragments().stream()
+                    .anyMatch(a -> a.equals(identityFragment.getUniqueName()))
+                    && (l.getArguments() == null || l.getArguments().isEmpty())) {
+                fragmentActivity.finish();
+                System.exit(0);
+            }
         }
+        backStack.removeLast();
         Fragment last = backStack.getLast();
+
         if (bundle == null) {
-            if (last instanceof Identity identity) {
-                bundle = incomingBundles.get(identity.getUniqueName());
+            if (last instanceof IdentityFragment identityFragment) {
+                bundle = incomingBundles.get(identityFragment.getUniqueName());
             }
         }
         goForward(last, bundle);
         backStack.remove(last);
-
     }
 
     public void callbackBack() {
-        if (onBackListener == null || onBackListener.onBack(backStack.getLast())) {
+        Fragment last = backStack.getLast();
+        if (onBackListeners.isEmpty() ||
+
+                onBackListeners.getLast().onBack(last)) {
             back();
         }
     }
 
-    public void setOnBackListener(OnBackListener onBackListener) {
-        this.onBackListener = onBackListener;
+    public void addOnBackListener(OnBackListener onBackListener) {
+        this.onBackListeners.add(onBackListener);
+    }
+
+    public void removeOnBackListener(OnBackListener onBackListener) {
+        this.onBackListeners.remove(onBackListener);
     }
 
     public interface OnBackListener {

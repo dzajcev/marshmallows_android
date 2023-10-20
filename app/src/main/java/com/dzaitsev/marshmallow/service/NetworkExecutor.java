@@ -6,9 +6,12 @@ import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
+import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -83,7 +86,17 @@ public class NetworkExecutor<T> implements Callback<T> {
             }
         } else {
             release();
-            showError("Ошибка выполнения");
+            try (ResponseBody responseBody = response.errorBody()) {
+                showError(Optional.ofNullable(responseBody)
+                        .map(m -> {
+                            try {
+                                return m.string();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).orElse(""));
+            }
+
 
         }
     }

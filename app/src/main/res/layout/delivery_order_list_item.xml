@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/deliveryOrderLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="1sp"
+    android:orientation="vertical"
+    android:paddingTop="3sp"
+    android:paddingBottom="3sp">
+
+
+    <ImageButton
+        android:id="@+id/deliveryOrderListGoods"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_vertical"
+        android:layout_toStartOf="@id/deliveryOrderConnect"
+        android:src="@drawable/list_goods_32" />
+
+    <ImageButton
+        android:id="@+id/deliveryOrderConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/connect_32" />
+
+    <LinearLayout
+        android:id="@+id/layoutWithDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/deliveryOrderConnect"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="3sp"
+        android:minHeight="50sp"
+        android:layout_toStartOf="@id/deliveryOrderListGoods"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/deliveryOrderItemDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:src="@drawable/delete_32" />
+
+        <TextView
+            android:id="@+id/deliveryOrderId"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="start|top"
+            android:paddingStart="6sp"
+            android:paddingEnd="3sp"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/deliveryOrderClientName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|top"
+            android:paddingStart="3sp"
+            android:paddingEnd="3sp"
+            android:text=""
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/deliveryOrderShipped"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderConnect"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="top"
+        android:src="@drawable/shipped_32" />
+
+    <TextView
+        android:id="@+id/deliveryOrderAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutWithDelete"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="3sp"
+        android:layout_toStartOf="@id/deliveryOrderShipped"
+        android:gravity="start|center_vertical"
+        android:textSize="16sp" />
+
+
+    <TextView
+        android:id="@+id/deliveryOrderPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderAddress"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="3sp"
+        android:layout_toStartOf="@id/deliveryOrderShipped"
+        android:gravity="start|center_vertical"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tx1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderPhone"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="3sp"
+        android:text="Сумма заказа:" />
+
+    <TextView
+        android:id="@+id/deliveryOrderSum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderPhone"
+        android:layout_marginEnd="3sp"
+        android:layout_toEndOf="@id/tx1"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/tx2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderPhone"
+        android:layout_marginEnd="3sp"
+        android:layout_toStartOf="@id/deliveryOrderToPay"
+        android:text="К оплате:" />
+
+    <TextView
+        android:id="@+id/deliveryOrderToPay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryOrderPhone"
+        android:layout_alignParentEnd="true"
+        android:text="TextView" />
+</RelativeLayout>

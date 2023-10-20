@@ -1,17 +1,17 @@
 package com.dzaitsev.marshmallow.dto;
 
-public enum OrderStatus {
+public enum DeliveryStatus {
+    NEW("Новая"),
     IN_PROGRESS("В процессе"),
-    DONE("Выполнен"),
-    SHIPPED("Доставлен");
-
+    DONE("Выполнена");
     private final String text;
 
-    OrderStatus(String text) {
+    DeliveryStatus(String text) {
         this.text = text;
     }
 
     public String getText() {
         return text;
     }
+
 }

@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.components.DateTimePicker;
+import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
@@ -28,9 +28,10 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
-import java.util.function.Consumer;
 
-public class OrderClientFragment extends Fragment implements Identity {
+public class OrderClientFragment extends Fragment implements IdentityFragment {
+
+    public static final String IDENTITY = "orderClientFragment";
     private FragmentOrderClientBinding binding;
 
     private Order order;
@@ -65,13 +66,13 @@ public class OrderClientFragment extends Fragment implements Identity {
             Navigation.getNavigation(requireActivity()).goForward(new ClientsFragment(), bundle);
         });
         binding.deadline.setOnClickListener(v -> {
-            DateTimePicker dateTimePicker = new DateTimePicker(requireActivity(),
+            DatePicker datePicker = new DatePicker(requireActivity(),
                     date -> {
                         order.setDeadline(date);
                         binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date));
                         binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                     }, "Выбор даты", "Укажите дату выдачи");
-            dateTimePicker.show();
+            datePicker.show();
         });
         binding.orderClientDelivery.setOnClickListener(v -> Toast.makeText(requireContext(), ((EditText) v).getText(), Toast.LENGTH_SHORT).show());
         binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
@@ -145,6 +146,6 @@ public class OrderClientFragment extends Fragment implements Identity {
 
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/ordersFragment"
+        android:id="@+id/ordersMenu"
         android:title="Заказы"
-        android:icon="@drawable/order_64"/>
+        android:icon="@drawable/orders_32"/>
     <item
-        android:id="@+id/goodsFragment"
+        android:id="@+id/deliveryMenu"
+        android:title="Доставка"
+        android:icon="@drawable/delivery_32"/>
+    <item
+        android:id="@+id/goodsMenu"
         android:title="Зефирки"
-        android:icon="@drawable/edit_32"/>
+        android:icon="@drawable/marshmallow_32"/>
     <item
-        android:id="@+id/clientsFragment"
+        android:id="@+id/clientsMenu"
         android:title="Клиенты"
-        android:icon="@drawable/cancel_32"/>
+        android:icon="@drawable/clients_32"/>
 </menu>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/goodCardFragment"
@@ -10,6 +10,7 @@
     android:layout_marginBottom="5sp"
     android:orientation="vertical"
     tools:context=".fragments.GoodCardFragment">
+
     <EditText
         android:id="@+id/goodCardName"
         android:layout_width="match_parent"
@@ -22,9 +23,12 @@
         android:inputType="textMultiLine"
         android:lines="4"
         android:maxLines="5"
-        android:minLines="2"
         android:minHeight="50sp"
+        android:minLines="2"
         android:scrollbars="vertical"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:textSize="14sp" />
 
     <TextView
@@ -33,6 +37,9 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="5sp"
         android:background="@color/field_background"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/goodCardName"
         android:gravity="top|start"
         android:hint="Цена зефирки"
         android:minHeight="40sp"
@@ -53,58 +60,46 @@
         android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/goodCardPrice"
         android:textSize="14sp" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:barrierDirection="top" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/goodCardCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|center_vertical"
-            android:background="@color/transparent"
-            android:src="@drawable/cancel_32" />
-
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <ImageButton
-            android:id="@+id/goodCardSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|center_vertical|end"
-            android:background="@color/transparent"
-            android:src="@drawable/save_32" />
-
-    </LinearLayout>
-
     <TextView
-        android:id="@+id/goodsCardPriceHistoryLabel"
+        android:id="@+id/tx1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/goodCardDescription"
         android:text="История цен"
         android:textSize="16sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goodCardPriceHistoryList"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/tx1"
+        android:layout_above="@id/goodCardSave"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/goodCardCancel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="Отмена" />
 
-</LinearLayout>
+
+    <Button
+        android:id="@+id/goodCardSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:text="Сохранить" />
+
+
+</RelativeLayout>

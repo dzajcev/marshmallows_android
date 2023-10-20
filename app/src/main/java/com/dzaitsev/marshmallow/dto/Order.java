@@ -32,7 +32,7 @@ public class Order implements Serializable, Cloneable {
 
     private Client client;
 
-    private List<OrderLine> orderLines = new ArrayList<>();
+    private List<OrderLine> orderLines;
 
     private Double prePaymentSum;
 
@@ -52,10 +52,6 @@ public class Order implements Serializable, Cloneable {
 
     public LocalDateTime getCreateDate() {
         return createDate;
-    }
-
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
     }
 
     public String getComment() {
@@ -83,6 +79,9 @@ public class Order implements Serializable, Cloneable {
     }
 
     public List<OrderLine> getOrderLines() {
+        if (orderLines == null) {
+            orderLines = new ArrayList<>();
+        }
         return orderLines;
     }
 
@@ -155,14 +154,14 @@ public class Order implements Serializable, Cloneable {
         return Objects.equals(deadline, order.deadline) && Objects.equals(comment, order.comment)
                 && Objects.equals(deliveryAddress, order.deliveryAddress) && Objects.equals(phone, order.phone)
                 && Objects.equals(needDelivery, order.needDelivery) && Objects.equals(client, order.client)
-                && new HashSet<>(orderLines).equals(new HashSet<>(order.orderLines)) && Objects.equals(prePaymentSum, order.prePaymentSum)
+                && new HashSet<>(getOrderLines()).equals(new HashSet<>(order.getOrderLines())) && Objects.equals(prePaymentSum, order.prePaymentSum)
                 && Objects.equals(paySum, order.paySum)
                 && Objects.equals(shipped, order.shipped) && Objects.equals(completeDate, order.completeDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deadline, comment, deliveryAddress, phone, needDelivery, client, orderLines,
+        return Objects.hash(deadline, comment, deliveryAddress, phone, needDelivery, client, getOrderLines(),
                 prePaymentSum, paySum, shipped, completeDate);
     }
 

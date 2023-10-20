@@ -29,8 +29,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-public class OrderGoodsFragment extends Fragment implements Identity{
-
+public class OrderGoodsFragment extends Fragment implements IdentityFragment {
+    public static final String IDENTITY = "orderGoodsFragment";
     private FragmentOrderGoodsBinding binding;
 
     private Order order;
@@ -149,6 +149,6 @@ public class OrderGoodsFragment extends Fragment implements Identity{
 
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

@@ -22,9 +22,6 @@ public class Price implements Serializable {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
 
     public Double getPrice() {
         return price;

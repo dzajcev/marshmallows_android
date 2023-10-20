@@ -26,7 +26,9 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class GoodsFragment extends Fragment implements Identity{
+public class GoodsFragment extends Fragment implements IdentityFragment {
+
+    public static final String IDENTITY = "goodsFragment";
 
     private FragmentGoodsBinding binding;
     private GoodRecyclerViewAdapter mAdapter;
@@ -74,7 +76,6 @@ public class GoodsFragment extends Fragment implements Identity{
                 .ifPresent(bundle -> {
                     Integer orderline = bundle.getSerializable("orderline", Integer.class);
                     Order order = bundle.getSerializable("order", Order.class);
-                    String source = bundle.getString("source");
                     if (orderline != null && order != null) {
                         binding.newGood.setVisibility(View.GONE);
                         mAdapter.setSelectItemListener(item -> {
@@ -84,7 +85,9 @@ public class GoodsFragment extends Fragment implements Identity{
                                     .filter(f -> f.getGood().getId().equals(item.getId()))
                                     .findAny().ifPresentOrElse(orderLine -> {
                                         orderLine.setCount(orderLine.getCount() + 1);
+                                        if (order.getOrderLines().size()>1) {
                                         order.getOrderLines().removeIf(f -> f.getNum().equals(orderline));
+                                        }
                                     }, () -> order.getOrderLines().stream()
                                             .filter(f -> f.getNum().equals(orderline))
                                             .findAny()
@@ -122,6 +125,6 @@ public class GoodsFragment extends Fragment implements Identity{
     }
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

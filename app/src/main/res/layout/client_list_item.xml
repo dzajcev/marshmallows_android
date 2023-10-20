@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/clientItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -7,23 +7,23 @@
     android:paddingTop="3sp"
     android:paddingBottom="3sp">
 
-
     <TextView
         android:id="@+id/orderItemClientName"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_gravity="start|center_vertical"
-        android:layout_weight=".9"
+        android:layout_toStartOf="@id/clientItemEdit"
         android:gravity="start|center_vertical"
-        android:minHeight="30sp"
         android:textSize="14sp" />
 
     <ImageButton
         android:id="@+id/clientItemEdit"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight=".1"
-        android:background="@color/transparent"
+
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
         android:src="@drawable/edit_32" />
 
-</LinearLayout>
+</RelativeLayout>

@@ -1,6 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
-public interface Identity {
+public interface IdentityFragment {
 
     String getUniqueName();
 }

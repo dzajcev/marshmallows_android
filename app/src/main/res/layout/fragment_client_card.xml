@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:selector="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -15,6 +15,9 @@
         android:id="@+id/clientCardName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="3sp"
         android:ems="10"
         android:gravity="start|top"
@@ -27,6 +30,9 @@
         android:id="@+id/clientCardPhone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/clientCardName"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="3sp"
         android:ems="10"
         android:gravity="start|top"
@@ -43,6 +49,9 @@
         android:id="@+id/clientCardDelivery"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/clientCardPhone"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="3sp"
         android:ems="10"
         android:gravity="start|top"
@@ -55,6 +64,9 @@
         android:id="@+id/clientCardComment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/clientCardDelivery"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="3sp"
         android:ems="10"
         android:gravity="start|top"
@@ -63,60 +75,48 @@
         android:minHeight="50sp"
         android:textSize="14sp" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/tx1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/clientCardComment"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="5sp"
+        android:gravity="center_horizontal|center_vertical"
+        android:text="Каналы связи"
+        android:textSize="18sp" />
+
+    <com.dzaitsev.marshmallow.components.LinkChannelSelector
+        android:id="@+id/link_channel_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tx1"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_gravity="center_horizontal"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+        selector:iconHeight="40dp"
+        selector:iconWidth="40dp"
+        selector:mode="checkbox" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5sp"
-            android:gravity="center_horizontal|center_vertical"
-            android:text="Каналы связи"
-            android:textSize="18sp" />
 
-        <com.dzaitsev.marshmallow.components.LinkChannelSelector
-            android:id="@+id/link_channel_selector"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            selector:iconHeight="40dp"
-            selector:iconWidth="40dp"
-            selector:mode="checkbox" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/clientCardCancel"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
-        android:orientation="horizontal">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:text="Отмена" />
 
-        <ImageButton
-            android:id="@+id/clientCardCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|center_vertical"
-            android:background="@color/transparent"
-            android:src="@drawable/cancel_32" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="0pt"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
+    <Button
+        android:id="@+id/clientCardSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center_horizontal|center_vertical|end"
+        android:text="Сохранить" />
 
-        <ImageButton
-            android:id="@+id/clientCardSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|center_vertical|end"
-            android:background="@color/transparent"
-            android:src="@drawable/save_32" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

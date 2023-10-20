@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ordersFragment"
+    android:id="@+id/deliveriesFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".fragments.OrdersFragment">
+    tools:context=".fragments.DeliveriesFragment"
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/orderCreate"
+
+    <ImageButton
+        android:id="@+id/deliveryCreate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="10sp"
-        android:text="Новый заказ" />
+        android:src="@drawable/create_32" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/ordersList"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/orderCreate"
+        android:id="@+id/deliveriesList"
+        android:layout_below="@id/deliveryCreate"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>

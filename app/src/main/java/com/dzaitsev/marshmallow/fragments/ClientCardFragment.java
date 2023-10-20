@@ -7,59 +7,54 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 
-import com.dzaitsev.marshmallow.MainActivity;
+import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.components.LinkChannelSelector;
 import com.dzaitsev.marshmallow.databinding.FragmentClientCardBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
+import com.dzaitsev.marshmallow.dto.response.ClientResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class ClientCardFragment extends Fragment implements Identity{
-
+public class ClientCardFragment extends Fragment implements IdentityFragment {
+    public static final String IDENTITY = "clientCardFragment";
 
     private FragmentClientCardBinding binding;
     private Client incomingClient;
+    private Client client;
 
-    private final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
-        @Override
-        public void handleOnBackPressed() {
-            if (hasChanges()) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+    private final Navigation.OnBackListener backListener = fragment -> {
+        if (ClientCardFragment.this == fragment) {
+            if (ClientCardFragment.this.hasChanges()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(ClientCardFragment.this.getActivity());
                 builder.setTitle("Запись изменена. Сохранить?");
                 builder.setPositiveButton("Да", (dialog, id) -> {
-                    if (save()) {
-                        setEnabled(false);
-                        requireActivity().onBackPressed();
+                    if (ClientCardFragment.this.save()) {
+                        Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back();
                     }
                 });
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> {
-                    setEnabled(false);
-                    requireActivity().onBackPressed();
-                });
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back());
                 builder.create().show();
             } else {
-                setEnabled(false);
-                requireActivity().onBackPressed();
+                Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back();
             }
         }
+        return false;
     };
 
     private boolean hasChanges() {
-        Client client = constructClient();
+        fillClient();
         if (StringUtils.isEmpty(client.getName())
                 && StringUtils.isEmpty(client.getComment())
                 && StringUtils.isEmpty(client.getDefaultDeliveryAddress())
@@ -75,9 +70,12 @@ public class ClientCardFragment extends Fragment implements Identity{
         super.onCreate(savedInstanceState);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        client = requireArguments().getSerializable("client", Client.class);
+        Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
+        incomingClient = Objects.requireNonNull(client).clone();
         binding = FragmentClientCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
@@ -87,21 +85,31 @@ public class ClientCardFragment extends Fragment implements Identity{
         v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background));
         return false;
     };
-//    LinkChannelSelector.OnCheckedChangeListener selectorChangeListener = new LinkChannelSelector.OnCheckedChangeListener() {
-//        @Override
-//        public void onCheckedChanged(LinkChannelSelectorComponent linkChannelSelectorComponent, boolean isChecked) {
-//            binding.lickChannelSelector.restoreBackgroundColor();
-//        }
-//    };
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка клиента");
-        Client client = requireArguments().getSerializable("client", Client.class);
-        Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
-        incomingClient = Objects.requireNonNull(client).clone();
+        binding.clientCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
+        if (client.getId() != null) {
+            NetworkExecutor<ClientResponse> orderResponseNetworkExecutor = new NetworkExecutor<>(requireActivity(),
+                    NetworkService.getInstance().getMarshmallowApi().getClient(client.getId()),
+                    response -> Optional.ofNullable(response.body())
+                            .ifPresent(clientResponse -> {
+                                if (clientResponse.getClients() != null && !clientResponse.getClients().isEmpty()) {
+                                    incomingClient = clientResponse.getClients().iterator().next();
+                                }
+                            }), true);
 
+            orderResponseNetworkExecutor.invoke();
+            if (!orderResponseNetworkExecutor.isSuccess()) {
+                Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+                return;
+            }
+        } else {
+            client = new Client();
+        }
+        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
         binding.clientCardName.setText(client.getName());
         binding.clientCardName.setOnKeyListener(keyListener);
 
@@ -111,16 +119,15 @@ public class ClientCardFragment extends Fragment implements Identity{
         binding.clientCardDelivery.setText(client.getDefaultDeliveryAddress());
         binding.clientCardComment.setText(client.getComment());
 
-        binding.clientCardCancel.setOnClickListener(v -> requireActivity().onBackPressed());
+
         binding.clientCardSave.setOnClickListener(v -> {
             if (save()) {
-                requireActivity().onBackPressed();
+                Navigation.getNavigation(requireActivity()).back();
             }
         });
         binding.linkChannelSelector.setChecked(client.getLinkChannels());
         binding.linkChannelSelector.setOnCheckedChangeListener((linkChannelSelector, channels)
                 -> linkChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.transparent)));
-
 
     }
 
@@ -141,7 +148,7 @@ public class ClientCardFragment extends Fragment implements Identity{
         if (fail) {
             return false;
         }
-        Client client = constructClient();
+        fillClient();
         NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
                 NetworkService.getInstance().getMarshmallowApi().saveClient(client),
                 true);
@@ -150,15 +157,13 @@ public class ClientCardFragment extends Fragment implements Identity{
         return callback.isSuccess();
     }
 
-    private Client constructClient() {
-        Client client = new Client();
+    private void fillClient() {
         client.setId(incomingClient == null ? null : incomingClient.getId());
         client.setName(binding.clientCardName.getText().toString());
         client.setComment(binding.clientCardComment.getText().toString());
         client.setLinkChannels(getLinkChannels());
         client.setDefaultDeliveryAddress(binding.clientCardDelivery.getText().toString());
         client.setPhone(binding.clientCardPhone.getRawText());
-        return client;
     }
 
     private List<LinkChannel> getLinkChannels() {
@@ -169,9 +174,11 @@ public class ClientCardFragment extends Fragment implements Identity{
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
     }
+
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

@@ -2,16 +2,20 @@ package com.dzaitsev.marshmallow.components;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.BlendMode;
+import android.graphics.BlendModeColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
@@ -70,6 +74,20 @@ public class LinkChannelSelectorComponent extends ConstraintLayout {
         inflater.inflate(R.layout.link_channel_selector_component, this);
         background = findViewById(R.id.background);
         this.setOnTouchListener(new ExtendOnTouchListener(this::performClick));
+        this.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    v.getBackground().setColorFilter(new BlendModeColorFilter(ContextCompat.getColor(v.getContext(), R.color.row_2), BlendMode.COLOR));
+                    v.invalidate();
+                    return performClick();
+                }
+                case MotionEvent.ACTION_UP -> {
+                    v.getBackground().clearColorFilter();
+                    v.invalidate();
+                }
+            }
+            return false;
+        });
     }
 
     @Override

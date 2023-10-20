@@ -5,15 +5,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.components.ExtendOnTouchListener;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, GoodRecyclerViewAdapter.RecycleViewHolder> {
 
@@ -48,27 +50,29 @@ public class GoodRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Good, G
     public class RecycleViewHolder extends AbstractRecyclerViewHolder<Good> {
         private final TextView name;
         private final TextView price;
+        private  ImageButton edit;
 
         @SuppressLint("ClickableViewAccessibility")
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.goodListName);
             price = itemView.findViewById(R.id.goodListPrice);
-            LinearLayout layout = itemView.findViewById(R.id.goodItemLayout);
-            ImageButton edit = itemView.findViewById(R.id.goodItemEdit);
-            edit.setOnTouchListener(new ExtendOnTouchListener(() -> {
-                if (editItemListener!=null){
+            View layout = itemView.findViewById(R.id.goodItemLayout);
+            edit = itemView.findViewById(R.id.goodItemEdit);
+            edit.setOnClickListener(v -> {
+                if (editItemListener != null) {
                     editItemListener.edit(getItem());
                 }
-            }));
+            });
 
             if (selectItemListener != null) {
                 edit.setVisibility(View.GONE);
-                layout.setOnTouchListener(new ExtendOnTouchListener(()
-                        -> selectItemListener.selectItem(getItem())));
+                layout.setOnClickListener(v -> selectItemListener.selectItem(getItem()));
             }
         }
-
+        protected List<View> getViewsForChangeColor() {
+            return Stream.of(getView(), edit).collect(Collectors.toList());
+        }
         @Override
         public void bind(Good item) {
             super.bind(item);

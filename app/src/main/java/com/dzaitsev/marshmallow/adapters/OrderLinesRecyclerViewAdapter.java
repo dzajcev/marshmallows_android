@@ -20,9 +20,12 @@ import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.RecyclerViewHolder> {
     private View view;
@@ -60,7 +63,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     }
 
     public interface DoneListener {
-        void onDone(OrderLine orderLine, View view);
+        void onDone(OrderLine orderLine, RecyclerViewHolder view);
     }
 
     public interface ChangeSumListener {
@@ -72,8 +75,8 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
         private final TextView good;
         private final TextView price;
         private final TextView count;
-
         private final ImageButton done;
+        private final ImageButton delete;
 
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public RecyclerViewHolder(View itemView) {
@@ -142,7 +145,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                 }
             });
 
-            ImageButton delete = itemView.findViewById(R.id.orderLineDelete);
+            delete = itemView.findViewById(R.id.orderLineDelete);
             delete.setOnClickListener(v -> {
                 if (removeListener != null) {
                     int adapterPosition = getAdapterPosition();
@@ -153,7 +156,14 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             done = itemView.findViewById(R.id.orderLineDone);
             if (doneListener != null) {
                 done.setVisibility(View.VISIBLE);
-                done.setOnClickListener(v -> doneListener.onDone(getItem(), itemView));
+                done.setOnClickListener(v -> {
+                    doneListener.onDone(getItem(), RecyclerViewHolder.this);
+                    if (getItem().isDone()) {
+                        delete.setVisibility(View.GONE);
+                    } else {
+                        delete.setVisibility(View.VISIBLE);
+                    }
+                });
             }
         }
 
@@ -165,11 +175,16 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
             if (orderLine.getGood() == null) {
                 done.setVisibility(View.GONE);
-            }
-            if (orderLine.getGood() == null) {
                 price.setFocusable(false);
                 count.setFocusable(false);
             }
+            if (orderLine.isDone()) {
+                delete.setVisibility(View.GONE);
+            }
+        }
+
+        protected List<View> getViewsForChangeColor() {
+            return Stream.of(getView(), delete, done).collect(Collectors.toList());
         }
     }
 
@@ -187,7 +202,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (getShowItems().get(position).isDone()) {
-            holder.getView().setBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
+            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
 
     }

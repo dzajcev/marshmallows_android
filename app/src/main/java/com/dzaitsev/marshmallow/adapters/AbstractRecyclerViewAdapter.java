@@ -21,11 +21,15 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
 
     @Override
     public void onBindViewHolder(@NonNull A holder, int position) {
+        int color;
         if (position % 2 == 0) {
-            holder.getView().setBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.row_1));
+            color = ContextCompat.getColor(holder.getView().getContext(), R.color.row_1);
         } else {
-            holder.getView().setBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.row_2));
+            color = ContextCompat.getColor(holder.getView().getContext(), R.color.row_2);
         }
+
+        holder.originalColor = color;
+        holder.getView().setBackgroundColor(color);
         holder.bind(showItems.get(position));
     }
 

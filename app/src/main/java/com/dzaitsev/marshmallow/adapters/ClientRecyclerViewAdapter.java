@@ -4,13 +4,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Client;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Client, ClientRecyclerViewAdapter.RecycleViewHolder> {
     private EditItemListener editItemListener;
@@ -36,11 +39,13 @@ public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Clien
     public class RecycleViewHolder extends AbstractRecyclerViewHolder<Client> {
         private final TextView name;
 
+        private ImageButton edit;
+
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.orderItemClientName);
-            LinearLayout layout = itemView.findViewById(R.id.clientItemLayout);
-            ImageButton edit = itemView.findViewById(R.id.clientItemEdit);
+            ViewGroup layout = itemView.findViewById(R.id.clientItemLayout);
+            edit = itemView.findViewById(R.id.clientItemEdit);
 
             if (selectItemListener != null) {
                 edit.setVisibility(View.GONE);
@@ -52,6 +57,10 @@ public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Clien
                     }
                 });
             }
+        }
+
+        protected List<View> getViewsForChangeColor() {
+            return Stream.of(getView(), edit).collect(Collectors.toList());
         }
 
         @Override

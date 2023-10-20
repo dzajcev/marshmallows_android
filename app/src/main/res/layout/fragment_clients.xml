@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/clientsFragment"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,31 +9,31 @@
     android:padding="3sp"
     tools:context=".fragments.ClientsFragment">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageButton
+        android:id="@+id/clientListCreate"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_gravity="center_vertical"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/create_32" />
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchClientFld"
+        android:layout_toStartOf="@id/clientListCreate"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignBottom="@id/clientListCreate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchClientFld"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
 
-        </androidx.appcompat.widget.SearchView>
-
-        <ImageButton
-            android:id="@+id/clientListCreate"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:background="@color/transparent"
-            android:src="@drawable/create_32" />
-
-    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/clientsView"
+        android:layout_below="@id/searchClientFld"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-</LinearLayout>
+</RelativeLayout>

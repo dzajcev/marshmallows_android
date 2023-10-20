@@ -39,11 +39,7 @@ public class PriceHistoryRecyclerViewAdapter extends AbstractRecyclerViewAdapter
         public void bind(Price item) {
             super.bind(item);
             createDate.setText(dateTimeFormatter.format(getItem().getCreateDate()));
-            if (getItem().getPrice() - getItem().getPrice().intValue() == 0) {
-                price.setText(String.format("%sр", getItem().getPrice().intValue()));
-            } else {
-                price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(getItem().getPrice()));
-            }
+            price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(getItem().getPrice()));
         }
     }
 }

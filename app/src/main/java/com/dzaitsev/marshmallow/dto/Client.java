@@ -46,10 +46,6 @@ public class Client implements Serializable, Cloneable {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-
     public String getDefaultDeliveryAddress() {
         return defaultDeliveryAddress;
     }

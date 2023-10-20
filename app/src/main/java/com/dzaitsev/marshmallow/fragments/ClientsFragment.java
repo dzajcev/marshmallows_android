@@ -1,5 +1,8 @@
 package com.dzaitsev.marshmallow.fragments;
 
+import android.content.res.ColorStateList;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,10 +28,13 @@ import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class ClientsFragment extends Fragment implements Identity{
+public class ClientsFragment extends Fragment implements IdentityFragment {
 
+    public static final String IDENTITY = "clientsFragment";
     private FragmentClientsBinding binding;
 
     private ClientRecyclerViewAdapter mAdapter;
@@ -51,7 +58,9 @@ public class ClientsFragment extends Fragment implements Identity{
                 response -> Optional.ofNullable(response.body())
                         .ifPresent(clientResponse -> {
                             mAdapter.setItems(Optional.of(response.body())
-                                    .orElse(new ClientResponse()).getClients());
+                                    .orElse(new ClientResponse()).getClients()
+                                    .stream()
+                                    .sorted(Comparator.comparing(Client::getName)).collect(Collectors.toList()));
                             if (!StringUtils.isEmpty(binding.searchClientFld.getQuery().toString())) {
                                 mAdapter.filter(binding.searchClientFld.getQuery().toString());
                             }
@@ -91,15 +100,26 @@ public class ClientsFragment extends Fragment implements Identity{
             bundle.putSerializable("client", new Client());
             Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
         });
+        ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
+        binding.clientListCreate.setBackgroundTintList(colorStateList);
     }
-
+    private int getBackgroundColor(View view) {
+        Drawable background = view.getBackground();
+        if (background instanceof ColorDrawable colorDrawable) {
+            return colorDrawable.getColor();
+        } else {
+            return ContextCompat.getColor(requireContext(), R.color.white);
+        }
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        mAdapter = null;
     }
+
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

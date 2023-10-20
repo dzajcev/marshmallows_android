@@ -8,11 +8,13 @@ import com.google.gson.JsonSerializer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class GsonExt {
     private static final DateTimeFormatter localDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
     private static final DateTimeFormatter localDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter localTimeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     private static Gson instance;
     
 
@@ -22,6 +24,9 @@ public class GsonExt {
                     .registerTypeAdapter(LocalDateTime.class,
                             (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context)
                                     -> new JsonPrimitive(localDateTimeFormatter.format(src)))
+                    .registerTypeAdapter(LocalTime.class,
+                            (JsonSerializer<LocalTime>) (src, typeOfSrc, context)
+                                    -> new JsonPrimitive(localTimeFormatter.format(src)))
                     .registerTypeAdapter(LocalDate.class,
                             (JsonSerializer<LocalDate>) (src, typeOfSrc, context)
                                     -> new JsonPrimitive(localDateFormatter.format(src)))
@@ -29,6 +34,10 @@ public class GsonExt {
                             (JsonDeserializer<LocalDateTime>) (json, type,
                                                                jsonDeserializationContext) ->
                                     LocalDateTime.parse(json.getAsJsonPrimitive().getAsString(), localDateTimeFormatter))
+                    .registerTypeAdapter(LocalTime.class,
+                            (JsonDeserializer<LocalTime>) (json, type,
+                                                           jsonDeserializationContext) ->
+                                    LocalTime.parse(json.getAsJsonPrimitive().getAsString(), localTimeFormatter))
                     .registerTypeAdapter(LocalDate.class,
                             (JsonDeserializer<LocalDate>) (json, type,
                                                            jsonDeserializationContext) ->

@@ -10,22 +10,26 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.Navigation;
-import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class OrdersFragment extends Fragment implements Identity{
+public class OrdersFragment extends Fragment implements IdentityFragment {
+
+    public static final String IDENTITY = "ordersFragment";
 
     private FragmentOrdersBinding binding;
 
@@ -44,21 +48,19 @@ public class OrdersFragment extends Fragment implements Identity{
 
     private void fillItems() {
         new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().getOrders(),
+                //todo: filter
+                NetworkService.getInstance().getMarshmallowApi().getOrders(null, null,null),
                 response -> Optional.ofNullable(response.body())
-                        .ifPresent(orderResponse -> {
-                            mAdapter.setItems(Optional.of(orderResponse)
-                                    .orElse(new OrderResponse()).getOrders().stream()
-                                    .sorted((o1, o2) -> {
-                                        int i = o1.getDeadline().compareTo(o2.getDeadline());
-                                        if (i == 0) {
-                                            return o1.getId().compareTo(o2.getId());
-                                        } else {
-                                            return i;
-                                        }
-                                    }).collect(Collectors.toList()));
-
-                        })).invoke();
+                        .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
+                                .orElse(new OrderResponse()).getOrders().stream()
+                                .sorted((o1, o2) -> {
+                                    int i = o1.getDeadline().compareTo(o2.getDeadline());
+                                    if (i == 0) {
+                                        return o1.getId().compareTo(o2.getId());
+                                    } else {
+                                        return i;
+                                    }
+                                }).collect(Collectors.toList())))).invoke();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -105,6 +107,6 @@ public class OrdersFragment extends Fragment implements Identity{
 
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

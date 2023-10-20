@@ -45,10 +45,6 @@ public class OrderLine implements Serializable, Cloneable {
         return createDate;
     }
 
-    public void setCreateDate(LocalDateTime createDate) {
-        this.createDate = createDate;
-    }
-
     public Good getGood() {
         return good;
     }

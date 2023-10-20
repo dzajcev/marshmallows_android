@@ -11,34 +11,35 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.OrderLine;
-import com.dzaitsev.marshmallow.dto.OrderStatus;
-import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order, OrderRecyclerViewAdapter.RecycleViewHolder> {
+public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Delivery, DeliveryRecyclerViewAdapter.RecycleViewHolder> {
     private EditItemListener editItemListener;
     private SelectItemListener selectItemListener;
     private DeleteItemListener deleteItemListener;
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public interface EditItemListener {
-        void edit(Order item);
+        void edit(Delivery item);
     }
 
     public interface SelectItemListener {
-        void selectItem(Order item);
+        void selectItem(Delivery item);
     }
 
     public interface DeleteItemListener {
-        void deleteItem(Order item);
+        void deleteItem(Delivery item);
     }
 
     public void setEditItemListener(EditItemListener editItemListener) {
@@ -56,38 +57,33 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
     @Override
     public void onBindViewHolder(@NonNull RecycleViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).getOrderLines().stream().allMatch(OrderLine::isDone)) {
-            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
-        }
-        if (getShowItems().get(position).isShipped()) {
+        if (getShowItems().get(position).getStatus() == DeliveryStatus.DONE) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
-
     }
 
-    public class RecycleViewHolder extends AbstractRecyclerViewHolder<Order> {
+    public class RecycleViewHolder extends AbstractRecyclerViewHolder<Delivery> {
+
         private final TextView id;
-        private final TextView clientName;
-        private final TextView deadline;
-        private final TextView createDate;
-        private final TextView toPay;
-
-        private final TextView status;
-
+        private final TextView deliveryDate;
+        private final TextView start;
+        private final TextView end;
+        private final TextView totalOrders;
+        private final TextView deliveredOrders;
         private final ImageButton delete;
-
         private final ImageButton edit;
+
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
-            id = itemView.findViewById(R.id.orderItemId);
-            clientName = itemView.findViewById(R.id.orderItemClientName);
-            deadline = itemView.findViewById(R.id.orderItemDeadline);
-            createDate = itemView.findViewById(R.id.orderItemDateCreate);
-            toPay = itemView.findViewById(R.id.orderItemToPay);
-            status = itemView.findViewById(R.id.ordertemStatus);
-            LinearLayout layout = itemView.findViewById(R.id.orderItemLayout);
-            edit = itemView.findViewById(R.id.orderItemEdit);
-            delete = itemView.findViewById(R.id.orderItemDelete);
+            id = itemView.findViewById(R.id.deliveryItemId);
+            deliveryDate = itemView.findViewById(R.id.deliveryDate);
+            start = itemView.findViewById(R.id.deliveryStart);
+            end = itemView.findViewById(R.id.deliveryEnd);
+            totalOrders = itemView.findViewById(R.id.totalOrders);
+            deliveredOrders = itemView.findViewById(R.id.deliveredOrders);
+            View layout = itemView.findViewById(R.id.deliveryItemLayout);
+            edit = itemView.findViewById(R.id.deliveryItemEdit);
+            delete = itemView.findViewById(R.id.deliveryItemDelete);
             if (selectItemListener != null) {
                 edit.setVisibility(View.GONE);
                 layout.setOnClickListener(view -> selectItemListener.selectItem(getItem()));
@@ -101,18 +97,17 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
         }
 
         @Override
-        public void bind(Order item) {
+        public void bind(Delivery item) {
             super.bind(item);
             id.setText(String.format("#%s", getItem().getId()));
-            clientName.setText(getItem().getClient().getName());
-            deadline.setText(dateTimeFormatter.format(getItem().getDeadline()));
-            createDate.setText(dateTimeFormatter.format(getItem().getCreateDate()));
-            double sumOrder = getItem().getOrderLines().stream()
-                    .mapToDouble(m -> m.getPrice() * m.getCount()).sum();
-            toPay.setText(MoneyUtils.getInstance()
-                    .moneyWithCurrencyToString(sumOrder - Optional.ofNullable(getItem().getPrePaymentSum()).orElse(0d)));
-            status.setText(getItem().getStatus().getText());
-            if (getItem().getStatus() == OrderStatus.IN_PROGRESS) {
+            deliveryDate.setText(dateTimeFormatter.format(item.getDeliveryDate()));
+            start.setText(timeFormatter.format(item.getStart()));
+            end.setText(timeFormatter.format(item.getEnd()));
+            totalOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).map(List::size).orElse(0)));
+            deliveredOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
+                    .stream().filter(Order::isShipped)
+                    .collect(Collectors.toList()).size()));
+            if (getItem().getStatus() == DeliveryStatus.NEW) {
                 delete.setOnClickListener(v -> {
                     if (deleteItemListener != null) {
                         deleteItemListener.deleteItem(getItem());
@@ -122,17 +117,17 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
                 delete.setVisibility(View.GONE);
             }
         }
+
         protected List<View> getViewsForChangeColor() {
             return Stream.of(getView(), delete, edit).collect(Collectors.toList());
         }
-
     }
 
     @NonNull
     @Override
     public RecycleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View inflate = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.order_list_item, parent, false);
+                .inflate(R.layout.delivery_list_item, parent, false);
         return new RecycleViewHolder(inflate);
     }
 

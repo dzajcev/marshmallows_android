@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/deliveryItemLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="3sp"
+    android:layout_marginEnd="3sp"
+    android:orientation="vertical"
+    android:paddingTop="3sp"
+    android:paddingBottom="3sp">
+
+
+    <LinearLayout
+        android:id="@id/deliveryItemLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/deliveryItemEdit"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/deliveryItemDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="@color/transparent"
+            android:minWidth="50dp"
+            android:minHeight="50dp"
+            android:src="@drawable/delete_32" />
+
+        <TextView
+            android:id="@+id/deliveryItemId"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="3sp"
+            android:layout_marginTop="3sp"
+            android:layout_marginEnd="3sp"
+            android:layout_marginBottom="3sp"
+            android:gravity="start|center_vertical"
+            android:minHeight="30sp"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/deliveryDate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="3sp"
+            android:layout_marginTop="3sp"
+            android:layout_marginEnd="3sp"
+            android:layout_marginBottom="3sp"
+            android:gravity="center_vertical|start"
+            android:minHeight="30sp"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+
+    <ImageButton
+        android:id="@+id/deliveryItemEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/transparent"
+        android:layout_alignParentEnd="true"
+        android:minWidth="50dp"
+        android:minHeight="50dp"
+        android:src="@drawable/edit_32"
+        android:contentDescription="" />
+
+    <TextView
+        android:id="@+id/deliveryStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/deliveryItemLayout"
+        android:layout_marginTop="3sp"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/tx1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/deliveryStart"
+        android:layout_below="@id/deliveryItemLayout"
+        android:text="-"
+        android:layout_marginTop="3sp"
+        android:layout_marginStart="3sp"
+        android:layout_marginEnd="3sp"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+
+    <TextView
+        android:id="@+id/deliveryEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/tx1"
+        android:layout_below="@id/deliveryItemLayout"
+        android:textSize="18sp"
+        android:layout_marginTop="3sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tx2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/deliveryStart"
+        android:layout_marginTop="3sp"
+        android:text="Всего заказов:" />
+    <TextView
+        android:id="@+id/totalOrders"
+        android:layout_marginStart="3sp"
+        android:layout_marginEnd="3sp"
+        android:layout_marginTop="3sp"
+        android:layout_below="@id/deliveryStart"
+        android:layout_toEndOf="@id/tx2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <TextView
+        android:id="@+id/deliveredOrders"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/deliveryStart"
+        android:layout_marginTop="3sp"
+        android:layout_marginStart="3sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/tx3"
+        android:layout_marginTop="3sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryStart"
+        android:layout_toStartOf="@id/deliveredOrders"
+        android:text="Заказов выдано:" />
+
+
+</RelativeLayout>
+
+

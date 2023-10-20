@@ -1,6 +1,9 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
@@ -19,13 +22,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
-import com.dzaitsev.marshmallow.components.DateTimePicker;
+import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.LinkChannelPicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
@@ -39,7 +43,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Optional;
 
-public class OrderCardFragment extends Fragment implements Identity{
+public class OrderCardFragment extends Fragment implements IdentityFragment {
+    public static final String IDENTITY = "orderCardFragment";
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
@@ -48,27 +53,24 @@ public class OrderCardFragment extends Fragment implements Identity{
     private Order order;
 
     private OrderLinesRecyclerViewAdapter mAdapter;
-    Navigation.OnBackListener backListener = new Navigation.OnBackListener() {
-        @Override
-        public boolean onBack(Fragment fragment) {
-            if (OrderCardFragment.this == fragment) {
-                if (OrderCardFragment.this.hasChanges()) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(OrderCardFragment.this.getActivity());
-                    builder.setTitle("Запись изменена. Сохранить?");
-                    builder.setPositiveButton("Да", (dialog, id) -> {
-                        if (OrderCardFragment.this.save()) {
-                            Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
-                        }
-                    });
-                    builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                    builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back());
-                    builder.create().show();
-                } else {
-                    Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
-                }
+    Navigation.OnBackListener backListener = fragment -> {
+        if (OrderCardFragment.this == fragment) {
+            if (OrderCardFragment.this.hasChanges()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(OrderCardFragment.this.getActivity());
+                builder.setTitle("Запись изменена. Сохранить?");
+                builder.setPositiveButton("Да", (dialog, id) -> {
+                    if (OrderCardFragment.this.save()) {
+                        Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
+                    }
+                });
+                builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back());
+                builder.create().show();
+            } else {
+                Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
             }
-            return false;
         }
+        return false;
     };
 
     private boolean hasChanges() {
@@ -81,26 +83,35 @@ public class OrderCardFragment extends Fragment implements Identity{
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
         requireActivity().setTitle("Информация о заказе");
-        incomingOrder = order.clone();
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
     }
 
-    private View.OnKeyListener keyListener = (v, keyCode, event) -> {
-        v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background));
-        return false;
-    };
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Navigation.getNavigation(requireActivity()).setOnBackListener(backListener);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
+        NetworkExecutor<OrderResponse> orderResponseNetworkExecutor = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getMarshmallowApi().getOrder(order.getId()),
+                response -> Optional.ofNullable(response.body())
+                        .ifPresent(orderResponse -> {
+                            if (orderResponse.getOrders() != null && !orderResponse.getOrders().isEmpty()) {
+                                incomingOrder = orderResponse.getOrders().iterator().next();
+                            }
+
+                        }), true);
+        orderResponseNetworkExecutor.invoke();
+        if (!orderResponseNetworkExecutor.isSuccess()) {
+            Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+            return;
+        }
+        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
         requireActivity().setTitle("Заказ");
         binding.clientName.setText(order.getClient().getName());
         EditTextUtil.setText(binding.phoneNumber, order.getPhone());
@@ -149,13 +160,13 @@ public class OrderCardFragment extends Fragment implements Identity{
             mAdapter.setChangeSumListener(this::bindSums);
 
             binding.deadline.setOnClickListener(v -> {
-                DateTimePicker dateTimePicker = new DateTimePicker(requireActivity(),
+                DatePicker datePicker = new DatePicker(requireActivity(),
                         date -> {
                             order.setDeadline(date);
                             binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date));
                             binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                         }, "Выбор даты", "Укажите дату выдачи");
-                dateTimePicker.show();
+                datePicker.show();
             });
 
             binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
@@ -186,20 +197,13 @@ public class OrderCardFragment extends Fragment implements Identity{
                         alertDialog.dismiss();
                     }).build()
                     .show());
+            binding.delivery.setOnClickListener(v -> v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background)));
             mAdapter.setDoneListener((orderLine, v) -> {
                 orderLine.setDone(!orderLine.isDone());
                 if (orderLine.isDone()) {
-                    v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.green));
+                    v.changeBackgroundTintColor(ContextCompat.getColor(OrderCardFragment.this.requireContext(), R.color.green));
                 } else {
-                    mAdapter.getShowItems().stream().filter(f -> f.getNum().equals(orderLine.getNum()))
-                            .findFirst()
-                            .ifPresent(line -> {
-                                if (mAdapter.getShowItems().indexOf(line) % 2 == 0) {
-                                    v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.row_1));
-                                } else {
-                                    v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.row_2));
-                                }
-                            });
+                    v.changeBackgroundTintColor();
                 }
             });
         } else {
@@ -211,12 +215,8 @@ public class OrderCardFragment extends Fragment implements Identity{
         if (calcToPay() == 0) {
             binding.orderCardPaid.setVisibility(View.GONE);
         }
-        if (order.isShipped()) {
-            binding.orderCardShipped.setVisibility(View.GONE);
-        }
         if (order.getStatus() != OrderStatus.DONE) {
             binding.orderCardPaid.setVisibility(View.GONE);
-            binding.orderCardShipped.setVisibility(View.GONE);
         }
         binding.orderCardPaid.setOnClickListener(v -> MoneyPicker.builder(requireContext())
                 .setInitialValue(MoneyUtils.getInstance().stringToDouble(binding.toPay.getText().toString()))
@@ -227,11 +227,6 @@ public class OrderCardFragment extends Fragment implements Identity{
                     order.setPaySum(Optional.ofNullable(order.getPaySum()).orElse(0d) + sum);
                     bindSums();
                 }).build().show());
-        binding.orderCardShipped.setOnClickListener(v -> {
-            //todo:
-            order.setShipped(true);
-        });
-        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
 
         binding.orderCardSave.setOnClickListener(v -> {
             if (save()) {
@@ -253,8 +248,18 @@ public class OrderCardFragment extends Fragment implements Identity{
         orderLinesList.setAdapter(mAdapter);
         order.getOrderLines().sort(Comparator.comparing(OrderLine::getNum));
         mAdapter.setItems(order.getOrderLines());
+        ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
+        binding.connect.setBackgroundTintList(colorStateList);
     }
 
+    private int getBackgroundColor(View view) {
+        Drawable background = view.getBackground();
+        if (background instanceof ColorDrawable colorDrawable) {
+            return colorDrawable.getColor();
+        } else {
+            return ContextCompat.getColor(requireContext(), R.color.white);
+        }
+    }
     private void sendNotification(Order order) {
 //todo:
     }
@@ -316,16 +321,18 @@ public class OrderCardFragment extends Fragment implements Identity{
         order.setDeliveryAddress(binding.delivery.getText().toString());
         order.setPhone(binding.phoneNumber.getRawText());
         order.setNeedDelivery(binding.orderCardNeedDelivery.isChecked());
+        order.getOrderLines().removeIf(r -> r.getGood() == null);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        Navigation.getNavigation(requireActivity()).setOnBackListener(null);
+        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
     }
+
     @Override
     public String getUniqueName() {
-        return getClass().getSimpleName();
+        return IDENTITY;
     }
 }

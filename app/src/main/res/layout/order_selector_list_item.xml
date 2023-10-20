@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal|center_vertical"
+    android:orientation="horizontal"
+    android:paddingTop="3sp"
+    android:paddingBottom="3sp">
+
+    <TextView
+        android:id="@+id/orderSelectorItemId"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_margin="5sp"
+        android:gravity="center_horizontal|center_vertical" />
+
+    <TextView
+        android:id="@+id/orderSelectorClientName"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_margin="5sp"
+        android:layout_weight="1"
+        android:gravity="start|center_vertical"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/orderSelectorToPay"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_margin="5sp"
+        android:gravity="center_vertical|end"
+        android:text=""
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/orderSelectorDeliveryDate"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_margin="5sp"
+        android:gravity="center_vertical|end"
+        android:text=""
+        android:textSize="14sp" />
+
+    <CheckBox
+        android:id="@+id/orderSelectorSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5sp"
+        android:layout_marginEnd="5sp"
+        android:layout_marginBottom="5sp" />
+
+</LinearLayout>
