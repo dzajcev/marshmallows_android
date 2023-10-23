@@ -17,12 +17,11 @@ import com.dzaitsev.marshmallow.adapters.OrderSelectorRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderSelectorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -83,18 +82,13 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
                 .map(m -> m.getSerializable("delivery", Delivery.class)).orElse(new Delivery());
         mAdapter = new OrderSelectorRecyclerViewAdapter();
         new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().getOrders(null, null, Collections.singletonList(OrderStatus.DONE)),
-                response -> Optional.ofNullable(response.body())
-                        .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
-                                .orElse(new OrderResponse()).getOrders().stream()
-                                .filter(f -> delivery.getOrders().stream().noneMatch(f1 -> f1.getId().equals(f.getId())))
-                                .sorted((o1, o2) -> {
-                                    int i = o2.getDeadline().compareTo(o1.getDeadline());
-                                    if (i == 0) {
-                                        return o1.getClient().getName().compareTo(o2.getClient().getName());
-                                    }
-                                    return i;
-                                }).collect(Collectors.toList())))).invoke();
+                NetworkService.getInstance().getOrdersApi().getOrdersForDelivery()).invoke(response -> Optional.ofNullable(response.body())
+                .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
+                        .orElse(new OrderResponse()).getOrders().stream()
+                        .filter(f -> delivery.getOrders().stream().noneMatch(f1 -> f1.getId().equals(f.getId())))
+                        .sorted(Comparator.comparing(Order::isShipped)
+                                .thenComparing(p -> p.getClient().getName()))
+                        .collect(Collectors.toList()))));
         binding.orderSelectorItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.orderSelectorItems.setAdapter(mAdapter);
         binding.orderSelectorCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());

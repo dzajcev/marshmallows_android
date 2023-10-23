@@ -6,34 +6,20 @@ import com.dzaitsev.marshmallow.dto.response.Price;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Good implements Serializable, Cloneable {
+public class Good extends NsiItem implements Cloneable {
     private Integer id;
-    private String name;
 
     private String description;
     private Double price;
 
-    private List<Price> prices=new ArrayList<>();
+    private final List<Price> prices = new ArrayList<>();
 
     public List<Price> getPrices() {
         return prices;
-    }
-
-    public void setPrices(List<Price> prices) {
-        this.prices = prices;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Double getPrice() {
@@ -65,12 +51,12 @@ public class Good implements Serializable, Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Good good = (Good) o;
-        return Objects.equals(id, good.id) && Objects.equals(name, good.name) && Objects.equals(price, good.price);
+        return Objects.equals(id, good.id) && Objects.equals(getName(), good.getName()) && Objects.equals(price, good.price);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price);
+        return Objects.hash(id, getName(), price);
     }
 
     @NonNull

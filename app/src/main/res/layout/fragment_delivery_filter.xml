@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5sp"
+    tools:context=".fragments.DeliveryFilterFragment">
+
+    <Button
+        android:id="@+id/deliveryFilterApply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Применить"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxDone" />
+
+    <Button
+        android:id="@+id/deliveryFilterCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Отмена"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxDone" />
+
+    <LinearLayout
+        android:id="@+id/layoutStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="30sp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="start|center_vertical"
+            android:text="Начальная дата"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/deliveryFilterStart"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5sp"
+            android:background="@color/field_background"
+            android:backgroundTint="@color/field_background"
+            android:gravity="center_vertical|end"
+            android:minWidth="100sp"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minHeight="30sp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutStart">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="start|center_vertical"
+            android:text="Начальная дата"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/deliveryFilterEnd"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5sp"
+            android:background="@color/field_background"
+            android:backgroundTint="@color/field_background"
+            android:gravity="center_vertical|end"
+            android:minWidth="100sp"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal|center_vertical"
+        android:minHeight="30sp"
+        android:text="Статусы"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <CheckBox
+        android:id="@+id/checkBoxNew"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Новая"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <CheckBox
+        android:id="@+id/checkBoxInProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="В процессе"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxNew" />
+
+    <CheckBox
+        android:id="@+id/checkBoxDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Выполнена"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxInProgress" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

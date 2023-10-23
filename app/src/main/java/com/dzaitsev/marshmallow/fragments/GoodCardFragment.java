@@ -4,6 +4,9 @@ import android.app.AlertDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,15 +23,18 @@ import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
+import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import retrofit2.Response;
 
 public class GoodCardFragment extends Fragment implements IdentityFragment {
 
@@ -68,8 +74,48 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem deleteClient = menu.add("Удалить");
+        if (incomingGood.isActive()) {
+            deleteClient.setTitle("Удалить");
+        } else {
+            deleteClient.setTitle("Восстановить");
+        }
+        deleteClient.setOnMenuItemClickListener(item -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
+            builder.setTitle((incomingGood.isActive() ? "Удаление" : "Восстановление") + " зефирки?");
+            Boolean hasOrders = null;
+
+            if (incomingGood.isActive()) {
+                hasOrders = checkGoodOnOrders();
+                if (hasOrders == null) {
+                    return false;
+                }
+            }
+            String text = "";
+            if (incomingGood.isActive() && Boolean.FALSE.equals(hasOrders)) {
+                text = "\nЗапись будет удалена безвозвратно";
+            }
+            builder.setMessage("Вы уверены?" + text);
+            builder.setPositiveButton("Да", (dialog, id) -> {
+                GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
+                if (new NetworkExecutor<>(requireActivity(),
+                        incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
+                        .invokeSync().isSuccessful()) {
+                    Navigation.getNavigation(getActivity()).back();
+                }
+            });
+            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+            builder.create().show();
+            return false;
+        });
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -77,6 +123,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         good = requireArguments().getSerializable("good", Good.class);
         incomingGood = Objects.requireNonNull(good).clone();
+        setHasOptionsMenu(good.getId() != null);
         binding = FragmentGoodCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
@@ -92,27 +139,19 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка зефирки");
         binding.goodCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        Optional.ofNullable(good.getId())
-                .ifPresent(new Consumer<Integer>() {
-                    @Override
-                    public void accept(Integer integer) {
-
-                    }
-                });
         if (good.getId() != null) {
-            NetworkExecutor<GoodsResponse> orderResponseNetworkExecutor = new NetworkExecutor<>(requireActivity(),
-                    NetworkService.getInstance().getMarshmallowApi().getGood(good.getId()),
-                    response -> Optional.ofNullable(response.body())
-                            .ifPresent(clientResponse -> {
-                                if (clientResponse.getGoods() != null && !clientResponse.getGoods().isEmpty()) {
-                                    incomingGood = clientResponse.getGoods().iterator().next();
-                                }
-                            }), true);
-
-            orderResponseNetworkExecutor.invoke();
-            if (!orderResponseNetworkExecutor.isSuccess()) {
+            Response<GoodsResponse> goodsResponse = new NetworkExecutor<>(requireActivity(),
+                    NetworkService.getInstance().getGoodsApi().getGood(good.getId())).invokeSync();
+            if (!goodsResponse.isSuccessful()) {
                 Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
                 return;
+            } else {
+                incomingGood = Optional.ofNullable(goodsResponse.body())
+                        .map(GoodsResponse::getItems)
+                        .filter(Objects::nonNull)
+                        .filter(f -> !f.isEmpty())
+                        .map(m -> m.iterator().next())
+                        .orElse(null);
             }
         } else {
             good = new Good();
@@ -125,7 +164,6 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         binding.goodCardName.setOnKeyListener(keyListener);
         binding.goodCardName.setText(good.getName());
         binding.goodCardPrice.setOnKeyListener(keyListener);
-
         binding.goodCardPrice.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(good.getPrice()));
         binding.goodCardPrice.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                 .setTitle("Укажите сумму")
@@ -153,6 +191,16 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 .sorted((price, t1) -> t1.getCreateDate().compareTo(price.getCreateDate())).collect(Collectors.toList()));
     }
 
+    private Boolean checkGoodOnOrders() {
+        NetworkExecutor<Boolean> callback = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()));
+        Response<Boolean> booleanResponse = callback.invokeSync();
+        if (!booleanResponse.isSuccessful()) {
+            return null;
+        }
+        return booleanResponse.body();
+    }
+
     private boolean save() {
         boolean fail = false;
         if (StringUtils.isEmpty(binding.goodCardName.getText().toString())) {
@@ -167,12 +215,10 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
             return false;
         }
         fillGood();
-        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().saveGood(good),
-                true);
-        callback.invoke();
+        Response<Void> voidResponse = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getGoodsApi().saveGood(good)).invokeSync();
         incomingGood = good;
-        return callback.isSuccess();
+        return voidResponse.isSuccessful();
     }
 
     private void fillGood() {

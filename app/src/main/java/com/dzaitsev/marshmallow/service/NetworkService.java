@@ -1,19 +1,12 @@
 package com.dzaitsev.marshmallow.service;
 
 
+import com.dzaitsev.marshmallow.service.api.ClientsApi;
+import com.dzaitsev.marshmallow.service.api.DeliveryApi;
+import com.dzaitsev.marshmallow.service.api.GoodsApi;
+import com.dzaitsev.marshmallow.service.api.OrdersApi;
 import com.dzaitsev.marshmallow.utils.GsonExt;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
-import java.lang.reflect.Type;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -38,8 +31,20 @@ public class NetworkService {
         setNetworkProfile();
     }
 
-    public MarshmallowApi getMarshmallowApi() {
-        return mRetrofit.create(MarshmallowApi.class);
+    public GoodsApi getGoodsApi() {
+        return mRetrofit.create(GoodsApi.class);
+    }
+
+    public ClientsApi getClientsApi() {
+        return mRetrofit.create(ClientsApi.class);
+    }
+
+    public OrdersApi getOrdersApi() {
+        return mRetrofit.create(OrdersApi.class);
+    }
+
+    public DeliveryApi getDeliveryApi() {
+        return mRetrofit.create(DeliveryApi.class);
     }
 
     public void setNetworkProfile() {
@@ -51,7 +56,7 @@ public class NetworkService {
 
 
         mRetrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.1.45:8080/")
+                .baseUrl("http://5.59.136.54:8080/")
                 .callbackExecutor(Executors.newSingleThreadExecutor())
                 .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
                 .client(okHttpClient)

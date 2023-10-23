@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:selector="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/clientCardFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="3sp"
-    android:layout_marginEnd="3sp"
+    android:layout_marginStart="5sp"
+    android:layout_marginEnd="5sp"
+    android:layout_marginBottom="5sp"
     android:orientation="vertical"
     tools:context=".fragments.ClientCardFragment">
 
@@ -15,8 +15,8 @@
         android:id="@+id/clientCardName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginBottom="3sp"
         android:ems="10"
@@ -106,7 +106,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_gravity="center_horizontal|center_vertical"
         android:text="Отмена" />
 
 
@@ -116,7 +115,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_gravity="center_horizontal|center_vertical|end"
         android:text="Сохранить" />
+
 
 </RelativeLayout>

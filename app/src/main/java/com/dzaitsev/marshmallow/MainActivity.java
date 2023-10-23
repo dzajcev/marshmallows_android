@@ -1,10 +1,10 @@
 package com.dzaitsev.marshmallow;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,17 +15,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
+import com.dzaitsev.marshmallow.dto.DeliveryFilter;
+import com.dzaitsev.marshmallow.dto.DeliveryStatus;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.dto.OrdersFilter;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.Gson;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class MainActivity extends AppCompatActivity {
     ActivityResultLauncher<String[]> permissionsLauncher =
@@ -34,10 +40,49 @@ public class MainActivity extends AppCompatActivity {
 
                     });
 
+    private void processDeliveryFilter() {
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        String string = preferences.getString("delivery-filter", "");
+        Gson gson = GsonExt.getGson();
+        DeliveryFilter deliveryFilter = gson.fromJson(string, DeliveryFilter.class);
+        if (deliveryFilter == null) {
+            deliveryFilter = new DeliveryFilter();
+            deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
+            deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
+            deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
+
+        }
+        deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
+        deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.putString("delivery-filter", GsonExt.getGson().toJson(deliveryFilter));
+        edit.apply();
+    }
+    private void processOrderFilter() {
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        String string = preferences.getString("order-filter", "");
+        Gson gson = GsonExt.getGson();
+        OrdersFilter ordersFilter = gson.fromJson(string, OrdersFilter.class);
+        if (ordersFilter == null) {
+            ordersFilter = new OrdersFilter();
+            ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
+            ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
+            ordersFilter.getStatuses().add(OrderStatus.DONE);
+            ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
+
+        }
+        ordersFilter.setStart(LocalDate.now().minusWeeks(1));
+        ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
+        SharedPreferences.Editor edit = preferences.edit();
+        edit.putString("order-filter", GsonExt.getGson().toJson(ordersFilter));
+        edit.apply();
+    }
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        processDeliveryFilter();
+        processOrderFilter();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -72,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     Navigation.getNavigation(MainActivity.this).goForward(new ClientsFragment());
                     return true;
                 }
-            }else if (item.getItemId() == R.id.deliveryMenu) {
+            } else if (item.getItemId() == R.id.deliveryMenu) {
                 if (!(fragmentById instanceof DeliveriesFragment)) {
                     Navigation.getNavigation(MainActivity.this).goForward(new DeliveriesFragment());
                     return true;
@@ -93,9 +138,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Permission required")
                 .setMessage("Some permissions are need to be allowed to use this app without any problems.")
-                .setPositiveButton("Settings", (dialog, which) -> {
-                    dialog.dismiss();
-                });
+                .setPositiveButton("Settings", (dialog, which) -> dialog.dismiss());
         if (alertDialog == null) {
             alertDialog = builder.create();
             if (!alertDialog.isShowing()) {
@@ -112,17 +155,15 @@ public class MainActivity extends AppCompatActivity {
         if (newPermissionStr.length > 0) {
             permissionsLauncher.launch(newPermissionStr);
         } else {
-        /* User has pressed 'Deny & Don't ask again' so we have to show the enable permissions dialog
-        which will lead them to app details page to enable permissions from there. */
             showPermissionDialog();
         }
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.optiona_menu, menu);
-        return true;
-    }
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.options_menu, menu);
+//        return true;
+//    }
 
     @Override
     public void onBackPressed() {

@@ -29,6 +29,8 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import retrofit2.Response;
+
 public class OrderClientFragment extends Fragment implements IdentityFragment {
 
     public static final String IDENTITY = "orderClientFragment";
@@ -77,8 +79,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         binding.orderClientDelivery.setOnClickListener(v -> Toast.makeText(requireContext(), ((EditText) v).getText(), Toast.LENGTH_SHORT).show());
         binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                 .setTitle("Укажите сумму")
-                .setMinValue(1)
-                .setMaxValue(100000)
+                .setMinValue(0)
                 .positiveButton(value -> {
                     binding.prePayment.setText(String.format("%s", MoneyUtils.getInstance()
                             .moneyWithCurrencyToString(value)));
@@ -137,11 +138,9 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         if (fail) {
             return false;
         }
-        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().saveOrder(order), response -> {
-        }, true);
-        callback.invoke();
-        return callback.isSuccess();
+        Response<Void> callback = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().saveOrder(order)).invokeSync();
+        return callback.isSuccessful();
     }
 
     @Override

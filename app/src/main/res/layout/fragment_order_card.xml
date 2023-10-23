@@ -160,7 +160,7 @@
         android:layout_toStartOf="@id/deadline"
         android:gravity="start|center_vertical"
         android:minHeight="30sp"
-        android:text="Доставка"
+        android:text="Выдача"
         android:textSize="16sp" />
 
     <TextView

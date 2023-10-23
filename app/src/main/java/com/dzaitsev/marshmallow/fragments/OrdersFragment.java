@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,15 +16,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.adapters.OrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
+import com.dzaitsev.marshmallow.dto.AbstractFilter;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.dto.OrdersFilter;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.lang.reflect.Type;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,6 +39,8 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
     private FragmentOrdersBinding binding;
 
     private OrderRecyclerViewAdapter mAdapter;
+
+    private AbstractFilter<OrderStatus> filter;
 
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -46,21 +53,30 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
         return binding.getRoot();
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SharedPreferences preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
+        String string = preferences.getString("order-filter", "{}");
+        if (string.isEmpty()) {
+            string = "{}";
+        }
+        Gson gson = GsonExt.getGson();
+        Type type = new TypeToken<OrdersFilter>() {
+        }.getType();
+        filter = gson.fromJson(string, type);
+    }
+
     private void fillItems() {
         new NetworkExecutor<>(requireActivity(),
-                //todo: filter
-                NetworkService.getInstance().getMarshmallowApi().getOrders(null, null,null),
-                response -> Optional.ofNullable(response.body())
+                NetworkService.getInstance().getOrdersApi().getOrders(filter.getStart(), filter.getEnd(),
+                        filter.getStatuses()))
+                .invoke(response -> Optional.ofNullable(response.body())
                         .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
                                 .orElse(new OrderResponse()).getOrders().stream()
-                                .sorted((o1, o2) -> {
-                                    int i = o1.getDeadline().compareTo(o2.getDeadline());
-                                    if (i == 0) {
-                                        return o1.getId().compareTo(o2.getId());
-                                    } else {
-                                        return i;
-                                    }
-                                }).collect(Collectors.toList())))).invoke();
+                                .sorted(Comparator.comparing(Order::getOrderStatus)
+                                        .thenComparing(Order::getDeadline))
+                                .collect(Collectors.toList()))));
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -81,20 +97,7 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
             bundle.putSerializable("order", item);
             Navigation.getNavigation(requireActivity()).goForward(new OrderCardFragment(), bundle);
         });
-        mAdapter.setDeleteItemListener(item -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> {
-                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                        NetworkService.getInstance().getMarshmallowApi().deleteOrder(item.getId()), response -> {
-                }, true);
-                callback.invoke();
-                binding.ordersList.setAdapter(mAdapter);
-                fillItems();
-            });
-            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-            builder.create().show();
-        });
+        binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new OrderFilterFragment()));
         binding.ordersList.setAdapter(mAdapter);
 
     }
@@ -103,6 +106,7 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        mAdapter.setEditItemListener(null);
     }
 
     @Override

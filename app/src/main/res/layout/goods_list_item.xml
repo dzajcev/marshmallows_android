@@ -31,11 +31,4 @@
         android:text=""
         android:textSize="14sp" />
 
-    <ImageButton
-        android:id="@+id/goodItemEdit"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight=".1"
-        android:src="@drawable/edit_32" />
-
 </LinearLayout>

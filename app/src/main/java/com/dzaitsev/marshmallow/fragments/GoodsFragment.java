@@ -2,127 +2,98 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
-import com.dzaitsev.marshmallow.databinding.FragmentGoodsBinding;
+import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.util.Comparator;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class GoodsFragment extends Fragment implements IdentityFragment {
+import retrofit2.Call;
+
+public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, GoodRecyclerViewAdapter> {
 
     public static final String IDENTITY = "goodsFragment";
 
-    private FragmentGoodsBinding binding;
-    private GoodRecyclerViewAdapter mAdapter;
-
-    @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        binding = FragmentGoodsBinding.inflate(inflater, container, false);
-        return binding.getRoot();
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setAdapter(new GoodRecyclerViewAdapter());
         requireActivity().setTitle("Зефирки и прочее");
-        binding.newGood.setOnClickListener(view1 -> {
+        Order order = Optional.ofNullable(getArguments())
+                .map(m -> m.getSerializable("order", Order.class)).orElse(null);
+        setOnCreateListener(() -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", new Good());
             Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
         });
-        mAdapter = new GoodRecyclerViewAdapter();
-        new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().getGoods(),
-                response -> Optional.ofNullable(response.body())
-                        .ifPresent(goodsResponse -> {
-                            mAdapter.setItems(Optional.of(goodsResponse)
-                                    .orElse(new GoodsResponse()).getGoods().stream()
-                                    .sorted(Comparator.comparing(Good::getName)).collect(Collectors.toList()));
-                            if (!StringUtils.isEmpty(binding.searchGood.getQuery().toString())) {
-                                mAdapter.filter(binding.searchGood.getQuery().toString());
-                            }
-                        })).invoke();
-        binding.goodsList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-
-        mAdapter.setEditItemListener(good -> {
+        setEditItemListener(good -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", good);
             Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
         });
-        mAdapter.setFilterPredicate(s -> good -> good.getName().toLowerCase().contains(s.toLowerCase()));
-        binding.goodsList.setAdapter(mAdapter);
-        Optional.ofNullable(getArguments())
-                .ifPresent(bundle -> {
-                    Integer orderline = bundle.getSerializable("orderline", Integer.class);
-                    Order order = bundle.getSerializable("order", Order.class);
-                    if (orderline != null && order != null) {
-                        binding.newGood.setVisibility(View.GONE);
-                        mAdapter.setSelectItemListener(item -> {
-                            Bundle newBundle = new Bundle();
-                            order.getOrderLines().stream()
-                                    .filter(f -> f.getGood() != null)
-                                    .filter(f -> f.getGood().getId().equals(item.getId()))
-                                    .findAny().ifPresentOrElse(orderLine -> {
-                                        orderLine.setCount(orderLine.getCount() + 1);
-                                        if (order.getOrderLines().size()>1) {
-                                        order.getOrderLines().removeIf(f -> f.getNum().equals(orderline));
+        if (order != null) {
+            Integer orderline = Optional.ofNullable(getArguments())
+                    .map(m -> m.getSerializable("orderline", Integer.class)).orElse(null);
+            setSelectListener(Optional.of(order)
+                    .map(m -> (SelectItemListener<Good>) item -> {
+                        Bundle bundle = new Bundle();
+                        order.getOrderLines().stream()
+                                .filter(f -> f.getNum().equals(orderline))
+                                .findAny().ifPresent(orderLine -> {
+                                    if (orderLine.getGood() == null) {
+                                        order.getOrderLines().stream()
+                                                .filter(f -> f.getGood() != null)
+                                                .filter(f -> f.getGood().getId().equals(item.getId()))
+                                                .findAny()
+                                                .ifPresentOrElse(orderLine12 -> {
+                                                    orderLine12.setDone(false);
+                                                    orderLine12.setCount(orderLine12.getCount() + 1);
+                                                    order.getOrderLines().remove(orderLine);
+                                                }, () -> {
+                                                    orderLine.setGood(item);
+                                                    orderLine.setPrice(item.getPrice());
+                                                    orderLine.setCount(1);
+                                                });
+                                    } else {
+                                        orderLine.setDone(false);
+                                        if (orderLine.getGood().getId().equals(item.getId())) {
+                                            orderLine.setCount(orderLine.getCount() + 1);
+                                        } else {
+                                            order.getOrderLines().stream()
+                                                    .filter(f -> f.getGood().getId().equals(item.getId()))
+                                                    .findAny()
+                                                    .ifPresent(orderLine1 -> {
+                                                        orderLine1.setCount(orderLine1.getCount() + 1);
+                                                        order.getOrderLines().remove(orderLine);
+                                                    });
+
+                                            orderLine.setGood(item);
+                                            orderLine.setPrice(item.getPrice());
                                         }
-                                    }, () -> order.getOrderLines().stream()
-                                            .filter(f -> f.getNum().equals(orderline))
-                                            .findAny()
-                                            .ifPresent(orderLine -> {
-                                                orderLine.setGood(item);
-                                                orderLine.setPrice(item.getPrice());
-                                                orderLine.setCount(1);
-                                                newBundle.putSerializable("order", order);
-                                            }));
-                            newBundle.putSerializable("order", order);
-                            Navigation.getNavigation(requireActivity()).back();
-                        });
-                    }
-                });
-        binding.searchGood.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                mAdapter.filter(newText);
-                return false;
-            }
-        });
-
+                                    }
+                                    order.getOrderLines().removeIf(f -> f.getGood() == null);
+                                });
+                        bundle.putSerializable("order", order);
+                        Navigation.getNavigation(requireActivity()).back(bundle);
+                    })
+                    .orElse(null));
+        }
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mAdapter = null;
-        binding = null;
+    protected Call<GoodsResponse> getCall(Boolean bool) {
+        return NetworkService.getInstance().getGoodsApi().getGoods(bool);
     }
+
     @Override
     public String getUniqueName() {
         return IDENTITY;

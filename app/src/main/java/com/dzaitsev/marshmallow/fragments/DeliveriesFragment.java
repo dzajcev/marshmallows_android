@@ -1,9 +1,7 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.app.AlertDialog;
-import android.content.res.ColorStateList;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,19 +10,23 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.Navigation;
-import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.DeliveryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveriesBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,21 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
 
     private DeliveryRecyclerViewAdapter mAdapter;
 
+    private DeliveryFilter filter;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        SharedPreferences preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
+        String string = preferences.getString("delivery-filter", "{}");
+        if (string.isEmpty()) {
+            string = "{}";
+        }
+        Gson gson = GsonExt.getGson();
+        Type type = new TypeToken<DeliveryFilter>() {
+        }.getType();
+        filter = gson.fromJson(string, type);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
@@ -48,21 +65,14 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
 
     private void fillItems() {
         new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().getDeliveries(),
-                response -> Optional.ofNullable(response.body())
-                        .ifPresent(deliveryReposponse -> {
-                            mAdapter.setItems(Optional.of(deliveryReposponse)
-                                    .orElse(new DeliveryResponse()).getDeliveries().stream()
-                                    .sorted((o1, o2) -> {
-                                        int i = o1.getDeliveryDate().compareTo(o2.getDeliveryDate());
-                                        if (i == 0) {
-                                            return o1.getStart().compareTo(o2.getStart());
-                                        } else {
-                                            return i;
-                                        }
-                                    }).collect(Collectors.toList()));
-
-                        })).invoke();
+                NetworkService.getInstance().getDeliveryApi().getDeliveries(filter.getStart(), filter.getEnd(), filter.getStatuses()))
+                .invoke(response -> Optional.ofNullable(response.body())
+                        .ifPresent(deliveryReposponse -> mAdapter.setItems(Optional.of(deliveryReposponse)
+                                .orElse(new DeliveryResponse()).getDeliveries().stream()
+                                .sorted(Comparator.comparing(Delivery::getStatus)
+                                        .thenComparing(Delivery::getDeliveryDate)
+                                        .thenComparing(Delivery::getStart))
+                                .collect(Collectors.toList()))));
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -82,34 +92,10 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
             bundle.putSerializable("delivery", item);
             Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
         });
-        mAdapter.setDeleteItemListener(item -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> {
-                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                        NetworkService.getInstance().getMarshmallowApi().deleteDelivery(item.getId()), response -> {
-                }, true);
-                callback.invoke();
-                binding.deliveriesList.setAdapter(mAdapter);
-                fillItems();
-            });
-            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-            builder.create().show();
-        });
         binding.deliveriesList.setAdapter(mAdapter);
-        view.post(() -> {
-            ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
-            binding.deliveryCreate.setBackgroundTintList(colorStateList);
-        });
+        binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new DeliveryFilterFragment()));
     }
-    private int getBackgroundColor(View view) {
-        Drawable background = view.getBackground();
-        if (background instanceof ColorDrawable colorDrawable) {
-            return colorDrawable.getColor();
-        } else {
-            return ContextCompat.getColor(requireContext(), R.color.white);
-        }
-    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

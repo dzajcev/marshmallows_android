@@ -8,21 +8,10 @@
     android:layout_marginBottom="1sp"
     android:orientation="vertical">
 
-
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/orderItemDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:minWidth="40dp"
-                android:minHeight="40dp"
-                android:src="@drawable/delete_32" />
 
             <TextView
                 android:id="@+id/orderItemId"
@@ -46,15 +35,6 @@
                 android:minHeight="30sp"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <ImageButton
-                android:id="@+id/orderItemEdit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:minWidth="40dp"
-                android:minHeight="40dp"
-                android:src="@drawable/edit_32" />
 
         </LinearLayout>
 

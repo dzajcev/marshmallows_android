@@ -42,6 +42,10 @@ public class Order implements Serializable, Cloneable {
 
     private LocalDateTime completeDate;
 
+    private OrderStatus orderStatus;
+
+    private boolean clientNotificated;
+
     public Integer getId() {
         return id;
     }
@@ -146,6 +150,22 @@ public class Order implements Serializable, Cloneable {
         this.paySum = paySum;
     }
 
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
+
+    public boolean isClientNotificated() {
+        return clientNotificated;
+    }
+
+    public void setClientNotificated(boolean clientNotificated) {
+        this.clientNotificated = clientNotificated;
+    }
+
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -170,15 +190,5 @@ public class Order implements Serializable, Cloneable {
     public Order clone() {
         Gson gson = GsonExt.getGson();
         return gson.fromJson(gson.toJson(this), Order.class);
-    }
-
-    public OrderStatus getStatus() {
-        if (isShipped()) {
-            return OrderStatus.SHIPPED;
-        }
-        if (getOrderLines().stream().allMatch(OrderLine::isDone)) {
-            return OrderStatus.DONE;
-        }
-        return OrderStatus.IN_PROGRESS;
     }
 }

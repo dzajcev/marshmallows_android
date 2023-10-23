@@ -5,6 +5,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.adapters.listeners.EditItemListener;
+import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -19,6 +21,26 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
     private List<T> showItems = new ArrayList<>();
     private Function<String, Predicate<T>> filterPredicate;
 
+    private EditItemListener<T> editItemListener;
+    private SelectItemListener<T> selectItemListener;
+
+
+    public void setEditItemListener(EditItemListener<T> editItemListener) {
+        this.editItemListener = editItemListener;
+    }
+
+    public void setSelectItemListener(SelectItemListener<T> selectItemListener) {
+        this.selectItemListener = selectItemListener;
+    }
+
+    public EditItemListener<T> getEditItemListener() {
+        return editItemListener;
+    }
+
+    public SelectItemListener<T> getSelectItemListener() {
+        return selectItemListener;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull A holder, int position) {
         int color;
@@ -27,10 +49,11 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
         } else {
             color = ContextCompat.getColor(holder.getView().getContext(), R.color.row_2);
         }
-
         holder.originalColor = color;
         holder.getView().setBackgroundColor(color);
         holder.bind(showItems.get(position));
+        holder.setSelectItemListener(selectItemListener);
+        holder.setEditItemListener(editItemListener);
     }
 
     public void filter(String namePart) {

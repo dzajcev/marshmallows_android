@@ -3,64 +3,29 @@ package com.dzaitsev.marshmallow.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Client;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Client, AbstractRecyclerViewHolder<Client>> {
 
-public class ClientRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Client, ClientRecyclerViewAdapter.RecycleViewHolder> {
-    private EditItemListener editItemListener;
-    private SelectItemListener selectItemListener;
-
-    public interface EditItemListener {
-        void edit(Client item);
+    @Override
+    public void onBindViewHolder(@NonNull AbstractRecyclerViewHolder<Client> holder, int position) {
+        super.onBindViewHolder(holder, position);
+        if (!getShowItems().get(position).isActive()) {
+            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.grey));
+        }
     }
-
-    public interface SelectItemListener {
-        void selectItem(Client item);
-    }
-
-
-    public void setEditItemListener(ClientRecyclerViewAdapter.EditItemListener editItemListener) {
-        this.editItemListener = editItemListener;
-    }
-
-    public void setSelectItemListener(ClientRecyclerViewAdapter.SelectItemListener selectItemListener) {
-        this.selectItemListener = selectItemListener;
-    }
-
-    public class RecycleViewHolder extends AbstractRecyclerViewHolder<Client> {
+    private static class RecycleViewHolder extends AbstractRecyclerViewHolder<Client> {
         private final TextView name;
-
-        private ImageButton edit;
 
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
-            name = itemView.findViewById(R.id.orderItemClientName);
-            ViewGroup layout = itemView.findViewById(R.id.clientItemLayout);
-            edit = itemView.findViewById(R.id.clientItemEdit);
-
-            if (selectItemListener != null) {
-                edit.setVisibility(View.GONE);
-                layout.setOnClickListener(view -> selectItemListener.selectItem(getItem()));
-            } else {
-                edit.setOnClickListener(v -> {
-                    if (editItemListener != null) {
-                        editItemListener.edit(getItem());
-                    }
-                });
-            }
-        }
-
-        protected List<View> getViewsForChangeColor() {
-            return Stream.of(getView(), edit).collect(Collectors.toList());
+            name = itemView.findViewById(R.id.clientName);
         }
 
         @Override

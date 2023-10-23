@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.LinkChannelPicker;
+import com.dzaitsev.marshmallow.components.OrderSimpleDialog;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
@@ -21,37 +22,18 @@ import com.dzaitsev.marshmallow.service.SendWhatsappService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order, DeliveryOrderRecyclerViewAdapter.RecycleViewHolder> {
-    private EditItemListener editItemListener;
-    private SelectItemListener selectItemListener;
     private DeleteItemListener deleteItemListener;
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    public interface EditItemListener {
-        void edit(Order item);
-    }
-
-    public interface SelectItemListener {
-        void selectItem(Order item);
-    }
 
     public interface DeleteItemListener {
         void deleteItem(Order item);
     }
 
-    public void setEditItemListener(EditItemListener editItemListener) {
-        this.editItemListener = editItemListener;
-    }
-
-    public void setSelectItemListener(SelectItemListener selectItemListener) {
-        this.selectItemListener = selectItemListener;
-    }
 
     public void setDeleteItemListener(DeleteItemListener deleteItemListener) {
         this.deleteItemListener = deleteItemListener;
@@ -91,6 +73,11 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
             deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
             deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
+            deliveryOrderListGoods.setOnClickListener(v -> OrderSimpleDialog.builder(getView().getContext())
+                    .setTitle("Содержимое заказа")
+                    .setItems(getItem().getOrderLines())
+                    .build()
+                    .show());
             deliveryOrderConnect.setOnClickListener(v -> LinkChannelPicker.builder(v.getContext())
                     .setTitle("Выберите канал связи")
                     .setAction((alertDialog, linkChannel) -> {
@@ -110,11 +97,6 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                 getItem().setShipped(!getItem().isShipped());
                 setShipped(getItem().isShipped());
             });
-        }
-
-        protected List<View> getViewsForChangeColor() {
-            return Stream.of(getView(), deliveryOrderConnect, deliveryOrderListGoods, deliveryOrderItemDelete, deliveryOrderShipped)
-                    .collect(Collectors.toList());
         }
 
         @Override
@@ -152,7 +134,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
 
     public void setShipped(boolean shipped, Order order) {
         order.setShipped(shipped);
-        notifyItemChanged(getShowItems().indexOf(order));
+        notifyDataSetChanged();
     }
 
     private Double calcTotalSum(Order order) {

@@ -7,6 +7,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -24,12 +27,16 @@ import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.response.ClientResponse;
 import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
 import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
+
+import retrofit2.Response;
 
 public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "deliveryCardFragment";
@@ -66,13 +73,39 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         return !delivery.equals(incomingDelivery);
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+        MenuItem deleteOrder = menu.add("Удалить");
+        deleteOrder.setOnMenuItemClickListener(item -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Вы уверены?");
+            builder.setPositiveButton("Да", (dialog, id) -> {
+                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+                        NetworkService.getInstance().getDeliveryApi().deleteDelivery(delivery.getId()));
+                if (callback.invokeSync().isSuccessful()) {
+                    Navigation.getNavigation(requireActivity()).back();
+                }
+            });
+            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+            builder.create().show();
+            return false;
+        });
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        delivery = requireArguments().getSerializable("delivery", Delivery.class);
+        delivery = Objects.requireNonNull(requireArguments().getSerializable("delivery", Delivery.class));
+        setHasOptionsMenu(delivery.getId() != null);
         incomingDelivery = delivery.clone();
         binding = FragmentDeliveryCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -84,19 +117,18 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         requireActivity().setTitle("Карточка доставки");
         binding.deliveryCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
         if (delivery.getId() != null) {
-            NetworkExecutor<DeliveryResponse> orderResponseNetworkExecutor = new NetworkExecutor<>(requireActivity(),
-                    NetworkService.getInstance().getMarshmallowApi().getDelivery(delivery.getId()),
-                    response -> Optional.ofNullable(response.body())
-                            .ifPresent(deliveryResponse -> {
-                                if (deliveryResponse.getDeliveries() != null && !deliveryResponse.getDeliveries().isEmpty()) {
-                                    incomingDelivery = deliveryResponse.getDeliveries().iterator().next();
-                                }
-
-                            }), true);
-            orderResponseNetworkExecutor.invoke();
-            if (!orderResponseNetworkExecutor.isSuccess()) {
+            Response<DeliveryResponse> deliveryResponse = new NetworkExecutor<>(requireActivity(),
+                    NetworkService.getInstance().getDeliveryApi().getDelivery(delivery.getId())).invokeSync();
+            if (!deliveryResponse.isSuccessful()) {
                 Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
                 return;
+            } else {
+                incomingDelivery = Optional.ofNullable(deliveryResponse.body())
+                        .map(DeliveryResponse::getDeliveries)
+                        .filter(Objects::nonNull)
+                        .filter(f -> !f.isEmpty())
+                        .map(m -> m.iterator().next())
+                        .orElse(null);
             }
         } else {
             incomingDelivery = new Delivery();
@@ -139,27 +171,27 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         });
         Optional.ofNullable(delivery)
                 .ifPresent(d -> {
-                    binding.deliveryCardStart.setText(timeFormatter.format(d.getStart()));
-                    binding.deliveryCardEnd.setText(timeFormatter.format(d.getEnd()));
-                    binding.deliveryCardDateDelivery.setText(dateTimeFormatter.format(d.getDeliveryDate()));
+                    binding.deliveryCardStart.setText(Optional.ofNullable(d.getStart()).map(timeFormatter::format).orElse(""));
+                    binding.deliveryCardEnd.setText(Optional.ofNullable(d.getEnd()).map(timeFormatter::format).orElse(""));
+                    binding.deliveryCardDateDelivery.setText(Optional.ofNullable(d.getDeliveryDate()).map(dateTimeFormatter::format).orElse(""));
                     mAdapter.setItems(d.getOrders());
-                    binding.deliveryCardStart.requestLayout();
-                    binding.deliveryCardEnd.requestLayout();
                 });
         binding.deliveryCardSave.setOnClickListener(v -> {
-            save();
-            Navigation.getNavigation(requireActivity()).back();
+            if (save()) {
+                Navigation.getNavigation(requireActivity()).back();
+            }
         });
         mAdapter.setDeleteItemListener(item -> {
             delivery.getOrders().remove(item);
             binding.deliveryCardOrders.setAdapter(mAdapter);
             mAdapter.setItems(delivery.getOrders());
         });
-        view.post(() -> {
-            ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
-            binding.deliveryCardFinishDelivery.setBackgroundTintList(colorStateList);
-        });
+        ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
+        binding.deliveryCardFinishDelivery.setBackgroundTintList(colorStateList);
         binding.deliveryCardFinishDelivery.setOnClickListener(v -> {
+            if (delivery.getOrders().isEmpty()) {
+                return;
+            }
             boolean toShip = delivery.getOrders().stream().anyMatch(a -> !a.isShipped());
             AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryCardFragment.this.getActivity());
             builder.setTitle("Вы уверены, что хотите отметить все заказы " +
@@ -204,12 +236,16 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         if (fail) {
             return false;
         }
-        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().saveDelivery(delivery), response -> {
-        }, true);
-        callback.invoke();
+        if (delivery.getStart().isAfter(delivery.getEnd())) {
+            binding.deliveryCardEnd.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            binding.deliveryCardStart.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            Toast.makeText(requireContext(), "Время начала позже времени окончания", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        Response<Void> callback = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getDeliveryApi().saveDelivery(delivery)).invokeSync();
         incomingDelivery = delivery;
-        return callback.isSuccess();
+        return callback.isSuccessful();
     }
 
     @Override

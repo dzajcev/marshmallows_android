@@ -13,7 +13,6 @@ import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +67,7 @@ public class OrderSelectorRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             orderSelectorToPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(item)));
             orderSelectorDeliveryDate.setText(dateTimeFormatter.format(getItem().getDeadline()));
             CheckBox orderSelectorSelect = itemView.findViewById(R.id.orderSelectorSelect);
+            getView().setOnClickListener(v -> orderSelectorSelect.setChecked(!orderSelectorSelect.isChecked()));
             orderSelectorSelect.setOnCheckedChangeListener((buttonView, isChecked)
                     -> OrderSelectorRecyclerViewAdapter.this.selected.put(getItem().getId(), isChecked));
             orderSelectorSelect.setChecked(Boolean.TRUE.equals(selected.getOrDefault(getItem().getId(), false)));

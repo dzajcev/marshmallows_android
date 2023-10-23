@@ -5,16 +5,13 @@ import androidx.annotation.NonNull;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Client implements Serializable, Cloneable {
+public class Client extends NsiItem implements Cloneable {
     private Integer id;
-
-    private String name;
 
     private LocalDateTime createDate;
 
@@ -24,7 +21,8 @@ public class Client implements Serializable, Cloneable {
 
     private String comment;
 
-    private List<LinkChannel> linkChannels=new ArrayList<>();
+
+    private List<LinkChannel> linkChannels = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -32,14 +30,6 @@ public class Client implements Serializable, Cloneable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public LocalDateTime getCreateDate() {
@@ -81,16 +71,15 @@ public class Client implements Serializable, Cloneable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Client client = (Client) o;
-        return name.equals(client.name) && Objects.equals(defaultDeliveryAddress,
-                client.defaultDeliveryAddress) && phone.equals(client.phone) && linkChannels.equals(client.linkChannels)
-                && Objects.equals(comment, client.comment);
+        if (!(o instanceof Client client)) return false;
+        return getName().equals(client.getName())
+                && Objects.equals(defaultDeliveryAddress, client.defaultDeliveryAddress)
+                && Objects.equals(phone, client.phone) && Objects.equals(comment, client.comment) && Objects.equals(linkChannels, client.linkChannels);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, defaultDeliveryAddress, phone, linkChannels, comment);
+        return Objects.hash(getName(), defaultDeliveryAddress, phone, comment, linkChannels);
     }
 
     @NonNull

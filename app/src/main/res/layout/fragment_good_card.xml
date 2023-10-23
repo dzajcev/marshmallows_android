@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/goodCardFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginStart="5sp"
@@ -15,6 +13,9 @@
         android:id="@+id/goodCardName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginBottom="5sp"
         android:background="@color/field_background"
         android:ems="10"
@@ -26,20 +27,17 @@
         android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
         android:textSize="14sp" />
 
     <TextView
         android:id="@+id/goodCardPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5sp"
-        android:background="@color/field_background"
+        android:layout_below="@id/goodCardName"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/goodCardName"
+        android:layout_marginBottom="5sp"
+        android:background="@color/field_background"
         android:gravity="top|start"
         android:hint="Цена зефирки"
         android:minHeight="40sp"
@@ -50,6 +48,9 @@
         android:id="@+id/goodCardDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/goodCardPrice"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:background="@color/field_background"
         android:ems="10"
         android:gravity="top|start"
@@ -60,29 +61,26 @@
         android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/goodCardPrice"
         android:textSize="14sp" />
 
     <TextView
         android:id="@+id/tx1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/goodCardDescription"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/goodCardDescription"
         android:text="История цен"
         android:textSize="16sp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goodCardPriceHistoryList"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@id/tx1"
-        android:layout_above="@id/goodCardSave"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_above="@id/goodCardSave"
+        android:layout_below="@id/tx1"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:id="@+id/goodCardCancel"
@@ -91,7 +89,6 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="Отмена" />
-
 
     <Button
         android:id="@+id/goodCardSave"

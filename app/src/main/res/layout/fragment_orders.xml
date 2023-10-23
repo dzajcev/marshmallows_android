@@ -4,6 +4,7 @@
     android:id="@+id/ordersFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="5sp"
     android:orientation="vertical"
     tools:context=".fragments.OrdersFragment">
 
@@ -24,4 +25,12 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true" />
+
+    <Button
+        android:id="@+id/orderListFilter"
+        android:layout_width="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_height="wrap_content"
+        android:text="Фильтр" />
 </RelativeLayout>

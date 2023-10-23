@@ -20,15 +20,11 @@ import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.RecyclerViewHolder> {
-    private View view;
     private RemoveListener removeListener;
 
     private SelectGoodListener selectGoodListener;
@@ -132,11 +128,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                                 public void accept(DialogInterface dialogInterface, NumberPicker numberPicker) {
                                     if (getItem().getGood() != null) {
                                         int s = Integer.parseInt(count.getText().toString());
-                                        if (s < numberPicker.getMinValue()) {
-                                            numberPicker.setValue(numberPicker.getMinValue());
-                                        } else {
-                                            numberPicker.setValue(s);
-                                        }
+                                        numberPicker.setValue(Math.max(s, numberPicker.getMinValue()));
                                     }
                                 }
                             })
@@ -182,10 +174,6 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                 delete.setVisibility(View.GONE);
             }
         }
-
-        protected List<View> getViewsForChangeColor() {
-            return Stream.of(getView(), delete, done).collect(Collectors.toList());
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -193,7 +181,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     @Override
     public RecyclerViewHolder onCreateViewHolder(ViewGroup parent,
                                                  int viewType) {
-        view = LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.order_line_list_item, parent, false);
         return new RecyclerViewHolder(view);
     }
@@ -204,7 +192,6 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
         if (getShowItems().get(position).isDone()) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
-
     }
 
 }

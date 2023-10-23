@@ -8,6 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -41,7 +44,10 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
+
+import retrofit2.Response;
 
 public class OrderCardFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardFragment";
@@ -89,6 +95,27 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+        MenuItem deleteOrder = menu.add("Удалить");
+        deleteOrder.setOnMenuItemClickListener(item -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Вы уверены?");
+            builder.setPositiveButton("Да", (dialog, id) -> {
+                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
+                        NetworkService.getInstance().getOrdersApi().deleteOrder(order.getId()));
+                if (callback.invokeSync().isSuccessful()) {
+                    Navigation.getNavigation(requireActivity()).back();
+                }
+
+            });
+            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+            builder.create().show();
+            return false;
+        });
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
@@ -96,20 +123,20 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        setHasOptionsMenu(order.getId() != null);
         binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        NetworkExecutor<OrderResponse> orderResponseNetworkExecutor = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().getOrder(order.getId()),
-                response -> Optional.ofNullable(response.body())
-                        .ifPresent(orderResponse -> {
-                            if (orderResponse.getOrders() != null && !orderResponse.getOrders().isEmpty()) {
-                                incomingOrder = orderResponse.getOrders().iterator().next();
-                            }
-
-                        }), true);
-        orderResponseNetworkExecutor.invoke();
-        if (!orderResponseNetworkExecutor.isSuccess()) {
+        Response<OrderResponse> orderResponse = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().getOrder(order.getId())).invokeSync();
+        if (!orderResponse.isSuccessful()) {
             Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
             return;
+        } else {
+            incomingOrder = Optional.ofNullable(orderResponse.body())
+                    .map(OrderResponse::getOrders)
+                    .filter(Objects::nonNull)
+                    .filter(f -> !f.isEmpty())
+                    .map(m -> m.iterator().next())
+                    .orElse(null);
         }
         Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
         requireActivity().setTitle("Заказ");
@@ -171,8 +198,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
 
             binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                     .setTitle("Укажите сумму")
-                    .setMinValue(1)
-                    .setMaxValue(100000)
+                    .setMinValue(0)
                     .positiveButton(value -> {
                         binding.prePayment.setText(String.format("%s", MoneyUtils.getInstance()
                                 .moneyWithCurrencyToString(value)));
@@ -215,7 +241,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         if (calcToPay() == 0) {
             binding.orderCardPaid.setVisibility(View.GONE);
         }
-        if (order.getStatus() != OrderStatus.DONE) {
+        if (order.getOrderStatus() != OrderStatus.DONE) {
             binding.orderCardPaid.setVisibility(View.GONE);
         }
         binding.orderCardPaid.setOnClickListener(v -> MoneyPicker.builder(requireContext())
@@ -230,16 +256,20 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
 
         binding.orderCardSave.setOnClickListener(v -> {
             if (save()) {
-                if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getStatus() != OrderStatus.SHIPPED) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Заказ полностью выполнен");
-                    builder.setMessage("Оповестить клиента?");
-                    builder.setPositiveButton("Да", (dialog, id) -> {
-                        sendNotification(order);
-                        dialog.dismiss();
-                    });
-                    builder.setNegativeButton("Нет", (dialog, id) -> dialog.dismiss());
-                    builder.create().show();
+                if (order.getOrderLines().stream().allMatch(OrderLine::isDone)) {
+                    Response<Boolean> booleanResponse = new NetworkExecutor<>(requireActivity(),
+                            NetworkService.getInstance().getOrdersApi().clientIsNotificated(order.getId())).invokeSync();
+                    if (Boolean.FALSE.equals(booleanResponse.body())) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+                        builder.setTitle("Заказ полностью выполнен");
+                        builder.setMessage("Оповестить клиента?");
+                        builder.setPositiveButton("Да", (dialog, id) -> {
+                            sendNotification(order);
+                            dialog.dismiss();
+                        });
+                        builder.setNegativeButton("Нет", (dialog, id) -> dialog.dismiss());
+                        builder.create().show();
+                    }
                 }
                 Navigation.getNavigation(requireActivity()).back();
             }
@@ -260,7 +290,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             return ContextCompat.getColor(requireContext(), R.color.white);
         }
     }
+
     private void sendNotification(Order order) {
+        new NetworkExecutor<>(NetworkService.getInstance().getOrdersApi().setClientIsNotificated(order.getId()))
+                .invokeSync();
 //todo:
     }
 
@@ -292,7 +325,8 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             binding.clientName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
-        if (StringUtils.isEmpty(order.getPhone())) {
+        if (StringUtils.isEmpty(order.getPhone())
+                || order.getPhone().length() != 10) {
             binding.phoneNumber.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
@@ -308,12 +342,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         if (fail) {
             return false;
         }
-        NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getMarshmallowApi().saveOrder(order), response -> {
-        }, true);
-        callback.invoke();
+        Response<Void> voidResponse = new NetworkExecutor<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().saveOrder(order)).invokeSync();
         incomingOrder = order;
-        return callback.isSuccess();
+        return voidResponse.isSuccessful();
     }
 
     private void fillOrder() {
