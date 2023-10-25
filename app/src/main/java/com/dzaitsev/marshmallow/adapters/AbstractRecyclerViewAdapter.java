@@ -33,14 +33,6 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
         this.selectItemListener = selectItemListener;
     }
 
-    public EditItemListener<T> getEditItemListener() {
-        return editItemListener;
-    }
-
-    public SelectItemListener<T> getSelectItemListener() {
-        return selectItemListener;
-    }
-
     @Override
     public void onBindViewHolder(@NonNull A holder, int position) {
         int color;
@@ -81,6 +73,7 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
         originalItems = items;
         showItems = new ArrayList<>(originalItems);
         notifyDataSetChanged();
+
     }
 
     public List<T> getShowItems() {

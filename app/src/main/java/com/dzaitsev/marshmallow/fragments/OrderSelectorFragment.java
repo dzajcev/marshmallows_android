@@ -1,14 +1,12 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -18,7 +16,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentOrderSelectorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
 import java.util.Comparator;
@@ -74,14 +72,13 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
         Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Выбор заказов");
         Delivery delivery = Optional.ofNullable(getArguments())
                 .map(m -> m.getSerializable("delivery", Delivery.class)).orElse(new Delivery());
         mAdapter = new OrderSelectorRecyclerViewAdapter();
-        new NetworkExecutor<>(requireActivity(),
+        new NetworkExecutorWrapper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().getOrdersForDelivery()).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
                         .orElse(new OrderResponse()).getOrders().stream()

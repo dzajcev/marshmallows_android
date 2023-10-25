@@ -5,7 +5,6 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
@@ -22,8 +21,8 @@ import java.util.stream.Stream;
 
 public class Navigation {
 
-    private final FragmentManager fragmentManager;
-    private final FragmentActivity fragmentActivity;
+    //    private final FragmentManager fragmentManager;
+    private FragmentActivity fragmentActivity;
 
     private final LinkedList<Fragment> backStack = new LinkedList<>();
     private final Map<String, Bundle> incomingBundles = new HashMap<>();
@@ -32,11 +31,13 @@ public class Navigation {
 
     private static Navigation navigation;
 
+    private FragmentManager fragmentManager() {
+        return fragmentActivity.getSupportFragmentManager();
+    }
 
     public Navigation(FragmentActivity activity) {
-        this.fragmentManager = activity.getSupportFragmentManager();
         this.fragmentActivity = activity;
-        fragmentManager.addFragmentOnAttachListener((fragmentManager, fragment) -> {
+        fragmentManager().addFragmentOnAttachListener((fragmentManager, fragment) -> {
             if (fragment instanceof IdentityFragment identityFragment) {
                 if ((getRootFragments().stream()
                         .anyMatch(a -> a.equals(identityFragment.getUniqueName())))
@@ -53,6 +54,7 @@ public class Navigation {
         if (navigation == null) {
             navigation = new Navigation(activity);
         }
+        navigation.fragmentActivity = activity;
         return navigation;
     }
 
@@ -70,10 +72,12 @@ public class Navigation {
         if (fragment instanceof IdentityFragment identityFragment) {
             incomingBundles.put(identityFragment.getUniqueName(), bundle);
         }
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragment.setArguments(bundle);
-        fragmentTransaction.replace(R.id.frame, fragment);
-        fragmentTransaction.commit();
+        if (!fragmentManager().isDestroyed()) {
+            fragmentManager().beginTransaction()
+                    .replace(R.id.frame, fragment)
+                    .commit();
+        }
     }
 
     public void back() {

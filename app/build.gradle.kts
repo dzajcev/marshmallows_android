@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dzaitsev.marshmallow"
-        minSdk = 30
+        minSdk = 33
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -34,6 +34,8 @@ android {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    implementation("commons-codec:commons-codec:1.16.0")
     implementation("com.github.arefbhrn:maskededittext:1.0.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.8.0")

@@ -1,6 +1,5 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +8,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -20,7 +18,7 @@ import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
@@ -29,8 +27,6 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import retrofit2.Response;
-
 public class OrderClientFragment extends Fragment implements IdentityFragment {
 
     public static final String IDENTITY = "orderClientFragment";
@@ -38,7 +34,6 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
 
     private Order order;
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -49,7 +44,6 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         return binding.getRoot();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Bundle bundle = new Bundle();
@@ -58,11 +52,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
             bundle.putSerializable("order", order);
             Navigation.getNavigation(requireActivity()).back();
         });
-        binding.ordersClientSave.setOnClickListener(view1 -> {
-            if (save()) {
-                Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment(), bundle);
-            }
-        });
+        binding.ordersClientSave.setOnClickListener(view1 -> save());
         binding.clientName.setOnClickListener(v -> {
             bundle.putSerializable("order", order);
             Navigation.getNavigation(requireActivity()).goForward(new ClientsFragment(), bundle);
@@ -95,7 +85,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         EditTextUtil.setText(binding.phoneNumber, Optional.ofNullable(order.getClient()).map(Client::getPhone).orElse(""));
         binding.clientName.setText(Optional.ofNullable(order.getClient()).map(Client::getName).orElse(""));
 
-        EditTextUtil.setText(binding.comment,Optional.ofNullable(order.getComment()).orElse(""));
+        EditTextUtil.setText(binding.comment, Optional.ofNullable(order.getComment()).orElse(""));
         binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(order.getPrePaymentSum()));
         binding.orderClientsNeedDelivery.setChecked(order.isNeedDelivery());
         Optional.ofNullable(order.getDeadline())
@@ -120,7 +110,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         binding = null;
     }
 
-    private boolean save() {
+    private void save() {
         fillOrder();
         boolean fail = false;
         if (order.getClient() == null) {
@@ -136,11 +126,11 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
             fail = true;
         }
         if (fail) {
-            return false;
+            return;
         }
-        Response<Void> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getOrdersApi().saveOrder(order)).invokeSync();
-        return callback.isSuccessful();
+        new NetworkExecutorWrapper<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().saveOrder(order))
+                .invoke(response -> Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment()));
     }
 
     @Override

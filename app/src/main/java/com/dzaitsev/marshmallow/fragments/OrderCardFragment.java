@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -16,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,9 +30,8 @@ import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
-import com.dzaitsev.marshmallow.dto.response.OrderResponse;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
@@ -46,8 +43,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
-
-import retrofit2.Response;
 
 public class OrderCardFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardFragment";
@@ -64,11 +59,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             if (OrderCardFragment.this.hasChanges()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(OrderCardFragment.this.getActivity());
                 builder.setTitle("Запись изменена. Сохранить?");
-                builder.setPositiveButton("Да", (dialog, id) -> {
-                    if (OrderCardFragment.this.save()) {
-                        Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
-                    }
-                });
+                builder.setPositiveButton("Да", (dialog, id) -> OrderCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
                 builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back());
                 builder.create().show();
@@ -84,10 +75,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         return !order.equals(incomingOrder);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
+        incomingOrder = Objects.requireNonNull(order).clone();
         requireActivity().setTitle("Информация о заказе");
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -100,14 +91,13 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         deleteOrder.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> {
-                NetworkExecutor<Void> callback = new NetworkExecutor<>(requireActivity(),
-                        NetworkService.getInstance().getOrdersApi().deleteOrder(order.getId()));
-                if (callback.invokeSync().isSuccessful()) {
-                    Navigation.getNavigation(requireActivity()).back();
-                }
-
-            });
+            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorWrapper<>(requireActivity(),
+                    NetworkService.getInstance().getOrdersApi().deleteOrder(order.getId()))
+                    .invoke(response -> {
+                        if (response.isSuccessful()) {
+                            Navigation.getNavigation(requireActivity()).back();
+                        }
+                    }));
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
             builder.create().show();
             return false;
@@ -120,24 +110,11 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         super.onCreate(savedInstanceState);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(order.getId() != null);
         binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        Response<OrderResponse> orderResponse = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getOrdersApi().getOrder(order.getId())).invokeSync();
-        if (!orderResponse.isSuccessful()) {
-            Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
-            return;
-        } else {
-            incomingOrder = Optional.ofNullable(orderResponse.body())
-                    .map(OrderResponse::getOrders)
-                    .filter(Objects::nonNull)
-                    .filter(f -> !f.isEmpty())
-                    .map(m -> m.iterator().next())
-                    .orElse(null);
-        }
+
         Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
         requireActivity().setTitle("Заказ");
         binding.clientName.setText(order.getClient().getName());
@@ -254,26 +231,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                     bindSums();
                 }).build().show());
 
-        binding.orderCardSave.setOnClickListener(v -> {
-            if (save()) {
-                if (order.getOrderLines().stream().allMatch(OrderLine::isDone)) {
-                    Response<Boolean> booleanResponse = new NetworkExecutor<>(requireActivity(),
-                            NetworkService.getInstance().getOrdersApi().clientIsNotificated(order.getId())).invokeSync();
-                    if (Boolean.FALSE.equals(booleanResponse.body())) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-                        builder.setTitle("Заказ полностью выполнен");
-                        builder.setMessage("Оповестить клиента?");
-                        builder.setPositiveButton("Да", (dialog, id) -> {
-                            sendNotification(order);
-                            dialog.dismiss();
-                        });
-                        builder.setNegativeButton("Нет", (dialog, id) -> dialog.dismiss());
-                        builder.create().show();
-                    }
-                }
-                Navigation.getNavigation(requireActivity()).back();
-            }
-        });
+        binding.orderCardSave.setOnClickListener(v -> save());
 
         orderLinesList.setAdapter(mAdapter);
         order.getOrderLines().sort(Comparator.comparing(OrderLine::getNum));
@@ -292,8 +250,8 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     }
 
     private void sendNotification(Order order) {
-        new NetworkExecutor<>(NetworkService.getInstance().getOrdersApi().setClientIsNotificated(order.getId()))
-                .invokeSync();
+//        new NetworkExecutorWrapper<>(NetworkService.getInstance().getOrdersApi().setClientIsNotificated(order.getId()))
+//                .invokeSync();
 //todo:
     }
 
@@ -318,7 +276,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                 + Optional.ofNullable(order.getPaySum()).orElse(0d));
     }
 
-    private boolean save() {
+    private void save() {
         boolean fail = false;
         fillOrder();
         if (order.getClient() == null) {
@@ -340,12 +298,36 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             fail = true;
         }
         if (fail) {
-            return false;
+            return;
         }
-        Response<Void> voidResponse = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getOrdersApi().saveOrder(order)).invokeSync();
-        incomingOrder = order;
-        return voidResponse.isSuccessful();
+        new NetworkExecutorWrapper<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().saveOrder(order)).invoke(response -> {
+            incomingOrder = order;
+            if (order.getOrderLines().stream().allMatch(OrderLine::isDone)) {
+                new NetworkExecutorWrapper<>(requireActivity(),
+                        NetworkService.getInstance().getOrdersApi().clientIsNotificated(order.getId())).invoke(booleanResponse -> {
+                    if (Boolean.FALSE.equals(booleanResponse.body())) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+                        builder.setTitle("Заказ полностью выполнен");
+                        builder.setMessage("Оповестить клиента?");
+                        builder.setPositiveButton("Да", (dialog, id) -> {
+                            sendNotification(order);
+                            Navigation.getNavigation(requireActivity()).back();
+                            dialog.dismiss();
+                        });
+                        builder.setNegativeButton("Нет", (dialog, id) -> {
+                            Navigation.getNavigation(requireActivity()).back();
+                            dialog.dismiss();
+                        });
+                        builder.create().show();
+                    }else{
+                        Navigation.getNavigation(requireActivity()).back();
+                    }
+                });
+            } else {
+                Navigation.getNavigation(requireActivity()).back();
+            }
+        });
     }
 
     private void fillOrder() {

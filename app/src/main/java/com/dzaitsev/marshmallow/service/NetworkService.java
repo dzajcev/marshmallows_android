@@ -1,16 +1,17 @@
 package com.dzaitsev.marshmallow.service;
 
 
+import com.dzaitsev.marshmallow.service.api.AuthorizationApi;
 import com.dzaitsev.marshmallow.service.api.ClientsApi;
 import com.dzaitsev.marshmallow.service.api.DeliveryApi;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.service.api.OrdersApi;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -18,7 +19,9 @@ public class NetworkService {
 
 
     private static NetworkService mInstance;
-    private Retrofit mRetrofit;
+    private final Retrofit mRetrofit;
+
+    private String token;
 
     public static NetworkService getInstance() {
         if (mInstance == null) {
@@ -27,8 +30,32 @@ public class NetworkService {
         return mInstance;
     }
 
+    public void refreshToken(String token) {
+        this.token = token;
+    }
+
     private NetworkService() {
-        setNetworkProfile();
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(chain -> {
+                    Request.Builder newRequestBuilder = chain.request().newBuilder();
+                    if (token != null) {
+                        newRequestBuilder.addHeader("Authorization", "Bearer " + token);
+                    }
+                    Request request = newRequestBuilder.addHeader("Content-Type", "application/json")
+                            .build();
+                    return chain.proceed(request);
+                })
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .build();
+
+        mRetrofit = new Retrofit.Builder()
+//                .baseUrl("http://5.59.136.54:8115/")
+                .baseUrl("http://192.168.1.45:8080")
+                .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
+                .client(okHttpClient)
+                .build();
     }
 
     public GoodsApi getGoodsApi() {
@@ -47,19 +74,7 @@ public class NetworkService {
         return mRetrofit.create(DeliveryApi.class);
     }
 
-    public void setNetworkProfile() {
-        OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .connectTimeout(1, TimeUnit.MINUTES)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .build();
-
-
-        mRetrofit = new Retrofit.Builder()
-                .baseUrl("http://5.59.136.54:8080/")
-                .callbackExecutor(Executors.newSingleThreadExecutor())
-                .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
-                .client(okHttpClient)
-                .build();
+    public AuthorizationApi getAuthorizationApi() {
+        return mRetrofit.create(AuthorizationApi.class);
     }
 }

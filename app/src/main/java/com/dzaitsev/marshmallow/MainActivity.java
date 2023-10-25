@@ -3,13 +3,12 @@ package com.dzaitsev.marshmallow;
 import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -19,11 +18,15 @@ import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
+import com.dzaitsev.marshmallow.dto.authorization.SignInRequest;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
+import com.dzaitsev.marshmallow.fragments.LoginFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.gson.Gson;
@@ -58,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         edit.putString("delivery-filter", GsonExt.getGson().toJson(deliveryFilter));
         edit.apply();
     }
+
     private void processOrderFilter() {
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         String string = preferences.getString("order-filter", "");
@@ -77,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
         edit.putString("order-filter", GsonExt.getGson().toJson(ordersFilter));
         edit.apply();
     }
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,7 +133,32 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.SEND_SMS));
         askForPermissions(permissionsList);
-        Navigation.getNavigation(this).goForward(new OrdersFragment(), new Bundle());
+        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
+        String string = preferences.getString("authorization-data", "");
+        Gson gson = GsonExt.getGson();
+        SignInRequest request = gson.fromJson(string, SignInRequest.class);
+        if (request != null) {
+            authorize(request);
+        } else {
+            Navigation.getNavigation(this).goForward(new LoginFragment(), new Bundle());
+        }
+    }
+
+    private void authorize(SignInRequest signInRequest) {
+        new NetworkExecutorWrapper<>(this, NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
+                .invoke(response -> {
+                    if (response.isSuccessful()) {
+                        NetworkService.getInstance().refreshToken(response.body().getToken());
+                        Navigation.getNavigation(MainActivity.this).goForward(new OrdersFragment());
+                    } else {
+                        if (response.code() == 403) {
+                            MainActivity.this.runOnUiThread(() -> Toast.makeText(MainActivity.this, "Неверный логин или пароль", Toast.LENGTH_SHORT).show());
+                        } else {
+                            Toast.makeText(MainActivity.this, "Авторизация не удалась", Toast.LENGTH_SHORT).show();
+                        }
+                        Navigation.getNavigation(MainActivity.this).goForward(new LoginFragment(), new Bundle());
+                    }
+                });
     }
 
     private AlertDialog alertDialog;
@@ -158,12 +187,6 @@ public class MainActivity extends AppCompatActivity {
             showPermissionDialog();
         }
     }
-
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.options_menu, menu);
-//        return true;
-//    }
 
     @Override
     public void onBackPressed() {

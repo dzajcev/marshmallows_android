@@ -1,9 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.RequiresApi;
 
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.adapters.ClientRecyclerViewAdapter;
@@ -20,22 +17,18 @@ import retrofit2.Call;
 public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse, ClientRecyclerViewAdapter> {
     public static final String IDENTITY = "clientsFragment";
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAdapter(new ClientRecyclerViewAdapter());
         requireActivity().setTitle("Клиенты");
-        Order order = Optional.ofNullable(getArguments())
-                .map(m -> m.getSerializable("order", Order.class)).orElse(null);
-        setSelectListener(Optional.ofNullable(order)
-                .map(m -> (SelectItemListener<Client>) item -> {
-                    m.setClient(item);
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("order", m);
-                    Navigation.getNavigation(requireActivity()).back(bundle);
-                })
-                .orElse(null));
+        Order order = Optional.ofNullable(getArguments()).map(m -> m.getSerializable("order", Order.class)).orElse(null);
+        setSelectListener(Optional.ofNullable(order).map(m -> (SelectItemListener<Client>) item -> {
+            m.setClient(item);
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("order", m);
+            Navigation.getNavigation(requireActivity()).back(bundle);
+        }).orElse(null));
         setEditItemListener(client -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("client", client);
@@ -47,7 +40,6 @@ public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse,
             Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
         });
     }
-
 
     @Override
     protected Call<ClientResponse> getCall(Boolean bool) {

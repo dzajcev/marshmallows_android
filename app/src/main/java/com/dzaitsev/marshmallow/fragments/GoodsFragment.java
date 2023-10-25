@@ -1,9 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.RequiresApi;
 
 import com.dzaitsev.marshmallow.Navigation;
 import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
@@ -22,7 +19,6 @@ public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, Good
     public static final String IDENTITY = "goodsFragment";
 
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

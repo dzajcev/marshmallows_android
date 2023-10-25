@@ -2,14 +2,12 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -19,7 +17,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentDeliveriesBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
@@ -27,6 +25,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,6 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
         filter = gson.fromJson(string, type);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -64,7 +62,7 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
     }
 
     private void fillItems() {
-        new NetworkExecutor<>(requireActivity(),
+        new NetworkExecutorWrapper<>(requireActivity(),
                 NetworkService.getInstance().getDeliveryApi().getDeliveries(filter.getStart(), filter.getEnd(), filter.getStatuses()))
                 .invoke(response -> Optional.ofNullable(response.body())
                         .ifPresent(deliveryReposponse -> mAdapter.setItems(Optional.of(deliveryReposponse)
@@ -87,11 +85,21 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
             Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
         });
         mAdapter = new DeliveryRecyclerViewAdapter();
-        mAdapter.setEditItemListener(item -> {
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("delivery", item);
-            Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
-        });
+        mAdapter.setEditItemListener(item -> new NetworkExecutorWrapper<>(requireActivity(),
+                NetworkService.getInstance().getDeliveryApi().getDelivery(item.getId()))
+                .invoke(deliveryResponse -> {
+                    if (deliveryResponse.isSuccessful()) {
+                        Delivery delivery = Optional.ofNullable(deliveryResponse.body())
+                                .map(DeliveryResponse::getDeliveries)
+                                .filter(Objects::nonNull)
+                                .filter(f -> !f.isEmpty())
+                                .map(m -> m.iterator().next())
+                                .orElse(null);
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("delivery", delivery);
+                        Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
+                    }
+                }));
         binding.deliveriesList.setAdapter(mAdapter);
         binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new DeliveryFilterFragment()));
     }

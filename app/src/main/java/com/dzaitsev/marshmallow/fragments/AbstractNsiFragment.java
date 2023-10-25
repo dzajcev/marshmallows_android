@@ -1,13 +1,11 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,7 +22,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentAbstractNsiBinding;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.NsiResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Comparator;
@@ -50,20 +48,8 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
 
     private OnCreateListener onCreateListener;
 
-    public SelectItemListener<T> getSelectListener() {
-        return selectListener;
-    }
-
     public void setSelectListener(SelectItemListener<T> selectListener) {
         this.selectListener = selectListener;
-    }
-
-    public EditItemListener<T> getEditItemListener() {
-        return editItemListener;
-    }
-
-    public OnCreateListener getOnCreateListener() {
-        return onCreateListener;
     }
 
     public void setOnCreateListener(OnCreateListener onCreateListener) {
@@ -78,7 +64,6 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
         this.mAdapter = mAdapter;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -110,7 +95,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
     protected abstract Call<K> getCall(Boolean bool);
 
     private void refresh() {
-        new NetworkExecutor<>(requireActivity(),
+        new NetworkExecutorWrapper<>(requireActivity(),
                 getCall(determineRequestValue())).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(r -> {
                     mAdapter.setItems(Optional.of(r)
@@ -124,7 +109,6 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                 }));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         final RecyclerView recyclerView = view.findViewById(R.id.abstractNsiListView);

@@ -2,14 +2,12 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -21,7 +19,7 @@ import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
@@ -43,7 +41,6 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
     private AbstractFilter<OrderStatus> filter;
 
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(
             @NonNull LayoutInflater inflater, ViewGroup container,
@@ -68,7 +65,7 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
     }
 
     private void fillItems() {
-        new NetworkExecutor<>(requireActivity(),
+        new NetworkExecutorWrapper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().getOrders(filter.getStart(), filter.getEnd(),
                         filter.getStatuses()))
                 .invoke(response -> Optional.ofNullable(response.body())
@@ -92,6 +89,21 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
         });
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
+//        mAdapter.setEditItemListener(item -> new NetworkExecutorWrapper<>(requireActivity(),
+//                NetworkService.getInstance().getOrdersApi().getOrder(item.getId()))
+//                .invoke(orderResponse -> {
+//                    if (orderResponse.isSuccessful()) {
+//                        Bundle bundle = new Bundle();
+//                        Order incomingOrder = Optional.ofNullable(orderResponse.body())
+//                                .map(OrderResponse::getOrders)
+//                                .filter(Objects::nonNull)
+//                                .filter(f -> !f.isEmpty())
+//                                .map(m -> m.iterator().next())
+//                                .orElse(null);
+//                        bundle.putSerializable("order", item);
+//                        Navigation.getNavigation(requireActivity()).goForward(new OrderCardFragment(), bundle);
+//                    }
+//                }));
         mAdapter.setEditItemListener(item -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", item);

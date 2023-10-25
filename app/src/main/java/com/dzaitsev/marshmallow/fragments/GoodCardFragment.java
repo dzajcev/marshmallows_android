@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,16 +20,14 @@ import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
-import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Objects;
-import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import retrofit2.Response;
@@ -50,11 +46,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
             if (GoodCardFragment.this.hasChanges()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
                 builder.setTitle("Запись изменена. Сохранить?");
-                builder.setPositiveButton("Да", (dialog, id) -> {
-                    if (GoodCardFragment.this.save()) {
-                        Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back();
-                    }
-                });
+                builder.setPositiveButton("Да", (dialog, id) -> GoodCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
                 builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back());
                 builder.create().show();
@@ -74,7 +66,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
         MenuItem deleteClient = menu.add("Удалить");
         if (incomingGood.isActive()) {
             deleteClient.setTitle("Удалить");
@@ -84,27 +76,30 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         deleteClient.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
             builder.setTitle((incomingGood.isActive() ? "Удаление" : "Восстановление") + " зефирки?");
-            Boolean hasOrders = null;
-
-            if (incomingGood.isActive()) {
-                hasOrders = checkGoodOnOrders();
-                if (hasOrders == null) {
-                    return false;
-                }
-            }
-            String text = "";
-            if (incomingGood.isActive() && Boolean.FALSE.equals(hasOrders)) {
-                text = "\nЗапись будет удалена безвозвратно";
-            }
-            builder.setMessage("Вы уверены?" + text);
-            builder.setPositiveButton("Да", (dialog, id) -> {
-                GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
-                if (new NetworkExecutor<>(requireActivity(),
-                        incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
-                        .invokeSync().isSuccessful()) {
-                    Navigation.getNavigation(getActivity()).back();
-                }
-            });
+            new NetworkExecutorWrapper<>(requireActivity(),
+                    NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()))
+                    .invoke(booleanResponse -> {
+                        if (!booleanResponse.isSuccessful()) {
+                            return;
+                        }
+                        String text = "";
+                        if (incomingGood.isActive() && Boolean.FALSE.equals(booleanResponse.body())) {
+                            text = "\nЗапись будет удалена безвозвратно";
+                        }
+                        builder.setMessage("Вы уверены?" + text);
+                        builder.setPositiveButton("Да", (dialog, id) -> {
+                            GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
+                            new NetworkExecutorWrapper<>(requireActivity(),
+                                    incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
+                                    .invoke(response -> {
+                                        if (response.isSuccessful()) {
+                                            Navigation.getNavigation(getActivity()).back();
+                                        }
+                                    });
+                        });
+                        builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+                        builder.create().show();
+                    });
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
             builder.create().show();
             return false;
@@ -118,7 +113,6 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         setHasOptionsMenu(true);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         good = requireArguments().getSerializable("good", Good.class);
@@ -134,33 +128,14 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         return false;
     };
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка зефирки");
         binding.goodCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        if (good.getId() != null) {
-            Response<GoodsResponse> goodsResponse = new NetworkExecutor<>(requireActivity(),
-                    NetworkService.getInstance().getGoodsApi().getGood(good.getId())).invokeSync();
-            if (!goodsResponse.isSuccessful()) {
-                Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
-                return;
-            } else {
-                incomingGood = Optional.ofNullable(goodsResponse.body())
-                        .map(GoodsResponse::getItems)
-                        .filter(Objects::nonNull)
-                        .filter(f -> !f.isEmpty())
-                        .map(m -> m.iterator().next())
-                        .orElse(null);
-            }
-        } else {
-            good = new Good();
-        }
         Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
         if (good == null || good.getPrices().isEmpty()) {
             binding.tx1.setVisibility(View.GONE);
         }
-        incomingGood = Objects.requireNonNull(good).clone();
         binding.goodCardName.setOnKeyListener(keyListener);
         binding.goodCardName.setText(good.getName());
         binding.goodCardPrice.setOnKeyListener(keyListener);
@@ -178,11 +153,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 .build()
                 .show());
         binding.goodCardDescription.setText(good.getDescription());
-        binding.goodCardSave.setOnClickListener(v -> {
-            if (save()) {
-                requireActivity().onBackPressed();
-            }
-        });
+        binding.goodCardSave.setOnClickListener(v -> save());
         binding.goodCardPriceHistoryList.setLayoutManager(new LinearLayoutManager(view.getContext()));
         PriceHistoryRecyclerViewAdapter priceHistoryRecyclerViewAdapter = new PriceHistoryRecyclerViewAdapter();
         binding.goodCardPriceHistoryList.setAdapter(priceHistoryRecyclerViewAdapter);
@@ -190,18 +161,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         priceHistoryRecyclerViewAdapter.setItems(good.getPrices().stream()
                 .sorted((price, t1) -> t1.getCreateDate().compareTo(price.getCreateDate())).collect(Collectors.toList()));
     }
-
-    private Boolean checkGoodOnOrders() {
-        NetworkExecutor<Boolean> callback = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()));
-        Response<Boolean> booleanResponse = callback.invokeSync();
-        if (!booleanResponse.isSuccessful()) {
-            return null;
-        }
-        return booleanResponse.body();
-    }
-
-    private boolean save() {
+    private void save() {
         boolean fail = false;
         if (StringUtils.isEmpty(binding.goodCardName.getText().toString())) {
             binding.goodCardName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
@@ -212,13 +172,18 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
             fail = true;
         }
         if (fail) {
-            return false;
+            return;
         }
         fillGood();
-        Response<Void> voidResponse = new NetworkExecutor<>(requireActivity(),
-                NetworkService.getInstance().getGoodsApi().saveGood(good)).invokeSync();
+        new NetworkExecutorWrapper<>(requireActivity(),
+                NetworkService.getInstance().getGoodsApi().saveGood(good)).invoke(response -> {
+            incomingGood = good;
+            if (response.isSuccessful()) {
+                Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back();
+            }
+        });
         incomingGood = good;
-        return voidResponse.isSuccessful();
+
     }
 
     private void fillGood() {
