@@ -1,12 +1,10 @@
 package com.dzaitsev.marshmallow.components;
 
 import android.content.Context;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,13 +19,11 @@ import java.util.List;
 public class OrderSimpleComponent extends ConstraintLayout {
     OrderLineSimpleRecyclerViewAdapter orderLineSimpleRecyclerViewAdapter;
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     public OrderSimpleComponent(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initControl(context);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     public OrderSimpleComponent(Context context) {
         super(context);
         initControl(context);

@@ -6,6 +6,7 @@ import com.dzaitsev.marshmallow.service.api.ClientsApi;
 import com.dzaitsev.marshmallow.service.api.DeliveryApi;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.service.api.OrdersApi;
+import com.dzaitsev.marshmallow.service.api.UsersApi;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 
 import java.util.concurrent.TimeUnit;
@@ -72,6 +73,10 @@ public class NetworkService {
 
     public DeliveryApi getDeliveryApi() {
         return mRetrofit.create(DeliveryApi.class);
+    }
+
+    public UsersApi getUsersApi() {
+        return mRetrofit.create(UsersApi.class);
     }
 
     public AuthorizationApi getAuthorizationApi() {

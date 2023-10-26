@@ -4,14 +4,12 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
@@ -33,7 +31,6 @@ public class LinkChannelSelector extends ConstraintLayout {
     final Map<LinkChannel, LinkChannelSelectorComponent> channels = new HashMap<>();
 
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     public LinkChannelSelector(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         try (TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.LinkChannelSelector, 0, 0)) {
@@ -124,7 +121,7 @@ public class LinkChannelSelector extends ConstraintLayout {
 
     private boolean isAppInstalled(String packageName) {
         try {
-            getContext().getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            getContext().getPackageManager().getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(PackageManager.GET_ACTIVITIES));
             return true;
         } catch (PackageManager.NameNotFoundException ignored) {
             return false;

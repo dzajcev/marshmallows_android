@@ -4,53 +4,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.RegistrationFragment">
-
+    tools:context=".fragments.UserCardFragment">
 
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Регистрация"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline" />
-
-    <EditText
         android:id="@+id/txtLogin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:background="@color/field_background"
         android:ems="10"
+        android:gravity="start|center_vertical"
         android:hint="Имя пользователя"
-        android:inputType="text"
         android:minHeight="50sp"
         android:paddingStart="5sp"
         android:paddingEnd="5sp"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toTopOf="@+id/guideline" />
 
     <EditText
-        android:id="@+id/txtPassword"
+        android:id="@+id/txtConfirmPassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="@color/field_background"
         android:ems="10"
-        android:hint="Пароль"
-        android:inputType="textPassword"
+        android:gravity="start|center_vertical"
+        android:hint="Подтвердите пароль"
         android:minHeight="50sp"
         android:paddingStart="5sp"
         android:paddingEnd="5sp"
+        android:inputType="textPassword"
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/txtLogin" />
+        app:layout_constraintTop_toBottomOf="@+id/txtChangePassword" />
+
+    <EditText
+        android:id="@+id/txtChangePassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@color/field_background"
+        android:ems="10"
+        android:gravity="start|center_vertical"
+        android:hint="Введите новый пароль"
+        android:minHeight="50sp"
+        android:paddingStart="5sp"
+        android:paddingEnd="5sp"
+        android:inputType="textPassword"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/guideline6"
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/btnChangePassword" />
 
     <EditText
         android:id="@+id/txtLastName"
@@ -66,7 +73,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/txtRegistrationConfirmPassword" />
+        app:layout_constraintTop_toBottomOf="@+id/txtLogin" />
 
     <EditText
         android:id="@+id/txtFirstName"
@@ -86,14 +93,24 @@
 
 
     <Button
-        android:id="@+id/btnRegistration"
+        android:id="@+id/btnSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Регистрация"
+        android:text="Сохранить"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline9"
-        app:layout_constraintTop_toBottomOf="@+id/chkDelivery" />
+        app:layout_constraintTop_toBottomOf="@+id/txtFirstName" />
+
+    <Button
+        android:id="@+id/btnSavePassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Сохранить пароль"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtConfirmPassword" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline8"
@@ -133,46 +150,22 @@
         android:id="@+id/btnBack"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:text="Назад"
+        app:layout_constraintBottom_toBottomOf="@+id/btnSave"
         app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/chkDeveloper" />
+        app:layout_constraintTop_toBottomOf="@+id/txtFirstName"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <EditText
-        android:id="@+id/txtRegistrationConfirmPassword"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="@color/field_background"
-        android:ems="10"
-        android:hint="Повторите пароль"
-        android:inputType="textPassword"
-        android:minHeight="50sp"
-        android:paddingStart="5sp"
-        android:paddingEnd="5sp"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline6"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/txtPassword" />
-
-    <CheckBox
-        android:id="@+id/chkDeveloper"
-        android:layout_width="0dp"
+    <Button
+        android:id="@+id/btnChangePassword"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Производство"
-        app:layout_constraintEnd_toStartOf="@+id/guideline8"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/txtFirstName" />
-
-    <CheckBox
-        android:id="@+id/chkDelivery"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Доставка"
+        android:text="Изменить пароль"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
-        app:layout_constraintStart_toStartOf="@+id/guideline9"
-        app:layout_constraintTop_toBottomOf="@+id/txtFirstName" />
+        app:layout_constraintStart_toStartOf="@+id/guideline2"
+        app:layout_constraintTop_toBottomOf="@+id/btnSave" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

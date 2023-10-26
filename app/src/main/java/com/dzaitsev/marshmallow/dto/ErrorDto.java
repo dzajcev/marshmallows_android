@@ -1,22 +1,14 @@
 package com.dzaitsev.marshmallow.dto;
 
 public class ErrorDto {
-    private final ErrorCodes errorCode;
-    private String message;
+    private final ErrorCodes code;
 
-    public ErrorDto(ErrorCodes errorCode) {
-        this.errorCode = errorCode;
+    public ErrorDto(ErrorCodes code) {
+        this.code = code;
     }
 
-    public ErrorCodes getErrorCode() {
-        return errorCode;
+    public ErrorCodes getCode() {
+        return code;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

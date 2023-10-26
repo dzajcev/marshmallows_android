@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
@@ -21,19 +19,14 @@ import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order, DeliveryOrderRecyclerViewAdapter.RecycleViewHolder> {
     private DeleteItemListener deleteItemListener;
 
-    private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-
     public interface DeleteItemListener {
         void deleteItem(Order item);
     }
-
 
     public void setDeleteItemListener(DeleteItemListener deleteItemListener) {
         this.deleteItemListener = deleteItemListener;
@@ -55,11 +48,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
         private final TextView deliveryOrderSum;
         private final TextView deliveryOrderToPay;
         private final ImageButton deliveryOrderItemDelete;
-        private final ImageButton deliveryOrderListGoods;
-        private final ImageButton deliveryOrderConnect;
-        private final ImageButton deliveryOrderShipped;
 
-        @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         @SuppressLint("ResourceAsColor")
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -70,9 +59,9 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderSum = itemView.findViewById(R.id.deliveryOrderSum);
             deliveryOrderToPay = itemView.findViewById(R.id.deliveryOrderToPay);
             deliveryOrderItemDelete = itemView.findViewById(R.id.deliveryOrderItemDelete);
-            deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
-            deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
-            deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
+            ImageButton deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
+            ImageButton deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
+            ImageButton deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
             deliveryOrderListGoods.setOnClickListener(v -> OrderSimpleDialog.builder(getView().getContext())
                     .setTitle("Содержимое заказа")
                     .setItems(getItem().getOrderLines())
@@ -148,7 +137,6 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                 + Optional.ofNullable(order.getPaySum()).orElse(0d));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @NonNull
     @Override
     public RecycleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

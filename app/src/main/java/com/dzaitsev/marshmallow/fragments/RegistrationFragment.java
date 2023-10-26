@@ -1,29 +1,38 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentRegistrationBinding;
-import com.dzaitsev.marshmallow.dto.OrdersFilter;
-import com.dzaitsev.marshmallow.utils.GsonExt;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.dzaitsev.marshmallow.dto.UserRole;
+import com.dzaitsev.marshmallow.dto.request.SignUpRequest;
+import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
-import java.lang.reflect.Type;
+import java.util.Optional;
 
 
 public class RegistrationFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "registrationFragment";
     private FragmentRegistrationBinding binding;
-
+    private final View.OnFocusChangeListener restoreStateListener =
+            (v, hasFocus) -> v.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
+    CompoundButton.OnCheckedChangeListener onCheckedChangeListener
+            = (buttonView, isChecked) -> {
+        binding.chkDeveloper.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
+        binding.chkDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
+    };
 
     @Override
     public View onCreateView(
@@ -41,17 +50,80 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SharedPreferences preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("order-filter", "{}");
-        Gson gson = GsonExt.getGson();
-        Type type = new TypeToken<OrdersFilter>() {
-        }.getType();
-        OrdersFilter filter = gson.fromJson(string, type);
-        if (filter == null) {
-            filter = new OrdersFilter();
-        }
         binding.btnBack.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
-        binding.btnRegistration.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new ConfirmRegistrationFragment()));
+        binding.txtLogin.setOnFocusChangeListener(restoreStateListener);
+        binding.txtPassword.setOnFocusChangeListener(restoreStateListener);
+        binding.txtRegistrationConfirmPassword.setOnFocusChangeListener(restoreStateListener);
+        binding.txtFirstName.setOnFocusChangeListener(restoreStateListener);
+        binding.txtLastName.setOnFocusChangeListener(restoreStateListener);
+
+        binding.chkDelivery.setOnCheckedChangeListener(onCheckedChangeListener);
+        binding.chkDeveloper.setOnCheckedChangeListener(onCheckedChangeListener);
+        binding.btnRegistration.setOnClickListener(v -> {
+
+            boolean fail = false;
+            if (StringUtils.isEmpty(binding.txtFirstName.getText().toString())) {
+                binding.txtFirstName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (StringUtils.isEmpty(binding.txtLastName.getText().toString())) {
+                binding.txtLastName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (StringUtils.isEmpty(binding.txtLogin.getText().toString())) {
+                binding.txtLogin.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (StringUtils.isEmpty(binding.txtPassword.getText().toString())) {
+                binding.txtPassword.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (StringUtils.isEmpty(binding.txtRegistrationConfirmPassword.getText().toString())) {
+                binding.txtRegistrationConfirmPassword.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (!binding.txtPassword.getText().toString().equals(binding.txtRegistrationConfirmPassword.getText().toString())) {
+                binding.txtPassword.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                binding.txtRegistrationConfirmPassword.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                Toast.makeText(requireContext(), "Введенные пароли не совпадают", Toast.LENGTH_SHORT).show();
+                fail = true;
+            }
+            if (!binding.chkDelivery.isChecked() && !binding.chkDeveloper.isChecked()) {
+                binding.chkDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                binding.chkDeveloper.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+                fail = true;
+            }
+            if (!fail) {
+                SignUpRequest request = new SignUpRequest();
+                request.setEmail(binding.txtLogin.getText().toString());
+                request.setFirstName(binding.txtFirstName.getText().toString());
+                request.setLastName(binding.txtLastName.getText().toString());
+                request.setPassword(binding.txtPassword.getText().toString());
+                if (binding.chkDeveloper.isChecked()) {
+                    request.getRoles().add(UserRole.DEVELOPER);
+                }
+                if (binding.chkDelivery.isChecked()) {
+                    request.getRoles().add(UserRole.DELIVERYMAN);
+                }
+                NetworkService.getInstance().refreshToken(null);
+                new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi().signUp(request))
+                        .invoke(objectResponse -> {
+                            if (objectResponse.isSuccessful()) {
+                                Optional.ofNullable(objectResponse.body())
+                                        .ifPresent(jwtSignUpResponse -> {
+                                            Bundle bundle = new Bundle();
+                                            bundle.putInt("ttlCode", jwtSignUpResponse.getVerificationCodeTtl());
+                                            bundle.putString("token", jwtSignUpResponse.getToken());
+                                            bundle.putString("login", request.getEmail());
+                                            bundle.putString("password", request.getPassword());
+                                            Navigation.getNavigation(requireActivity()).goForward(new ConfirmRegistrationFragment(), bundle);
+                                        });
+                            }
+                        });
+            }
+
+        });
+
     }
 
 

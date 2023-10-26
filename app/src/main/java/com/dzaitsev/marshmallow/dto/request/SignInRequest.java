@@ -1,8 +1,8 @@
-package com.dzaitsev.marshmallow.dto.authorization;
+package com.dzaitsev.marshmallow.dto.request;
 
 public class SignInRequest {
     private final String email;
-    private final String password;
+    private String password;
 
     public SignInRequest(String email, String password) {
         this.email = email;
@@ -15,5 +15,9 @@ public class SignInRequest {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

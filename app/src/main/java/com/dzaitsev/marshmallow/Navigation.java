@@ -10,6 +10,7 @@ import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
+import com.dzaitsev.marshmallow.fragments.LoginFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 
 import java.util.HashMap;
@@ -41,7 +42,8 @@ public class Navigation {
             if (fragment instanceof IdentityFragment identityFragment) {
                 if ((getRootFragments().stream()
                         .anyMatch(a -> a.equals(identityFragment.getUniqueName())))
-                        && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
+                        && (fragment.getArguments() == null || fragment.getArguments().isEmpty())
+                        || ((IdentityFragment) fragment).getUniqueName().equals(LoginFragment.IDENTITY)) {
                     backStack.clear();
                     backStack.add(fragment);
                 }
