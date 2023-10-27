@@ -44,8 +44,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity {
-
-    SharedPreferences preferences;
     private final ActivityResultLauncher<String[]> permissionsLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                     result -> {
@@ -86,14 +84,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        preferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+        setContentView(R.layout.activity_main);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         AuthorizationHelperInitializer.init(preferences);
         FiltersHelperInitializer.init(preferences);
         NavigationInitializer.init(this, bottomNavigationView);
         processDeliveryFilter();
         processOrderFilter();
-        setContentView(R.layout.activity_main);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         View userCard = toolbar.findViewById(R.id.userCard);

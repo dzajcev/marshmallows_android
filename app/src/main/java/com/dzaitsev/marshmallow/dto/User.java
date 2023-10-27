@@ -2,8 +2,6 @@ package com.dzaitsev.marshmallow.dto;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class User implements Serializable {
     private Integer id;
@@ -13,6 +11,11 @@ public class User implements Serializable {
     private String lastName;
 
     private UserRole role;
+
+
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
 
     public Integer getId() {
         return id;

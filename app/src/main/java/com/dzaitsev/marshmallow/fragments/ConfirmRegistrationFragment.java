@@ -1,7 +1,5 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
@@ -12,14 +10,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.databinding.FragmentConfirmRegistrationBinding;
-import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
+import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Optional;
 
@@ -46,7 +44,6 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("");
-        SharedPreferences preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
         int ttlCode = requireArguments().getInt("ttlCode");
         String token = requireArguments().getString("token");
         String login = requireArguments().getString("login");
@@ -65,7 +62,7 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
 
             }
         }.start();
-        binding.btnCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new LoginFragment()));
+        binding.btnCancel.setOnClickListener(v -> Navigation.getNavigation().goForward(new LoginFragment()));
         binding.btnRequestCode.setEnabled(false);
         timer.start();
         binding.btnRequestCode.setOnClickListener(v -> {
@@ -93,7 +90,7 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
                                         AuthorizationHelper.getInstance().updateSignInRequest(new SignInRequest(login, password));
                                         NetworkService.getInstance().refreshToken(s);
                                         timer.cancel();
-                                        Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment());
+                                        Navigation.getNavigation().goForward(new OrdersFragment());
                                     });
                         }
                     });

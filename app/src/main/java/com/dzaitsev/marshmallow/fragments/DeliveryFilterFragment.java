@@ -52,7 +52,7 @@ public class DeliveryFilterFragment extends Fragment implements IdentityFragment
                     binding.checkBoxNew.setChecked(filter.getStatuses().contains(DeliveryStatus.NEW));
                 });
 
-        binding.deliveryFilterCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
+        binding.deliveryFilterCancel.setOnClickListener(v -> Navigation.getNavigation().back());
         binding.deliveryFilterStart.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
                     date -> binding.deliveryFilterStart.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date)),
@@ -81,7 +81,7 @@ public class DeliveryFilterFragment extends Fragment implements IdentityFragment
                 deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
             }
             FiltersHelper.getInstance().updateDeliveryFilter(deliveryFilter);
-            Navigation.getNavigation(requireActivity()).back();
+            Navigation.getNavigation().back();
         });
 
     }

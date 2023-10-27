@@ -42,10 +42,10 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
 //                    }
                 });
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderSelectorFragment.this.requireActivity()).back());
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
                 builder.create().show();
             } else {
-                Navigation.getNavigation(OrderSelectorFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         }
         return false;
@@ -69,7 +69,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
+        Navigation.getNavigation().addOnBackListener(backListener);
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -88,13 +88,13 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
                         .collect(Collectors.toList()))));
         binding.orderSelectorItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.orderSelectorItems.setAdapter(mAdapter);
-        binding.orderSelectorCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
+        binding.orderSelectorCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
 
         binding.orderSelectorSave.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             delivery.getOrders().addAll(getSelected());
             bundle.putSerializable("delivery", delivery);
-            Navigation.getNavigation(requireActivity()).back(bundle);
+            Navigation.getNavigation().back(bundle);
         });
     }
 
@@ -107,7 +107,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
         super.onDestroyView();
         mAdapter = null;
         binding = null;
-        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+        Navigation.getNavigation().removeOnBackListener(backListener);
     }
 
     @Override

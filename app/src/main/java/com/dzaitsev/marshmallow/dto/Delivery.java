@@ -10,15 +10,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Delivery implements Serializable, Cloneable {
 
     private Integer id;
     private LocalDateTime createDate;
     private User executor;
+
+    private User createUser;
     private LocalDate deliveryDate;
     private LocalTime start;
     private LocalTime end;
@@ -89,6 +93,18 @@ public class Delivery implements Serializable, Cloneable {
         this.deliveryStatus = deliveryStatus;
     }
 
+    public User getCreateUser() {
+        return createUser;
+    }
+
+    public void setCreateUser(User createUser) {
+        this.createUser = createUser;
+    }
+
+    public boolean isMy() {
+        return executor.getId().equals(createUser.getId());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -101,7 +117,8 @@ public class Delivery implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(deliveryDate, start, end, getOrders());
+        return Objects.hash(deliveryDate, start, end,
+                getOrders().stream().sorted(Comparator.comparingInt(Order::hashCode)).collect(Collectors.toList()));
     }
 
     @NonNull

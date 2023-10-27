@@ -68,16 +68,16 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
         binding.orderCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", new Order());
-            Navigation.getNavigation(requireActivity()).goForward(new OrderGoodsFragment(), bundle);
+            Navigation.getNavigation().goForward(new OrderGoodsFragment(), bundle);
         });
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
         mAdapter.setEditItemListener(item -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", item);
-            Navigation.getNavigation(requireActivity()).goForward(new OrderCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new OrderCardFragment(), bundle);
         });
-        binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new OrderFilterFragment()));
+        binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new OrderFilterFragment()));
         binding.ordersList.setAdapter(mAdapter);
 
     }

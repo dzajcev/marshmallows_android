@@ -64,7 +64,7 @@ public class LoginFragment extends Fragment implements IdentityFragment {
                     binding.txtPassword.getText().toString()
             ));
         });
-        binding.btnRegistration.setOnClickListener(v -> Navigation.getNavigation(requireActivity())
+        binding.btnRegistration.setOnClickListener(v -> Navigation.getNavigation()
                 .goForward(new RegistrationFragment()));
     }
 

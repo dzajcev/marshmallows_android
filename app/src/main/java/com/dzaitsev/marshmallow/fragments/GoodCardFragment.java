@@ -45,10 +45,10 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 builder.setTitle("Запись изменена. Сохранить?");
                 builder.setPositiveButton("Да", (dialog, id) -> GoodCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back());
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
                 builder.create().show();
             } else {
-                Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         }
         return false;
@@ -90,7 +90,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                                     incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
                                     .invoke(response -> {
                                         if (response.isSuccessful()) {
-                                            Navigation.getNavigation(getActivity()).back();
+                                            Navigation.getNavigation().back();
                                         }
                                     });
                         });
@@ -128,8 +128,8 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка зефирки");
-        binding.goodCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
+        binding.goodCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
+        Navigation.getNavigation().addOnBackListener(backListener);
         if (good == null || good.getPrices().isEmpty()) {
             binding.tx1.setVisibility(View.GONE);
         }
@@ -176,7 +176,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getGoodsApi().saveGood(good)).invoke(response -> {
             incomingGood = good;
             if (response.isSuccessful()) {
-                Navigation.getNavigation(GoodCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         });
         incomingGood = good;
@@ -195,7 +195,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+        Navigation.getNavigation().removeOnBackListener(backListener);
     }
 
     @Override

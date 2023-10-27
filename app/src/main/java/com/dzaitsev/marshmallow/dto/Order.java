@@ -9,9 +9,11 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class Order implements Serializable, Cloneable {
@@ -176,13 +178,15 @@ public class Order implements Serializable, Cloneable {
                 && Objects.equals(needDelivery, order.needDelivery) && Objects.equals(client, order.client)
                 && new HashSet<>(getOrderLines()).equals(new HashSet<>(order.getOrderLines())) && Objects.equals(prePaymentSum, order.prePaymentSum)
                 && Objects.equals(paySum, order.paySum)
-                && Objects.equals(shipped, order.shipped) && Objects.equals(completeDate, order.completeDate);
+                && Objects.equals(orderStatus, order.orderStatus) && Objects.equals(completeDate, order.completeDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deadline, comment, deliveryAddress, phone, needDelivery, client, getOrderLines(),
-                prePaymentSum, paySum, shipped, completeDate);
+        int hash = Objects.hash(deadline, comment, deliveryAddress, phone, needDelivery, client,
+                getOrderLines().stream().sorted(Comparator.comparingInt(OrderLine::hashCode)).collect(Collectors.toList()),
+                prePaymentSum, paySum, orderStatus, completeDate);
+        return hash;
     }
 
     @NonNull

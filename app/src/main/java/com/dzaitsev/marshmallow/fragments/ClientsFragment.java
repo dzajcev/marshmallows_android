@@ -27,17 +27,17 @@ public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse,
             m.setClient(item);
             Bundle bundle = new Bundle();
             bundle.putSerializable("order", m);
-            Navigation.getNavigation(requireActivity()).back(bundle);
+            Navigation.getNavigation().back(bundle);
         }).orElse(null));
         setEditItemListener(client -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("client", client);
-            Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new ClientCardFragment(), bundle);
         });
         setOnCreateListener(() -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("client", new Client());
-            Navigation.getNavigation(requireActivity()).goForward(new ClientCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new ClientCardFragment(), bundle);
         });
     }
 

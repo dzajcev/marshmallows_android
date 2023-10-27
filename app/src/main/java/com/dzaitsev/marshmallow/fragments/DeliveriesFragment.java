@@ -67,7 +67,7 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
         binding.deliveryCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("delivery", new Delivery());
-            Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
         });
         mAdapter = new DeliveryRecyclerViewAdapter();
         mAdapter.setEditItemListener(item -> new NetworkExecutorHelper<>(requireActivity(),
@@ -82,11 +82,11 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                                 .orElse(null);
                         Bundle bundle = new Bundle();
                         bundle.putSerializable("delivery", delivery);
-                        Navigation.getNavigation(requireActivity()).goForward(new DeliveryCardFragment(), bundle);
+                        Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
                     }
                 }));
         binding.deliveriesList.setAdapter(mAdapter);
-        binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).goForward(new DeliveryFilterFragment()));
+        binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new DeliveryFilterFragment()));
     }
 
     @Override

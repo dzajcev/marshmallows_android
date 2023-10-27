@@ -11,15 +11,12 @@ import androidx.core.content.ContextCompat;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
-import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.User;
-import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Delivery, DeliveryRecyclerViewAdapter.RecycleViewHolder> {
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -45,8 +42,9 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
         private final TextView totalOrders;
         private final TextView deliveredOrders;
         private final TextView deliveryStatus;
-
         private final View executorLayout;
+        private final TextView txtAuthor;
+        private final TextView txtExecutor;
 
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,6 +56,9 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             deliveredOrders = itemView.findViewById(R.id.deliveredOrders);
             deliveryStatus = itemView.findViewById(R.id.deliveryStatus);
             executorLayout = itemView.findViewById(R.id.executorLayout);
+            txtAuthor = itemView.findViewById(R.id.txtAuthor);
+            txtExecutor = itemView.findViewById(R.id.txtExecutor);
+
         }
 
         @Override
@@ -70,14 +71,14 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             totalOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).map(List::size).orElse(0)));
             deliveryStatus.setText(item.getDeliveryStatus().getText());
             deliveredOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
-                    .stream().filter(Order::isShipped)
+                    .stream().filter(f -> f.getOrderStatus() == OrderStatus.SHIPPED)
                     .count()));
-            AuthorizationHelper.getInstance().getUserData()
-                    .ifPresent(user -> {
-                        if (user.getId().equals(item.getExecutor().getId())) {
-                            executorLayout.setVisibility(View.GONE);
-                        }
-                    });
+            if (!item.isMy()) {
+                txtAuthor.setText(item.getCreateUser().getFullName());
+                txtExecutor.setText(item.getExecutor().getFullName());
+            } else {
+                executorLayout.setVisibility(View.GONE);
+            }
         }
     }
 

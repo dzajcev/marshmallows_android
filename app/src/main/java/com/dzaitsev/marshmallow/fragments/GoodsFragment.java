@@ -29,12 +29,12 @@ public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, Good
         setOnCreateListener(() -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", new Good());
-            Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new GoodCardFragment(), bundle);
         });
         setEditItemListener(good -> {
             Bundle bundle = new Bundle();
             bundle.putSerializable("good", good);
-            Navigation.getNavigation(requireActivity()).goForward(new GoodCardFragment(), bundle);
+            Navigation.getNavigation().goForward(new GoodCardFragment(), bundle);
         });
         if (order != null) {
             Integer orderline = Optional.ofNullable(getArguments())
@@ -79,7 +79,7 @@ public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, Good
                                     order.getOrderLines().removeIf(f -> f.getGood() == null);
                                 });
                         bundle.putSerializable("order", order);
-                        Navigation.getNavigation(requireActivity()).back(bundle);
+                        Navigation.getNavigation().back(bundle);
                     })
                     .orElse(null));
         }

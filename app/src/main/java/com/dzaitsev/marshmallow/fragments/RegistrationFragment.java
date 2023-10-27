@@ -50,7 +50,7 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding.btnBack.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
+        binding.btnBack.setOnClickListener(v -> Navigation.getNavigation().back());
         binding.txtLogin.setOnFocusChangeListener(restoreStateListener);
         binding.txtPassword.setOnFocusChangeListener(restoreStateListener);
         binding.txtRegistrationConfirmPassword.setOnFocusChangeListener(restoreStateListener);
@@ -116,7 +116,7 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
                                             bundle.putString("token", jwtSignUpResponse.getToken());
                                             bundle.putString("login", request.getEmail());
                                             bundle.putString("password", request.getPassword());
-                                            Navigation.getNavigation(requireActivity()).goForward(new ConfirmRegistrationFragment(), bundle);
+                                            Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
                                         });
                             }
                         });

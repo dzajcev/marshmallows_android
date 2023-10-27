@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DatePicker;
@@ -31,13 +30,14 @@ import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -61,10 +61,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                 builder.setTitle("Запись изменена. Сохранить?");
                 builder.setPositiveButton("Да", (dialog, id) -> OrderCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back());
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
                 builder.create().show();
             } else {
-                Navigation.getNavigation(OrderCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         }
         return false;
@@ -95,7 +95,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                     NetworkService.getInstance().getOrdersApi().deleteOrder(order.getId()))
                     .invoke(response -> {
                         if (response.isSuccessful()) {
-                            Navigation.getNavigation(requireActivity()).back();
+                            Navigation.getNavigation().back();
                         }
                     }));
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
@@ -113,9 +113,9 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(order.getId() != null);
-        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
+        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
 
-        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
+        Navigation.getNavigation().addOnBackListener(backListener);
         requireActivity().setTitle("Заказ");
         binding.clientName.setText(order.getClient().getName());
         EditTextUtil.setText(binding.phoneNumber, order.getPhone());
@@ -131,7 +131,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         RecyclerView orderLinesList = view.findViewById(R.id.orderLinesList);
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        if (order.isShipped()) {
+        if (order.getOrderStatus() == OrderStatus.SHIPPED || order.getOrderStatus() == OrderStatus.IN_DELIVERY) {
             binding.orderCardLineAdd.setVisibility(View.GONE);
         } else {
             binding.orderCardLineAdd.setOnClickListener(v -> {
@@ -143,7 +143,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         }
 
         mAdapter = new OrderLinesRecyclerViewAdapter();
-        if (!order.isShipped()) {
+        if (order.getOrderStatus() == OrderStatus.IN_PROGRESS || order.getOrderStatus() == OrderStatus.DONE) {
             mAdapter.setRemoveListener(position -> {
                 if (position >= 0) {
                     for (int i = position; i < mAdapter.getOriginalItems().size(); i++) {
@@ -159,7 +159,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                 bundle.putSerializable("order", order);
                 bundle.putInt("orderline", orderLine.getNum());
                 bundle.putString("source", "orderCard");
-                Navigation.getNavigation(requireActivity()).goForward(new GoodsFragment(), bundle);
+                Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
             });
             mAdapter.setChangeSumListener(this::bindSums);
 
@@ -312,20 +312,20 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                         builder.setMessage("Оповестить клиента?");
                         builder.setPositiveButton("Да", (dialog, id) -> {
                             sendNotification(order);
-                            Navigation.getNavigation(requireActivity()).back();
+                            Navigation.getNavigation().back();
                             dialog.dismiss();
                         });
                         builder.setNegativeButton("Нет", (dialog, id) -> {
-                            Navigation.getNavigation(requireActivity()).back();
+                            Navigation.getNavigation().back();
                             dialog.dismiss();
                         });
                         builder.create().show();
-                    }else{
-                        Navigation.getNavigation(requireActivity()).back();
+                    } else {
+                        Navigation.getNavigation().back();
                     }
                 });
             } else {
-                Navigation.getNavigation(requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         });
     }
@@ -342,7 +342,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+        Navigation.getNavigation().removeOnBackListener(backListener);
     }
 
     @Override

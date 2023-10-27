@@ -53,7 +53,7 @@ public class OrderFilterFragment extends Fragment implements IdentityFragment {
                     binding.checkBoxShipped.setChecked(filter.getStatuses().contains(OrderStatus.SHIPPED));
                 });
 
-        binding.orderFilterCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
+        binding.orderFilterCancel.setOnClickListener(v -> Navigation.getNavigation().back());
         binding.orderFilterStart.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
                     date -> binding.orderFilterStart.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date)),
@@ -85,7 +85,7 @@ public class OrderFilterFragment extends Fragment implements IdentityFragment {
                 ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
             }
             FiltersHelper.getInstance().updateOrderFilter(ordersFilter);
-            Navigation.getNavigation(requireActivity()).back();
+            Navigation.getNavigation().back();
         });
     }
 

@@ -18,15 +18,15 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.DeliveryOrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -47,10 +47,10 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 builder.setTitle("Запись изменена. Сохранить?");
                 builder.setPositiveButton("Да", (dialog, id) -> DeliveryCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation(DeliveryCardFragment.this.requireActivity()).back());
+                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
                 builder.create().show();
             } else {
-                Navigation.getNavigation(DeliveryCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         }
         return false;
@@ -73,7 +73,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     NetworkService.getInstance().getDeliveryApi().deleteDelivery(delivery.getId()))
                     .invoke(response -> {
                         if (response.isSuccessful()) {
-                            Navigation.getNavigation(requireActivity()).back();
+                            Navigation.getNavigation().back();
                         }
                     }));
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
@@ -94,7 +94,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             Bundle savedInstanceState
     ) {
         delivery = Objects.requireNonNull(requireArguments().getSerializable("delivery", Delivery.class));
-        setHasOptionsMenu(delivery.getId() != null);
+        setHasOptionsMenu(delivery.getId() != null && delivery.isMy());
         incomingDelivery = delivery.clone();
         binding = FragmentDeliveryCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -103,15 +103,15 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка доставки");
-        binding.deliveryCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
+        binding.deliveryCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
+        Navigation.getNavigation().addOnBackListener(backListener);
         mAdapter = new DeliveryOrderRecyclerViewAdapter();
         binding.deliveryCardOrders.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.deliveryCardOrders.setAdapter(mAdapter);
         binding.deliveryCardAddOrders.setOnClickListener(v -> {
             Bundle orders = new Bundle();
             orders.putSerializable("delivery", delivery);
-            Navigation.getNavigation(requireActivity()).goForward(orderSelectorFragment, orders);
+            Navigation.getNavigation().goForward(orderSelectorFragment, orders);
         });
         binding.deliveryCardDateDelivery.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
@@ -148,11 +148,13 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     mAdapter.setItems(d.getOrders());
                 });
         binding.deliveryCardSave.setOnClickListener(v -> save());
-        mAdapter.setDeleteItemListener(item -> {
-            delivery.getOrders().remove(item);
-            binding.deliveryCardOrders.setAdapter(mAdapter);
-            mAdapter.setItems(delivery.getOrders());
-        });
+        if (delivery.isMy()) {
+            mAdapter.setDeleteItemListener(item -> {
+                delivery.getOrders().remove(item);
+                binding.deliveryCardOrders.setAdapter(mAdapter);
+                mAdapter.setItems(delivery.getOrders());
+            });
+        }
         ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
         binding.deliveryCardFinishDelivery.setBackgroundTintList(colorStateList);
         binding.deliveryCardFinishDelivery.setOnClickListener(v -> {
@@ -211,7 +213,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getDeliveryApi().saveDelivery(delivery)).
                 invoke(response -> {
                     incomingDelivery = delivery;
-                    Navigation.getNavigation(DeliveryCardFragment.this.requireActivity()).back();
+                    Navigation.getNavigation().back();
                 });
         incomingDelivery = delivery;
     }
@@ -221,7 +223,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         super.onDestroyView();
         mAdapter = null;
         binding = null;
-        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+        Navigation.getNavigation().removeOnBackListener(backListener);
     }
 
     @Override

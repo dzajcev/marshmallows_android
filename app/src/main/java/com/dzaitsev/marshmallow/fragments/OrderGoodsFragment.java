@@ -37,7 +37,6 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
 
     private OrderLinesRecyclerViewAdapter mAdapter;
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = requireArguments().getSerializable("order", Order.class);
@@ -81,7 +80,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
                         }
                     }
                     bundle.putSerializable("order", order);
-                    Navigation.getNavigation(requireActivity()).goForward(new OrderClientFragment(), bundle);
+                    Navigation.getNavigation().goForward(new OrderClientFragment(), bundle);
                 } catch (Exception e) {
 //do nothing
                 }
@@ -93,11 +92,11 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
                 order.getOrderLines().removeIf(f -> f.getGood() == null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Есть не сохраненные данные. Продолжить?");
-                builder.setPositiveButton("Да", (dialog, id) -> Navigation.getNavigation(requireActivity()).back());
+                builder.setPositiveButton("Да", (dialog, id) -> Navigation.getNavigation().back());
                 builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
                 builder.create().show();
             } else {
-                Navigation.getNavigation(requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         });
         binding.orderGoodsLineAdd.setOnClickListener(v -> {
@@ -121,7 +120,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             bundle.putSerializable("order", order);
             bundle.putInt("orderline", orderLine.getNum());
             bundle.putString("source", "orderGoods");
-            Navigation.getNavigation(requireActivity()).goForward(new GoodsFragment(), bundle);
+            Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
         });
         mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
                 .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));

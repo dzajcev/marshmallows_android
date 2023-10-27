@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,22 +14,21 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentUserCardBinding;
 import com.dzaitsev.marshmallow.dto.authorization.request.ChangePasswordRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.SaveMyInfoRequest;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UserCardFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "userCardFragment";
     private FragmentUserCardBinding binding;
-    private SharedPreferences preferences;
 
     private final View.OnFocusChangeListener restoreStateListener =
             (v, hasFocus) -> {
@@ -49,7 +47,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                 AuthorizationHelper.getInstance().updateSignInRequest(null);
                 AuthorizationHelper.getInstance().updateUserData(null);
                 NetworkService.getInstance().refreshToken(null);
-                Navigation.getNavigation(requireActivity()).goForward(new LoginFragment());
+                Navigation.getNavigation().goForward(new LoginFragment());
             });
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
             builder.create().show();
@@ -82,7 +80,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                     binding.txtFirstName.setText(user.getFirstName());
                     binding.txtLastName.setText(user.getLastName());
                 });
-        binding.btnBack.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
+        binding.btnBack.setOnClickListener(v -> Navigation.getNavigation().back());
         binding.btnSave.setOnClickListener(v -> {
             boolean fail = false;
             if (StringUtils.isEmpty(binding.txtFirstName.getText().toString())) {
@@ -145,7 +143,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                                             signInRequest.setPassword(s);
                                             AuthorizationHelper.getInstance().updateSignInRequest(signInRequest);
                                         });
-                                Navigation.getNavigation(requireActivity()).goForward(new LoginFragment());
+                                Navigation.getNavigation().goForward(new LoginFragment());
                             } else {
                                 Toast.makeText(getContext(), "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
                             }

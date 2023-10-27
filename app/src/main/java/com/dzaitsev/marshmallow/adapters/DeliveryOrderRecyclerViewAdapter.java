@@ -102,7 +102,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                     deleteItemListener.deleteItem(getItem());
                 }
             });
-            if (getItem().isShipped()) {
+            if (getItem().isShipped() || deleteItemListener == null) {
                 deliveryOrderItemDelete.setVisibility(View.GONE);
             } else {
                 deliveryOrderItemDelete.setVisibility(View.VISIBLE);

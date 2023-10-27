@@ -50,12 +50,12 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         requireActivity().setTitle("Информация по заказу");
         binding.ordersClientBackward.setOnClickListener(view1 -> {
             bundle.putSerializable("order", order);
-            Navigation.getNavigation(requireActivity()).back();
+            Navigation.getNavigation().back();
         });
         binding.ordersClientSave.setOnClickListener(view1 -> save());
         binding.clientName.setOnClickListener(v -> {
             bundle.putSerializable("order", order);
-            Navigation.getNavigation(requireActivity()).goForward(new ClientsFragment(), bundle);
+            Navigation.getNavigation().goForward(new ClientsFragment(), bundle);
         });
         binding.deadline.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
@@ -130,7 +130,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         }
         new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(order))
-                .invoke(response -> Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment()));
+                .invoke(response -> Navigation.getNavigation().goForward(new OrdersFragment()));
     }
 
     @Override

@@ -52,7 +52,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                         }, new AlertDialogComponent.Action() {
                             @Override
                             public void doIn() {
-                                Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back();
+                                Navigation.getNavigation().back();
                             }
 
                             @Override
@@ -61,7 +61,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                             }
                         });
             } else {
-                Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         }
         return false;
@@ -107,7 +107,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                                     incomingClient.isActive() ? clientsApi.deleteClient(client.getId()) : clientsApi.restoreClient(client.getId()))
                                     .invoke(response -> {
                                         if (response.isSuccessful()) {
-                                            Navigation.getNavigation(getActivity()).back();
+                                            Navigation.getNavigation().back();
                                         }
                                     });
 
@@ -144,8 +144,8 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка клиента");
-        binding.clientCardCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).callbackBack());
-        Navigation.getNavigation(requireActivity()).addOnBackListener(backListener);
+        binding.clientCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
+        Navigation.getNavigation().addOnBackListener(backListener);
         binding.clientCardName.setText(client.getName());
         binding.clientCardName.setOnKeyListener(keyListener);
 
@@ -185,7 +185,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getClientsApi().saveClient(client)).invoke(response -> {
             incomingClient = client;
             if (response.isSuccessful()) {
-                Navigation.getNavigation(ClientCardFragment.this.requireActivity()).back();
+                Navigation.getNavigation().back();
             }
         });
     }
@@ -208,7 +208,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
-        Navigation.getNavigation(requireActivity()).removeOnBackListener(backListener);
+        Navigation.getNavigation().removeOnBackListener(backListener);
     }
 
     @Override
