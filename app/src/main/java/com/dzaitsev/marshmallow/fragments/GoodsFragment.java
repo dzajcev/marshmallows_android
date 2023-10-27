@@ -2,7 +2,7 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.os.Bundle;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.GoodRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.dto.Good;

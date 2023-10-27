@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow.dto.request;
+package com.dzaitsev.marshmallow.dto.authorization.request;
 
 import com.dzaitsev.marshmallow.dto.UserRole;
 
@@ -11,7 +11,7 @@ public class SignUpRequest {
     private String lastName;
     private String email;
     private String password;
-    private List<UserRole> roles = new ArrayList<>();
+    private UserRole role;
 
     public SignUpRequest() {
     }
@@ -44,8 +44,7 @@ public class SignUpRequest {
         this.password = password;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
+    public void setRole(UserRole role) {
+        this.role = role;
     }
-
 }

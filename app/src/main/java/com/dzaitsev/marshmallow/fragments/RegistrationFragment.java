@@ -11,12 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentRegistrationBinding;
 import com.dzaitsev.marshmallow.dto.UserRole;
-import com.dzaitsev.marshmallow.dto.request.SignUpRequest;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
@@ -100,13 +100,13 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
                 request.setLastName(binding.txtLastName.getText().toString());
                 request.setPassword(binding.txtPassword.getText().toString());
                 if (binding.chkDeveloper.isChecked()) {
-                    request.getRoles().add(UserRole.DEVELOPER);
+                    request.setRole(UserRole.DEVELOPER);
                 }
                 if (binding.chkDelivery.isChecked()) {
-                    request.getRoles().add(UserRole.DELIVERYMAN);
+                    request.setRole(UserRole.DELIVERYMAN);
                 }
                 NetworkService.getInstance().refreshToken(null);
-                new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi().signUp(request))
+                new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi().signUp(request))
                         .invoke(objectResponse -> {
                             if (objectResponse.isSuccessful()) {
                                 Optional.ofNullable(objectResponse.body())

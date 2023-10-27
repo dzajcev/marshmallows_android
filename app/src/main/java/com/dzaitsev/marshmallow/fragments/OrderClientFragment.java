@@ -11,14 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
@@ -128,7 +128,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         if (fail) {
             return;
         }
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(order))
                 .invoke(response -> Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment()));
     }

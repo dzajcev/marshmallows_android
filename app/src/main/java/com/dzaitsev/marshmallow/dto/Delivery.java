@@ -18,10 +18,13 @@ public class Delivery implements Serializable, Cloneable {
 
     private Integer id;
     private LocalDateTime createDate;
+    private User executor;
     private LocalDate deliveryDate;
     private LocalTime start;
     private LocalTime end;
     private List<Order> orders;
+
+    private DeliveryStatus deliveryStatus;
 
     public LocalDateTime getCreateDate() {
         return createDate;
@@ -70,15 +73,20 @@ public class Delivery implements Serializable, Cloneable {
         this.id = id;
     }
 
-    public DeliveryStatus getStatus() {
-        if (getOrders() != null && (getOrders().stream().allMatch(Order::isShipped))) {
-            return DeliveryStatus.DONE;
-        } else if (getOrders() != null && (getOrders().stream().anyMatch(f -> !f.isShipped())
-                && getOrders().stream().anyMatch(Order::isShipped))) {
-            return DeliveryStatus.IN_PROGRESS;
-        } else {
-            return DeliveryStatus.NEW;
-        }
+    public User getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(User executor) {
+        this.executor = executor;
+    }
+
+    public DeliveryStatus getDeliveryStatus() {
+        return deliveryStatus;
+    }
+
+    public void setDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
     }
 
     @Override

@@ -12,7 +12,7 @@ public class User implements Serializable {
     private String firstName;
     private String lastName;
 
-    private final List<UserRole> roles = new ArrayList<>();
+    private UserRole role;
 
     public Integer getId() {
         return id;
@@ -54,7 +54,11 @@ public class User implements Serializable {
         this.lastName = lastName;
     }
 
-    public List<UserRole> getRoles() {
-        return roles;
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 }

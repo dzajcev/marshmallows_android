@@ -20,7 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DatePicker;
@@ -31,7 +31,7 @@ import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
@@ -91,7 +91,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         deleteOrder.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorWrapper<>(requireActivity(),
+            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorHelper<>(requireActivity(),
                     NetworkService.getInstance().getOrdersApi().deleteOrder(order.getId()))
                     .invoke(response -> {
                         if (response.isSuccessful()) {
@@ -300,11 +300,11 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         if (fail) {
             return;
         }
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(order)).invoke(response -> {
             incomingOrder = order;
             if (order.getOrderLines().stream().allMatch(OrderLine::isDone)) {
-                new NetworkExecutorWrapper<>(requireActivity(),
+                new NetworkExecutorHelper<>(requireActivity(),
                         NetworkService.getInstance().getOrdersApi().clientIsNotificated(order.getId())).invoke(booleanResponse -> {
                     if (Boolean.FALSE.equals(booleanResponse.body())) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());

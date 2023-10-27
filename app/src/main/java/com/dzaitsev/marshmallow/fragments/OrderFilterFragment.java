@@ -1,30 +1,21 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
-import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderFilterBinding;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
-import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.dzaitsev.marshmallow.utils.StringUtils;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -49,25 +40,19 @@ public class OrderFilterFragment extends Fragment implements IdentityFragment {
         super.onCreate(savedInstanceState);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Фильтр заказов");
-        SharedPreferences preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("order-filter", "{}");
-        Gson gson = GsonExt.getGson();
-        Type type = new TypeToken<OrdersFilter>() {
-        }.getType();
-        OrdersFilter filter = gson.fromJson(string, type);
-        if (filter == null) {
-            filter = new OrdersFilter();
-        }
-        binding.orderFilterStart.setText(Optional.ofNullable(filter.getStart()).map(dateTimeFormatter::format).orElse(""));
-        binding.orderFilterEnd.setText(Optional.ofNullable(filter.getEnd()).map(dateTimeFormatter::format).orElse(""));
-        binding.checkBoxInProgress.setChecked(filter.getStatuses().contains(OrderStatus.IN_PROGRESS));
-        binding.checkBoxDone.setChecked(filter.getStatuses().contains(OrderStatus.DONE));
-        binding.checkBoxInDelivery.setChecked(filter.getStatuses().contains(OrderStatus.IN_DELIVERY));
-        binding.checkBoxShipped.setChecked(filter.getStatuses().contains(OrderStatus.SHIPPED));
+        FiltersHelper.getInstance().getOrderFilter()
+                .ifPresent(filter -> {
+                    binding.orderFilterStart.setText(Optional.ofNullable(filter.getStart()).map(dateTimeFormatter::format).orElse(""));
+                    binding.orderFilterEnd.setText(Optional.ofNullable(filter.getEnd()).map(dateTimeFormatter::format).orElse(""));
+                    binding.checkBoxInProgress.setChecked(filter.getStatuses().contains(OrderStatus.IN_PROGRESS));
+                    binding.checkBoxDone.setChecked(filter.getStatuses().contains(OrderStatus.DONE));
+                    binding.checkBoxInDelivery.setChecked(filter.getStatuses().contains(OrderStatus.IN_DELIVERY));
+                    binding.checkBoxShipped.setChecked(filter.getStatuses().contains(OrderStatus.SHIPPED));
+                });
+
         binding.orderFilterCancel.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
         binding.orderFilterStart.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
@@ -82,7 +67,6 @@ public class OrderFilterFragment extends Fragment implements IdentityFragment {
             datePicker.show();
         });
         binding.orderFilterApply.setOnClickListener(v -> {
-            SharedPreferences.Editor edit = preferences.edit();
             OrdersFilter ordersFilter = new OrdersFilter();
             ordersFilter.setStart(!StringUtils.isEmpty(binding.orderFilterStart.getText().toString())
                     ? LocalDate.parse(binding.orderFilterStart.getText(), dateTimeFormatter) : null);
@@ -100,8 +84,7 @@ public class OrderFilterFragment extends Fragment implements IdentityFragment {
             if (binding.checkBoxShipped.isChecked()) {
                 ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
             }
-            edit.putString("order-filter", GsonExt.getGson().toJson(ordersFilter));
-            edit.apply();
+            FiltersHelper.getInstance().updateOrderFilter(ordersFilter);
             Navigation.getNavigation(requireActivity()).back();
         });
     }

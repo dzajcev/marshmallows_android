@@ -1,132 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/deliveryItemLayout"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="3sp"
-    android:layout_marginEnd="3sp"
-    android:layout_marginBottom="1sp"
-    android:orientation="vertical"
-    android:paddingTop="3sp"
-    android:paddingBottom="3sp">
+    android:layout_marginBottom="1sp">
 
 
     <TextView
         android:id="@+id/deliveryItemId"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="3sp"
-        android:layout_marginTop="3sp"
-        android:layout_marginEnd="3sp"
-        android:layout_marginBottom="3sp"
+        android:layout_height="0dp"
         android:gravity="start|center_vertical"
         android:minHeight="30sp"
+        android:text="121"
         android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/deliveryDate"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="3sp"
-        android:layout_marginTop="3sp"
-        android:layout_marginEnd="3sp"
+        android:layout_height="0dp"
 
-        android:layout_marginBottom="3sp"
-        android:layout_toEndOf="@id/deliveryItemId"
+        android:layout_marginStart="3dp"
         android:gravity="center_vertical|start"
         android:minHeight="30sp"
+        android:text="date delivery"
         android:textSize="20sp"
-        android:textStyle="bold" />
-
-
-    <TextView
-        android:id="@+id/deliveryStart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryItemId"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="3sp"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/deliveryItemId"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tx1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryItemId"
-        android:layout_marginStart="3sp"
-        android:layout_marginTop="3sp"
-        android:layout_marginEnd="3sp"
-        android:layout_toEndOf="@id/deliveryStart"
-        android:text="-"
+        android:id="@+id/deliveryStatus"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="3dp"
+        android:gravity="center_vertical|end"
         android:textSize="18sp"
-        android:textStyle="bold" />
-
-
-    <TextView
-        android:id="@+id/deliveryEnd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryItemId"
-        android:layout_marginTop="3sp"
-        android:layout_toEndOf="@id/tx1"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/deliveryDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/deliveryDate"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/tx2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryStart"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="3sp"
-        android:text="Всего заказов:" />
+        android:layout_marginTop="3dp"
+        android:text="Всего заказов:"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryDate" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".9" />
 
     <TextView
         android:id="@+id/totalOrders"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryStart"
-        android:layout_marginStart="3sp"
-        android:layout_marginTop="3sp"
-        android:layout_marginEnd="3sp"
-        android:layout_toEndOf="@id/tx2" />
-
-
-    <TextView
-        android:id="@+id/deliveredOrders"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryStart"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="3sp"
-        android:layout_marginTop="3sp" />
+        android:layout_marginTop="3dp"
+        android:gravity="center_vertical|end"
+        android:text="11"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.72"
+        app:layout_constraintStart_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryStatus" />
 
     <TextView
         android:id="@+id/tx3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryStart"
-        android:layout_marginTop="3sp"
-        android:layout_toStartOf="@id/deliveredOrders"
-        android:text="Заказов выдано:" />
+        android:layout_marginTop="1dp"
+        android:text="Заказов выдано:"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toBottomOf="@+id/tx2" />
 
     <TextView
-        android:id="@+id/deliveryStatus"
-        android:layout_width="wrap_content"
+        android:id="@+id/deliveredOrders"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/deliveryDate"
-        android:layout_alignParentEnd="true"
         android:gravity="center_vertical|end"
+        android:text="23"
+        app:layout_constraintBottom_toBottomOf="@+id/tx3"
+        app:layout_constraintEnd_toEndOf="@+id/totalOrders"
+        app:layout_constraintStart_toStartOf="@+id/guideline10"
+        app:layout_constraintTop_toTopOf="@+id/tx3" />
+
+    <TextView
+        android:id="@+id/deliveryStart"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="center_vertical"
+        android:text="2312"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/tx3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryDate" />
+
+    <TextView
+        android:id="@+id/tx1"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="center_vertical"
+        android:text="-"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/deliveryStart"
+        app:layout_constraintStart_toEndOf="@+id/deliveryStart"
+        app:layout_constraintTop_toTopOf="@+id/deliveryStart" />
+
+    <TextView
+        android:id="@+id/deliveryEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:gravity="center_vertical"
+        android:text="23123"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/deliveryStart"
+        app:layout_constraintStart_toEndOf="@+id/tx1"
+        app:layout_constraintTop_toTopOf="@+id/deliveryStart" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/executorLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deliveryEnd">
+
+        <TextView
+            android:id="@+id/tx9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Автор"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tx10"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="Исполнитель"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tx9" />
+
+        <TextView
+            android:id="@+id/txtAuthor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:text="TextView"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tx10"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/txtExecutor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="3dp"
+            android:text="TextView"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="@+id/tx10"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/tx10"
+            app:layout_constraintTop_toBottomOf="@+id/tx9" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</RelativeLayout>
+
 
 

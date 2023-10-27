@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewHolder;
@@ -22,7 +22,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentAbstractNsiBinding;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.NsiResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Comparator;
@@ -95,7 +95,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
     protected abstract Call<K> getCall(Boolean bool);
 
     private void refresh() {
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 getCall(determineRequestValue())).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(r -> {
                     mAdapter.setItems(Optional.of(r)
@@ -137,7 +137,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                 }
             });
         }
-        binding.abstractNsiListBack.setOnClickListener(v -> Navigation.getNavigation(getActivity()).back());
+        binding.abstractNsiListBack.setOnClickListener(v -> Navigation.getNavigation().back());
         mAdapter.setFilterPredicate(s -> client -> client.getName().toLowerCase().contains(s.toLowerCase()));
         recyclerView.setAdapter(mAdapter);
         binding.searchClientFld.setOnQueryTextListener(new SearchView.OnQueryTextListener() {

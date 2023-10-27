@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,19 +15,16 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentUserCardBinding;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
-import com.dzaitsev.marshmallow.dto.request.ChangePasswordRequest;
-import com.dzaitsev.marshmallow.dto.request.SaveMyInfoRequest;
-import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.dto.authorization.request.ChangePasswordRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.SaveMyInfoRequest;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UserCardFragment extends Fragment implements IdentityFragment {
@@ -50,9 +46,8 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Вы уверены?");
             builder.setPositiveButton("Да", (dialog, id) -> {
-                SharedPreferences.Editor edit = preferences.edit();
-                edit.putString("authorization-data", "");
-                edit.apply();
+                AuthorizationHelper.getInstance().updateSignInRequest(null);
+                AuthorizationHelper.getInstance().updateUserData(null);
                 NetworkService.getInstance().refreshToken(null);
                 Navigation.getNavigation(requireActivity()).goForward(new LoginFragment());
             });
@@ -81,19 +76,11 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("");
-        preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
-        new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getUsersApi().getMyInfo())
-                .invoke(response -> {
-                    if (response.isSuccessful()) {
-                        Optional.ofNullable(response.body())
-                                .map(UserInfoResponse::getUser)
-                                .ifPresent(user -> {
-                                    binding.txtLogin.setText(user.getEmail());
-                                    binding.txtFirstName.setText(user.getFirstName());
-                                    binding.txtLastName.setText(user.getLastName());
-                                });
-                    }
-
+        AuthorizationHelper.getInstance().getUserData()
+                .ifPresent(user -> {
+                    binding.txtLogin.setText(user.getEmail());
+                    binding.txtFirstName.setText(user.getFirstName());
+                    binding.txtLastName.setText(user.getLastName());
                 });
         binding.btnBack.setOnClickListener(v -> Navigation.getNavigation(requireActivity()).back());
         binding.btnSave.setOnClickListener(v -> {
@@ -107,7 +94,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                 fail = true;
             }
             if (!fail) {
-                new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
+                new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
                         .saveMyInfo(new SaveMyInfoRequest(binding.txtFirstName.getText().toString(),
                                 binding.txtLastName.getText().toString())))
                         .invoke(response -> {
@@ -148,17 +135,16 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                 fail = true;
             }
             if (!fail) {
-                new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
+                new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
                         .changePassword(new ChangePasswordRequest(s)))
                         .invoke(response -> {
                             if (response.isSuccessful()) {
                                 Toast.makeText(getContext(), "Пароль успешно изменен", Toast.LENGTH_SHORT).show();
-                                String string = preferences.getString("authorization-data", "");
-                                SignInRequest signInRequest = GsonExt.getGson().fromJson(string, SignInRequest.class);
-                                signInRequest.setPassword(s);
-                                SharedPreferences.Editor edit = preferences.edit();
-                                edit.putString("authorization-data", GsonExt.getGson().toJson(signInRequest));
-                                edit.apply();
+                                AuthorizationHelper.getInstance().getSignInRequest()
+                                        .ifPresent(signInRequest -> {
+                                            signInRequest.setPassword(s);
+                                            AuthorizationHelper.getInstance().updateSignInRequest(signInRequest);
+                                        });
                                 Navigation.getNavigation(requireActivity()).goForward(new LoginFragment());
                             } else {
                                 Toast.makeText(getContext(), "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();

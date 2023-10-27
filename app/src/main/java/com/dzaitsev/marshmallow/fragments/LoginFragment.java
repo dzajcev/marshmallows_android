@@ -11,20 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentLoginBinding;
-import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
-import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import retrofit2.Response;
 
 public class LoginFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "loginFragment";
@@ -67,26 +59,13 @@ public class LoginFragment extends Fragment implements IdentityFragment {
             if (fail) {
                 return;
             }
-            authorize(new SignInRequest(
+            NetworkExecutorHelper.authorize(requireActivity(), new SignInRequest(
                     binding.txtLogin.getText().toString(),
                     binding.txtPassword.getText().toString()
             ));
         });
         binding.btnRegistration.setOnClickListener(v -> Navigation.getNavigation(requireActivity())
                 .goForward(new RegistrationFragment()));
-    }
-
-    private void authorize(SignInRequest signInRequest) {
-        new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
-                .invoke((Consumer<Response<JwtAuthenticationResponse>>) response -> Optional.ofNullable(response.body())
-                        .map(JwtAuthenticationResponse::getToken)
-                        .ifPresent(s -> {
-                            SharedPreferences.Editor edit = preferences.edit();
-                            edit.putString("authorization-data", GsonExt.getGson().toJson(signInRequest));
-                            edit.apply();
-                            NetworkService.getInstance().refreshToken(s);
-                            Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment());
-                        }));
     }
 
     @Override

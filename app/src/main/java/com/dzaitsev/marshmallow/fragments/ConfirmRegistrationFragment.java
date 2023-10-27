@@ -12,14 +12,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.databinding.FragmentConfirmRegistrationBinding;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
-import com.dzaitsev.marshmallow.dto.request.VerificationCodeRequest;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 
 import java.util.Optional;
 
@@ -71,7 +71,8 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
         binding.btnRequestCode.setOnClickListener(v -> {
             binding.btnRequestCode.setEnabled(false);
             timer.start();
-            new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi()
+            NetworkService.getInstance().refreshToken(token);
+            new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi()
                     .sendCode()).invoke(jwtAuthenticationResponseResponse -> {
                 if (jwtAuthenticationResponseResponse.isSuccessful()) {
                     Toast.makeText(requireContext(), "Код отправлен", Toast.LENGTH_SHORT).show();
@@ -82,16 +83,14 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
         });
         binding.btnSend.setOnClickListener(v -> {
             NetworkService.getInstance().refreshToken(token);
-            new NetworkExecutorWrapper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi()
+            new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi()
                     .verify(new VerificationCodeRequest(binding.txtCode.getText().toString())))
                     .invoke(jwtAuthenticationResponseResponse -> {
                         if (jwtAuthenticationResponseResponse.isSuccessful()) {
                             Optional.ofNullable(jwtAuthenticationResponseResponse.body())
                                     .map(JwtAuthenticationResponse::getToken)
                                     .ifPresent(s -> {
-                                        SharedPreferences.Editor edit = preferences.edit();
-                                        edit.putString("authorization-data", GsonExt.getGson().toJson(new SignInRequest(login, password)));
-                                        edit.apply();
+                                        AuthorizationHelper.getInstance().updateSignInRequest(new SignInRequest(login, password));
                                         NetworkService.getInstance().refreshToken(s);
                                         timer.cancel();
                                         Navigation.getNavigation(requireActivity()).goForward(new OrdersFragment());

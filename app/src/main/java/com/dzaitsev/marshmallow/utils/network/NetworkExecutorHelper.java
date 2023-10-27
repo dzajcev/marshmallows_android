@@ -1,19 +1,24 @@
-package com.dzaitsev.marshmallow.service;
+package com.dzaitsev.marshmallow.utils.network;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.dto.ErrorCodes;
 import com.dzaitsev.marshmallow.dto.ErrorDto;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
+import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
+import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
+import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.dzaitsev.marshmallow.service.NetworkExecutor;
+import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
-import com.google.gson.Gson;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -22,7 +27,7 @@ import java.util.function.Consumer;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class NetworkExecutorWrapper<T> {
+public class NetworkExecutorHelper<T> {
     private final FragmentActivity activity;
 
     private final Call<T> call;
@@ -33,19 +38,42 @@ public class NetworkExecutorWrapper<T> {
 
     private static OnErrorListener globalErrorListener;
 
-    public NetworkExecutorWrapper(FragmentActivity activity, Call<T> call) {
+    public NetworkExecutorHelper(FragmentActivity activity, Call<T> call) {
         this.activity = activity;
         this.call = call;
         screenCover = new ScreenCover(activity);
     }
+    public static void authorize(FragmentActivity activity, SignInRequest signInRequest) {
+        AuthorizationHelper.getInstance().updateSignInRequest(signInRequest);
+        new NetworkExecutorHelper<>(activity, NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
+                .invoke(response -> {
+                    if (response.isSuccessful()) {
+                        Optional.ofNullable(response.body())
+                                .map(JwtAuthenticationResponse::getToken)
+                                .ifPresent(s -> {
+                                    NetworkService.getInstance().refreshToken(s);
+                                    new NetworkExecutorHelper<>(activity, NetworkService.getInstance().getUsersApi().getMyInfo())
+                                            .invoke(r -> {
+                                                if (r.isSuccessful()) {
+                                                    Optional.ofNullable(r.body())
+                                                            .map(UserInfoResponse::getUser)
+                                                            .ifPresent(user -> AuthorizationHelper.getInstance().updateUserData(user));
+                                                }
 
-    public NetworkExecutorWrapper<T> setOnErrorListener(OnErrorListener onErrorListener) {
+                                            });
+                                    Navigation.getNavigation().goForward(new OrdersFragment());
+                                });
+                    }
+                });
+    }
+
+    public NetworkExecutorHelper<T> setOnErrorListener(OnErrorListener onErrorListener) {
         this.onErrorListener = onErrorListener;
         return this;
     }
 
     public static void setGlobalErrorListener(OnErrorListener globalErrorListener) {
-        NetworkExecutorWrapper.globalErrorListener = globalErrorListener;
+        NetworkExecutorHelper.globalErrorListener = globalErrorListener;
     }
 
     public interface OnErrorListener {
@@ -114,11 +142,8 @@ public class NetworkExecutorWrapper<T> {
     }
 
     private void refreshToken(NetworkExecutor.OnResponseListener<T> onResponseListener) {
-        SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("authorization-data", "");
-        Gson gson = GsonExt.getGson();
-        SignInRequest request = gson.fromJson(string, SignInRequest.class);
-        new NetworkExecutor<>(NetworkService.getInstance().getAuthorizationApi().signIn(request))
+        AuthorizationHelper.getInstance().getSignInRequest().ifPresent(signInRequest
+                -> new NetworkExecutor<>(NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
                 .setOnResponseListener(response -> {
                     if (response.body() != null) {
                         NetworkService.getInstance().refreshToken(response.body().getToken());
@@ -127,7 +152,8 @@ public class NetworkExecutorWrapper<T> {
                                 .invoke();
 
                     }
-                }).invoke();
+                }).invoke());
+
     }
 
 }

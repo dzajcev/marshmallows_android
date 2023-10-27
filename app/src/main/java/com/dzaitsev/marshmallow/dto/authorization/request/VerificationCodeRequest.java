@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow.dto.request;
+package com.dzaitsev.marshmallow.dto.authorization.request;
 
 public class VerificationCodeRequest {
     private final String code;

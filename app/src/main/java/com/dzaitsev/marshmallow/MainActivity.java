@@ -18,9 +18,7 @@ import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
-import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
-import com.dzaitsev.marshmallow.dto.request.SignUpRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.ConfirmRegistrationFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
@@ -29,11 +27,15 @@ import com.dzaitsev.marshmallow.fragments.IdentityFragment;
 import com.dzaitsev.marshmallow.fragments.LoginFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 import com.dzaitsev.marshmallow.fragments.UserCardFragment;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
 import com.dzaitsev.marshmallow.service.NetworkService;
-import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelperInitializer;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.NavigationInitializer;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
+import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
+import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelperInitializer;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.Gson;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,65 +44,64 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity {
-    ActivityResultLauncher<String[]> permissionsLauncher =
+
+    SharedPreferences preferences;
+    private final ActivityResultLauncher<String[]> permissionsLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                     result -> {
 
                     });
 
     private void processDeliveryFilter() {
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("delivery-filter", "");
-        Gson gson = GsonExt.getGson();
-        DeliveryFilter deliveryFilter = gson.fromJson(string, DeliveryFilter.class);
-        if (deliveryFilter == null) {
-            deliveryFilter = new DeliveryFilter();
-            deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
-            deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
-            deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
-
-        }
-        deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
-        deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
-        SharedPreferences.Editor edit = preferences.edit();
-        edit.putString("delivery-filter", GsonExt.getGson().toJson(deliveryFilter));
-        edit.apply();
+        FiltersHelper.getInstance().getDeliveryFilter()
+                .or(() -> {
+                    DeliveryFilter deliveryFilter = new DeliveryFilter();
+                    deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
+                    deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
+                    deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
+                    return Optional.of(deliveryFilter);
+                }).map(deliveryFilter -> {
+                    deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
+                    deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
+                    return deliveryFilter;
+                }).ifPresent(deliveryFilter -> FiltersHelper.getInstance().updateDeliveryFilter(deliveryFilter));
     }
 
     private void processOrderFilter() {
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("order-filter", "");
-        Gson gson = GsonExt.getGson();
-        OrdersFilter ordersFilter = gson.fromJson(string, OrdersFilter.class);
-        if (ordersFilter == null) {
-            ordersFilter = new OrdersFilter();
-            ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
-            ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
-            ordersFilter.getStatuses().add(OrderStatus.DONE);
-            ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
-
-        }
-        ordersFilter.setStart(LocalDate.now().minusWeeks(1));
-        ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
-        SharedPreferences.Editor edit = preferences.edit();
-        edit.putString("order-filter", GsonExt.getGson().toJson(ordersFilter));
-        edit.apply();
+        FiltersHelper.getInstance().getOrderFilter()
+                .or(() -> {
+                    OrdersFilter ordersFilter = new OrdersFilter();
+                    ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
+                    ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
+                    ordersFilter.getStatuses().add(OrderStatus.DONE);
+                    ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
+                    return Optional.of(ordersFilter);
+                }).map(ordersFilter -> {
+                    ordersFilter.setStart(LocalDate.now().minusWeeks(1));
+                    ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
+                    return ordersFilter;
+                }).ifPresent(ordersFilter -> FiltersHelper.getInstance().updateOrderFilter(ordersFilter));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        preferences = getPreferences(Context.MODE_PRIVATE);
+        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        AuthorizationHelperInitializer.init(preferences);
+        FiltersHelperInitializer.init(preferences);
+        NavigationInitializer.init(this, bottomNavigationView);
         processDeliveryFilter();
         processOrderFilter();
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         View userCard = toolbar.findViewById(R.id.userCard);
-        userCard.setOnClickListener(v -> Navigation.getNavigation(MainActivity.this).goForward(new UserCardFragment()));
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        userCard.setOnClickListener(v -> Navigation.getNavigation().goForward(new UserCardFragment()));
+
         getSupportFragmentManager().addFragmentOnAttachListener((fragmentManager, fragment) -> {
             if (fragment instanceof IdentityFragment identityFragment) {
-                if ((Navigation.getNavigation(MainActivity.this).getRootFragments().stream()
+                if ((Navigation.getNavigation().getRootFragments().stream()
                         .anyMatch(a -> a.equals(identityFragment.getUniqueName())))
                         && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
                     bottomNavigationView.setVisibility(View.VISIBLE);
@@ -112,58 +113,57 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        SharedPreferences preferences = this.getPreferences(Context.MODE_PRIVATE);
-        String string = preferences.getString("authorization-data", "");
-        Gson gson = GsonExt.getGson();
-        SignInRequest request = gson.fromJson(string, SignInRequest.class);
-        NetworkExecutorWrapper.setGlobalErrorListener(code -> {
+        NetworkExecutorHelper.setGlobalErrorListener(code -> {
             switch (code) {
                 case AUTH006 -> {//обновление токена
                 }
                 case AUTH008 -> {
                     NetworkService.getInstance().refreshToken(null);
-                    new NetworkExecutorWrapper<>(MainActivity.this, NetworkService.getInstance().getAuthorizationApi()
-                            .signUp(new SignUpRequest(request.getEmail(), request.getPassword())))
-                            .invoke(response -> Optional.ofNullable(response.body())
-                                    .ifPresent(jwtSignUpResponse -> {
-                                        Bundle bundle = new Bundle();
-                                        bundle.putInt("ttCode", jwtSignUpResponse.getVerificationCodeTtl());
-                                        bundle.putString("token", jwtSignUpResponse.getToken());
-                                        bundle.putString("login", request.getEmail());
-                                        bundle.putString("password", request.getPassword());
-                                        Navigation.getNavigation(MainActivity.this).goForward(new ConfirmRegistrationFragment(), bundle);
-                                    }));
+                    AuthorizationHelper.getInstance().getSignInRequest()
+                            .ifPresent(r -> new NetworkExecutorHelper<>(MainActivity.this, NetworkService.getInstance().getAuthorizationApi()
+                                    .signUp(new SignUpRequest(r.getEmail(), r.getPassword())))
+                                    .invoke(response -> Optional.ofNullable(response.body())
+                                            .ifPresent(jwtSignUpResponse -> {
+                                                Bundle bundle = new Bundle();
+                                                bundle.putInt("ttlCode", jwtSignUpResponse.getVerificationCodeTtl());
+                                                bundle.putString("token", jwtSignUpResponse.getToken());
+                                                bundle.putString("login", r.getEmail());
+                                                bundle.putString("password", r.getPassword());
+                                                Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
+                                            })));
                 }
                 default -> {
                     Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
                     Toast.makeText(this, code.getText(), Toast.LENGTH_SHORT).show();
                     if (!(fragmentById instanceof LoginFragment)) {
-                        Navigation.getNavigation(MainActivity.this).goForward(new LoginFragment());
+                        AuthorizationHelper.getInstance().updateSignInRequest(null);
+                        Navigation.getNavigation().goForward(new LoginFragment());
                     }
                 }
             }
         });
+
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
             if (item.getItemId() == R.id.ordersMenu) {
                 if (!(fragmentById instanceof OrdersFragment)) {
-                    Navigation.getNavigation(MainActivity.this).goForward(new OrdersFragment());
+                    Navigation.getNavigation().goForward(new OrdersFragment());
                     return true;
                 }
 
             } else if (item.getItemId() == R.id.goodsMenu) {
                 if (!(fragmentById instanceof GoodsFragment)) {
-                    Navigation.getNavigation(MainActivity.this).goForward(new GoodsFragment());
+                    Navigation.getNavigation().goForward(new GoodsFragment());
                     return true;
                 }
             } else if (item.getItemId() == R.id.clientsMenu) {
                 if (!(fragmentById instanceof ClientsFragment)) {
-                    Navigation.getNavigation(MainActivity.this).goForward(new ClientsFragment());
+                    Navigation.getNavigation().goForward(new ClientsFragment());
                     return true;
                 }
             } else if (item.getItemId() == R.id.deliveryMenu) {
                 if (!(fragmentById instanceof DeliveriesFragment)) {
-                    Navigation.getNavigation(MainActivity.this).goForward(new DeliveriesFragment());
+                    Navigation.getNavigation().goForward(new DeliveriesFragment());
                     return true;
                 }
             }
@@ -173,33 +173,9 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.SEND_SMS));
         askForPermissions(permissionsList);
-        if (request != null) {
-            authorize(request);
-        } else {
-            Navigation.getNavigation(this).goForward(new LoginFragment(), new Bundle());
-        }
-    }
-
-    private void authorize(SignInRequest signInRequest) {
-        new NetworkExecutorWrapper<>(this, NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
-                .invoke(response -> {
-                    if (response.isSuccessful()) {
-                        Optional.ofNullable(response.body())
-                                .map(JwtAuthenticationResponse::getToken)
-                                .ifPresent(s -> {
-                                    NetworkService.getInstance().refreshToken(s);
-                                    Navigation.getNavigation(MainActivity.this).goForward(new OrdersFragment());
-                                });
-                    }
-//                    else {
-//                        if (response.code() == 403) {
-//                            MainActivity.this.runOnUiThread(() -> Toast.makeText(MainActivity.this, "Неверный логин или пароль", Toast.LENGTH_SHORT).show());
-//                        } else {
-//                            Toast.makeText(MainActivity.this, "Авторизация не удалась", Toast.LENGTH_SHORT).show();
-//                        }
-//                        Navigation.getNavigation(MainActivity.this).goForward(new LoginFragment(), new Bundle());
-//                    }
-                });
+        AuthorizationHelper.getInstance().getSignInRequest()
+                .ifPresentOrElse(signInRequest -> NetworkExecutorHelper.authorize(MainActivity.this, signInRequest),
+                        () -> Navigation.getNavigation().goForward(new LoginFragment(), new Bundle()));
     }
 
     private AlertDialog alertDialog;
@@ -231,6 +207,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Navigation.getNavigation(this).callbackBack();
+        Navigation.getNavigation().callbackBack();
     }
 }

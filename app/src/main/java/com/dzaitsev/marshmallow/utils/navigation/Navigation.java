@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow;
+package com.dzaitsev.marshmallow.utils.navigation;
 
 import android.os.Bundle;
 
@@ -6,12 +6,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
 import com.dzaitsev.marshmallow.fragments.LoginFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,8 +24,9 @@ import java.util.stream.Stream;
 
 public class Navigation {
 
-    //    private final FragmentManager fragmentManager;
     private FragmentActivity fragmentActivity;
+
+    private BottomNavigationView bottomNavigationView;
 
     private final LinkedList<Fragment> backStack = new LinkedList<>();
     private final Map<String, Bundle> incomingBundles = new HashMap<>();
@@ -36,7 +39,12 @@ public class Navigation {
         return fragmentActivity.getSupportFragmentManager();
     }
 
-    public Navigation(FragmentActivity activity) {
+    protected Navigation setBottomNavigationView(BottomNavigationView bottomNavigationView) {
+        this.bottomNavigationView = bottomNavigationView;
+        return this;
+    }
+
+    protected Navigation setActivity(FragmentActivity activity) {
         this.fragmentActivity = activity;
         fragmentManager().addFragmentOnAttachListener((fragmentManager, fragment) -> {
             if (fragment instanceof IdentityFragment identityFragment) {
@@ -49,14 +57,13 @@ public class Navigation {
                 }
             }
         });
+        return this;
     }
 
-
-    public static Navigation getNavigation(FragmentActivity activity) {
+    public static Navigation getNavigation() {
         if (navigation == null) {
-            navigation = new Navigation(activity);
+            navigation = new Navigation();
         }
-        navigation.fragmentActivity = activity;
         return navigation;
     }
 

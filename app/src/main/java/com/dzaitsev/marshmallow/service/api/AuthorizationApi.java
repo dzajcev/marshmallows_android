@@ -2,9 +2,9 @@ package com.dzaitsev.marshmallow.service.api;
 
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtSignUpResponse;
-import com.dzaitsev.marshmallow.dto.request.SignInRequest;
-import com.dzaitsev.marshmallow.dto.request.SignUpRequest;
-import com.dzaitsev.marshmallow.dto.request.VerificationCodeRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
+import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

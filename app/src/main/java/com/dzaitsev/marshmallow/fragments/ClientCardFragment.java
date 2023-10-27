@@ -13,13 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.AlertDialogComponent;
 import com.dzaitsev.marshmallow.databinding.FragmentClientCardBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.ClientsApi;
 import com.dzaitsev.marshmallow.utils.StringUtils;
@@ -90,7 +90,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         deleteClient.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(ClientCardFragment.this.getActivity());
             builder.setTitle((incomingClient.isActive() ? "Удаление" : "Восстановление") + " клиента?");
-            new NetworkExecutorWrapper<>(requireActivity(),
+            new NetworkExecutorHelper<>(requireActivity(),
                     NetworkService.getInstance().getClientsApi().checkClientOnOrdersAvailability(client.getId()))
                     .invoke(booleanResponse -> {
                         if (!booleanResponse.isSuccessful()) {
@@ -103,7 +103,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                         builder.setMessage("Вы уверены?" + text);
                         builder.setPositiveButton("Да", (dialog, id) -> {
                             ClientsApi clientsApi = NetworkService.getInstance().getClientsApi();
-                            new NetworkExecutorWrapper<>(requireActivity(),
+                            new NetworkExecutorHelper<>(requireActivity(),
                                     incomingClient.isActive() ? clientsApi.deleteClient(client.getId()) : clientsApi.restoreClient(client.getId()))
                                     .invoke(response -> {
                                         if (response.isSuccessful()) {
@@ -181,7 +181,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
             return;
         }
         fillClient();
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getClientsApi().saveClient(client)).invoke(response -> {
             incomingClient = client;
             if (response.isSuccessful()) {

@@ -10,13 +10,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.OrderSelectorRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderSelectorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
 import java.util.Comparator;
@@ -78,7 +78,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
         Delivery delivery = Optional.ofNullable(getArguments())
                 .map(m -> m.getSerializable("delivery", Delivery.class)).orElse(new Delivery());
         mAdapter = new OrderSelectorRecyclerViewAdapter();
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().getOrdersForDelivery()).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
                         .orElse(new OrderResponse()).getOrders().stream()

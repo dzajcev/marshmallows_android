@@ -12,11 +12,14 @@ import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.User;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Delivery, DeliveryRecyclerViewAdapter.RecycleViewHolder> {
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -25,10 +28,10 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
     @Override
     public void onBindViewHolder(@NonNull RecycleViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).getStatus() == DeliveryStatus.DONE) {
+        if (getShowItems().get(position).getDeliveryStatus() == DeliveryStatus.DONE) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
-        if (getShowItems().get(position).getStatus() == DeliveryStatus.IN_PROGRESS) {
+        if (getShowItems().get(position).getDeliveryStatus() == DeliveryStatus.IN_PROGRESS) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
         }
     }
@@ -41,8 +44,9 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
         private final TextView end;
         private final TextView totalOrders;
         private final TextView deliveredOrders;
-
         private final TextView deliveryStatus;
+
+        private final View executorLayout;
 
         public RecycleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -53,6 +57,7 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             totalOrders = itemView.findViewById(R.id.totalOrders);
             deliveredOrders = itemView.findViewById(R.id.deliveredOrders);
             deliveryStatus = itemView.findViewById(R.id.deliveryStatus);
+            executorLayout = itemView.findViewById(R.id.executorLayout);
         }
 
         @Override
@@ -63,10 +68,16 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             start.setText(timeFormatter.format(item.getStart()));
             end.setText(timeFormatter.format(item.getEnd()));
             totalOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).map(List::size).orElse(0)));
-            deliveryStatus.setText(item.getStatus().getText());
+            deliveryStatus.setText(item.getDeliveryStatus().getText());
             deliveredOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
                     .stream().filter(Order::isShipped)
                     .count()));
+            AuthorizationHelper.getInstance().getUserData()
+                    .ifPresent(user -> {
+                        if (user.getId().equals(item.getExecutor().getId())) {
+                            executorLayout.setVisibility(View.GONE);
+                        }
+                    });
         }
     }
 

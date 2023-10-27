@@ -14,23 +14,20 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import retrofit2.Response;
 
 public class GoodCardFragment extends Fragment implements IdentityFragment {
 
@@ -76,7 +73,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         deleteClient.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
             builder.setTitle((incomingGood.isActive() ? "Удаление" : "Восстановление") + " зефирки?");
-            new NetworkExecutorWrapper<>(requireActivity(),
+            new NetworkExecutorHelper<>(requireActivity(),
                     NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()))
                     .invoke(booleanResponse -> {
                         if (!booleanResponse.isSuccessful()) {
@@ -89,7 +86,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                         builder.setMessage("Вы уверены?" + text);
                         builder.setPositiveButton("Да", (dialog, id) -> {
                             GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
-                            new NetworkExecutorWrapper<>(requireActivity(),
+                            new NetworkExecutorHelper<>(requireActivity(),
                                     incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
                                     .invoke(response -> {
                                         if (response.isSuccessful()) {
@@ -175,7 +172,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
             return;
         }
         fillGood();
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getGoodsApi().saveGood(good)).invoke(response -> {
             incomingGood = good;
             if (response.isSuccessful()) {

@@ -18,14 +18,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.Navigation;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.DeliveryOrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
-import com.dzaitsev.marshmallow.service.NetworkExecutorWrapper;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 
 import java.time.format.DateTimeFormatter;
@@ -69,7 +69,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         deleteOrder.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorWrapper<>(requireActivity(),
+            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorHelper<>(requireActivity(),
                     NetworkService.getInstance().getDeliveryApi().deleteDelivery(delivery.getId()))
                     .invoke(response -> {
                         if (response.isSuccessful()) {
@@ -207,7 +207,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             Toast.makeText(requireContext(), "Время начала позже времени окончания", Toast.LENGTH_SHORT).show();
             return;
         }
-        new NetworkExecutorWrapper<>(requireActivity(),
+        new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getDeliveryApi().saveDelivery(delivery)).
                 invoke(response -> {
                     incomingDelivery = delivery;
