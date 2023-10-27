@@ -11,18 +11,19 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        order = requireArguments().getSerializable("order", Order.class);
+        order = GsonHelper.deserialize(requireArguments().getString("order"), Order.class);
         binding = FragmentOrderClientBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -49,12 +50,12 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         Bundle bundle = new Bundle();
         requireActivity().setTitle("Информация по заказу");
         binding.ordersClientBackward.setOnClickListener(view1 -> {
-            bundle.putSerializable("order", order);
+            bundle.putString("order", GsonHelper.serialize(order));
             Navigation.getNavigation().back();
         });
         binding.ordersClientSave.setOnClickListener(view1 -> save());
         binding.clientName.setOnClickListener(v -> {
-            bundle.putSerializable("order", order);
+            bundle.putString("order", GsonHelper.serialize(order));
             Navigation.getNavigation().goForward(new ClientsFragment(), bundle);
         });
         binding.deadline.setOnClickListener(v -> {

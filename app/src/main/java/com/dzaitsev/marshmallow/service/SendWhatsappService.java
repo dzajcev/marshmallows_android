@@ -2,14 +2,7 @@ package com.dzaitsev.marshmallow.service;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 public class SendWhatsappService {
 
@@ -28,13 +21,12 @@ public class SendWhatsappService {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     public void send(Context context, String number, String text) {
         try {
             Intent i = new Intent(Intent.ACTION_VIEW);
             String url = "https://api.whatsapp.com/send?phone="
                     + number
-                    + "&text=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
+                    + "&text=" + text;
             i.setPackage("com.whatsapp");
             i.setData(Uri.parse(url));
             if (i.resolveActivity(context.getPackageManager()) != null) {

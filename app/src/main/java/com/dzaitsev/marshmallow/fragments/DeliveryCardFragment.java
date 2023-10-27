@@ -24,7 +24,10 @@ import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.DeliveryStatus;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
@@ -93,7 +96,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             @NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
-        delivery = Objects.requireNonNull(requireArguments().getSerializable("delivery", Delivery.class));
+        delivery = Objects.requireNonNull(GsonHelper.deserialize(requireArguments().getString("delivery"), Delivery.class));
         setHasOptionsMenu(delivery.getId() != null && delivery.isMy());
         incomingDelivery = delivery.clone();
         binding = FragmentDeliveryCardBinding.inflate(inflater, container, false);
@@ -110,7 +113,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         binding.deliveryCardOrders.setAdapter(mAdapter);
         binding.deliveryCardAddOrders.setOnClickListener(v -> {
             Bundle orders = new Bundle();
-            orders.putSerializable("delivery", delivery);
+            orders.putString("delivery", GsonHelper.serialize(delivery));
             Navigation.getNavigation().goForward(orderSelectorFragment, orders);
         });
         binding.deliveryCardDateDelivery.setOnClickListener(v -> {
@@ -161,12 +164,15 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             if (delivery.getOrders().isEmpty()) {
                 return;
             }
-            boolean toShip = delivery.getOrders().stream().anyMatch(a -> !a.isShipped());
+            boolean toShip = delivery.getOrders().stream().anyMatch(a -> a.getOrderStatus() != OrderStatus.SHIPPED);
             AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryCardFragment.this.getActivity());
             builder.setTitle("Вы уверены, что хотите отметить все заказы " +
                     (toShip ? "" : "не") +
                     " доставленными?");
-            builder.setPositiveButton("Да", (dialog, id) -> delivery.getOrders().forEach(o -> mAdapter.setShipped(toShip, o)));
+            builder.setPositiveButton("Да", (dialog, id) -> {
+                delivery.setDeliveryStatus(toShip ? DeliveryStatus.DONE : DeliveryStatus.NEW);
+                delivery.getOrders().forEach(o -> mAdapter.setShipped(toShip, o));
+            });
             builder.setNegativeButton("Нет", (dialog, id) -> {
             });
             builder.create().show();

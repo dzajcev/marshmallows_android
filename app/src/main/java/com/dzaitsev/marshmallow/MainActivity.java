@@ -18,6 +18,7 @@ import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
+import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.ConfirmRegistrationFragment;
@@ -51,34 +52,34 @@ public class MainActivity extends AppCompatActivity {
                     });
 
     private void processDeliveryFilter() {
-        FiltersHelper.getInstance().getDeliveryFilter()
-                .or(() -> {
-                    DeliveryFilter deliveryFilter = new DeliveryFilter();
-                    deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
-                    deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
-                    deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
-                    return Optional.of(deliveryFilter);
-                }).map(deliveryFilter -> {
-                    deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
-                    deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
-                    return deliveryFilter;
-                }).ifPresent(deliveryFilter -> FiltersHelper.getInstance().updateDeliveryFilter(deliveryFilter));
+        DeliveryFilter deliveryFilter;
+        if (FiltersHelper.getInstance().getDeliveryFilter().isPresent()) {
+            deliveryFilter = FiltersHelper.getInstance().getDeliveryFilter().get();
+        } else {
+            deliveryFilter = new DeliveryFilter();
+            deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
+            deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
+            deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
+        }
+        deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
+        deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
+        FiltersHelper.getInstance().updateDeliveryFilter(deliveryFilter);
     }
 
     private void processOrderFilter() {
-        FiltersHelper.getInstance().getOrderFilter()
-                .or(() -> {
-                    OrdersFilter ordersFilter = new OrdersFilter();
-                    ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
-                    ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
-                    ordersFilter.getStatuses().add(OrderStatus.DONE);
-                    ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
-                    return Optional.of(ordersFilter);
-                }).map(ordersFilter -> {
-                    ordersFilter.setStart(LocalDate.now().minusWeeks(1));
-                    ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
-                    return ordersFilter;
-                }).ifPresent(ordersFilter -> FiltersHelper.getInstance().updateOrderFilter(ordersFilter));
+        OrdersFilter ordersFilter;
+        if (FiltersHelper.getInstance().getOrderFilter().isPresent()) {
+            ordersFilter = FiltersHelper.getInstance().getOrderFilter().get();
+        } else {
+            ordersFilter = new OrdersFilter();
+            ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
+            ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
+            ordersFilter.getStatuses().add(OrderStatus.DONE);
+            ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
+        }
+        ordersFilter.setStart(LocalDate.now().minusWeeks(1));
+        ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
+        FiltersHelper.getInstance().updateOrderFilter(ordersFilter);
     }
 
     @Override
@@ -141,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
             if (item.getItemId() == R.id.ordersMenu) {
@@ -172,9 +172,12 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.SEND_SMS));
         askForPermissions(permissionsList);
-        AuthorizationHelper.getInstance().getSignInRequest()
-                .ifPresentOrElse(signInRequest -> NetworkExecutorHelper.authorize(MainActivity.this, signInRequest),
-                        () -> Navigation.getNavigation().goForward(new LoginFragment(), new Bundle()));
+        Optional<SignInRequest> request = AuthorizationHelper.getInstance().getSignInRequest();
+        if (request.isPresent()) {
+            NetworkExecutorHelper.authorize(MainActivity.this, request.get());
+        } else {
+            Navigation.getNavigation().goForward(new LoginFragment(), new Bundle());
+        }
     }
 
     private AlertDialog alertDialog;

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.widget.CompoundButton;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 
@@ -148,6 +149,7 @@ public class CheckBoxTriStates extends AppCompatCheckBox {
             out.writeValue(state);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "CheckboxTriState.SavedState{"
@@ -155,7 +157,6 @@ public class CheckBoxTriStates extends AppCompatCheckBox {
                     + " state=" + state + "}";
         }
 
-        @SuppressWarnings("hiding")
         public static final Parcelable.Creator<SavedState> CREATOR =
                 new Parcelable.Creator<>() {
                     @Override

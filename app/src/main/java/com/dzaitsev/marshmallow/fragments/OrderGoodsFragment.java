@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,19 +8,19 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderGoodsBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +38,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        order = requireArguments().getSerializable("order", Order.class);
+        order = GsonHelper.deserialize(requireArguments().getString("order"), Order.class);
         binding = FragmentOrderGoodsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -79,7 +78,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
                             order.getOrderLines().get(i).setNum(i + 1);
                         }
                     }
-                    bundle.putSerializable("order", order);
+                    bundle.putString("order",GsonHelper.serialize( order));
                     Navigation.getNavigation().goForward(new OrderClientFragment(), bundle);
                 } catch (Exception e) {
 //do nothing
@@ -117,7 +116,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
         });
         mAdapter.setSelectGoodListener(orderLine -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("order", order);
+            bundle.putString("order", GsonHelper.serialize(order));
             bundle.putInt("orderline", orderLine.getNum());
             bundle.putString("source", "orderGoods");
             Navigation.getNavigation().goForward(new GoodsFragment(), bundle);

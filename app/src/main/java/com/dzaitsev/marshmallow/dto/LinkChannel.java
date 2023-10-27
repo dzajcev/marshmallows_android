@@ -6,7 +6,7 @@ public enum LinkChannel {
     WHATSAPP(2);
 
 
-    private int idx;
+    private final int idx;
 
     LinkChannel(int idx) {
         this.idx = idx;

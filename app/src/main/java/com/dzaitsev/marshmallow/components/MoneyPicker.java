@@ -3,18 +3,14 @@ package com.dzaitsev.marshmallow.components;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Build;
 import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
@@ -24,7 +20,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class MoneyPicker extends View{
+public class MoneyPicker extends View {
     private final AlertDialog.Builder builder;
     private final EditText money;
 
@@ -72,10 +68,12 @@ public class MoneyPicker extends View{
             MoneyPicker.this.builder.setTitle(title);
             return this;
         }
+
         public Builder setMessage(String message) {
             MoneyPicker.this.builder.setMessage(message);
             return this;
         }
+
         public Builder setMinValue(Integer minValue) {
             MoneyPicker.this.minValue = minValue;
             return this;
@@ -91,7 +89,6 @@ public class MoneyPicker extends View{
             return this;
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public Builder positiveButton(Consumer<Double> supplier) {
             positiveButton = view -> {
                 Optional.ofNullable(MoneyUtils.getInstance()

@@ -13,16 +13,17 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.AlertDialogComponent;
 import com.dzaitsev.marshmallow.databinding.FragmentClientCardBinding;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.ClientsApi;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.List;
 import java.util.Objects;
@@ -127,7 +128,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        client = requireArguments().getSerializable("client", Client.class);
+        client = GsonHelper.deserialize(requireArguments().getString("client"), Client.class);
         Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
         setHasOptionsMenu(client.getId() != null);
         incomingClient = Objects.requireNonNull(client).clone();

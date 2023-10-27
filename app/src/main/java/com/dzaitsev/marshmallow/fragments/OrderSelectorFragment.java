@@ -10,14 +10,15 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.OrderSelectorRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderSelectorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Comparator;
 import java.util.List;
@@ -52,8 +53,6 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
     };
 
     private boolean hasChanges() {
-//        fillOrder();
-//        return !order.equals(incomingOrder);
         return false;
     }
 
@@ -76,14 +75,14 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Выбор заказов");
         Delivery delivery = Optional.ofNullable(getArguments())
-                .map(m -> m.getSerializable("delivery", Delivery.class)).orElse(new Delivery());
+                .map(m -> GsonHelper.deserialize(m.getString("delivery"), Delivery.class)).orElse(new Delivery());
         mAdapter = new OrderSelectorRecyclerViewAdapter();
         new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().getOrdersForDelivery()).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
                         .orElse(new OrderResponse()).getOrders().stream()
                         .filter(f -> delivery.getOrders().stream().noneMatch(f1 -> f1.getId().equals(f.getId())))
-                        .sorted(Comparator.comparing(Order::isShipped)
+                        .sorted(Comparator.comparing(Order::getOrderStatus)
                                 .thenComparing(p -> p.getClient().getName()))
                         .collect(Collectors.toList()))));
         binding.orderSelectorItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
@@ -93,7 +92,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
         binding.orderSelectorSave.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             delivery.getOrders().addAll(getSelected());
-            bundle.putSerializable("delivery", delivery);
+            bundle.putString("delivery", GsonHelper.serialize(delivery));
             Navigation.getNavigation().back(bundle);
         });
     }

@@ -40,8 +40,6 @@ public class Order implements Serializable, Cloneable {
 
     private Double paySum;
 
-    private boolean shipped;
-
     private LocalDateTime completeDate;
 
     private OrderStatus orderStatus;
@@ -134,14 +132,6 @@ public class Order implements Serializable, Cloneable {
 
     public void setNeedDelivery(boolean needDelivery) {
         this.needDelivery = needDelivery;
-    }
-
-    public boolean isShipped() {
-        return shipped;
-    }
-
-    public void setShipped(boolean shipped) {
-        this.shipped = shipped;
     }
 
     public Double getPaySum() {

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.OrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
@@ -67,14 +68,14 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
 
         binding.orderCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("order", new Order());
+            bundle.putString("order", GsonHelper.serialize(new Order()));
             Navigation.getNavigation().goForward(new OrderGoodsFragment(), bundle);
         });
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
         mAdapter.setEditItemListener(item -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("order", item);
+            bundle.putString("order", GsonHelper.serialize(item));
             Navigation.getNavigation().goForward(new OrderCardFragment(), bundle);
         });
         binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new OrderFilterFragment()));

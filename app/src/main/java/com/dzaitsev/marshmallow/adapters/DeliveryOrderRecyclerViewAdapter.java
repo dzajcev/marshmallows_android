@@ -14,6 +14,7 @@ import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.LinkChannelPicker;
 import com.dzaitsev.marshmallow.components.OrderSimpleDialog;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.service.CallPhoneService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
@@ -35,7 +36,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
     @Override
     public void onBindViewHolder(@NonNull RecycleViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).isShipped()) {
+        if (getShowItems().get(position).getOrderStatus() == OrderStatus.SHIPPED) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
         }
     }
@@ -83,8 +84,12 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                     }).build()
                     .show());
             deliveryOrderShipped.setOnClickListener(v -> {
-                getItem().setShipped(!getItem().isShipped());
-                setShipped(getItem().isShipped());
+                if (getItem().getOrderStatus() == OrderStatus.SHIPPED) {
+                    getItem().setOrderStatus(OrderStatus.IN_DELIVERY);
+                } else if (getItem().getOrderStatus() == OrderStatus.IN_DELIVERY) {
+                    getItem().setOrderStatus(OrderStatus.SHIPPED);
+                }
+                setShipped(getItem().getOrderStatus());
             });
         }
 
@@ -98,11 +103,11 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(getItem())));
             deliveryOrderToPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(getItem())));
             deliveryOrderItemDelete.setOnClickListener(v -> {
-                if (deleteItemListener != null && !getItem().isShipped()) {
+                if (deleteItemListener != null && getItem().getOrderStatus() != OrderStatus.SHIPPED) {
                     deleteItemListener.deleteItem(getItem());
                 }
             });
-            if (getItem().isShipped() || deleteItemListener == null) {
+            if (getItem().getOrderStatus() == OrderStatus.SHIPPED || deleteItemListener == null) {
                 deliveryOrderItemDelete.setVisibility(View.GONE);
             } else {
                 deliveryOrderItemDelete.setVisibility(View.VISIBLE);
@@ -110,8 +115,8 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
         }
 
         @SuppressLint("ResourceAsColor")
-        public void setShipped(boolean shipped) {
-            if (shipped) {
+        public void setShipped(OrderStatus status) {
+            if (status == OrderStatus.SHIPPED) {
                 deliveryOrderItemDelete.setVisibility(View.GONE);
                 changeBackgroundTintColor(ContextCompat.getColor(getView().getContext(), R.color.light_green));
             } else {
@@ -122,7 +127,8 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
     }
 
     public void setShipped(boolean shipped, Order order) {
-        order.setShipped(shipped);
+
+        order.setOrderStatus(shipped ? OrderStatus.SHIPPED : OrderStatus.IN_DELIVERY);
         notifyDataSetChanged();
     }
 

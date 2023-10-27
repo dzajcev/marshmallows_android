@@ -121,7 +121,7 @@ public class LinkChannelSelector extends ConstraintLayout {
 
     private boolean isAppInstalled(String packageName) {
         try {
-            getContext().getPackageManager().getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(PackageManager.GET_ACTIVITIES));
+            getContext().getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
             return true;
         } catch (PackageManager.NameNotFoundException ignored) {
             return false;

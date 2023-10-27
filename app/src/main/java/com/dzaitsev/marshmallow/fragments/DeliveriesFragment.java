@@ -9,13 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.DeliveryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveriesBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
 
 import java.util.Comparator;
@@ -66,7 +67,7 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
 
         binding.deliveryCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
-            bundle.putSerializable("delivery", new Delivery());
+            bundle.putString("delivery", GsonHelper.serialize(new Delivery()));
             Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
         });
         mAdapter = new DeliveryRecyclerViewAdapter();
@@ -81,14 +82,13 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                                 .map(m -> m.iterator().next())
                                 .orElse(null);
                         Bundle bundle = new Bundle();
-                        bundle.putSerializable("delivery", delivery);
+                        bundle.putString("delivery", GsonHelper.serialize(delivery));
                         Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
                     }
                 }));
         binding.deliveriesList.setAdapter(mAdapter);
         binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new DeliveryFilterFragment()));
     }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();

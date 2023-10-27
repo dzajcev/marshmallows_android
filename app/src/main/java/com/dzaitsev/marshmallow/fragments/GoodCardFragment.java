@@ -14,17 +14,18 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentGoodCardBinding;
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -112,7 +113,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        good = requireArguments().getSerializable("good", Good.class);
+        good = GsonHelper.deserialize(requireArguments().getString("good"), Good.class);
         incomingGood = Objects.requireNonNull(good).clone();
         setHasOptionsMenu(good.getId() != null);
         binding = FragmentGoodCardBinding.inflate(inflater, container, false);
@@ -158,6 +159,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         priceHistoryRecyclerViewAdapter.setItems(good.getPrices().stream()
                 .sorted((price, t1) -> t1.getCreateDate().compareTo(price.getCreateDate())).collect(Collectors.toList()));
     }
+
     private void save() {
         boolean fail = false;
         if (StringUtils.isEmpty(binding.goodCardName.getText().toString())) {

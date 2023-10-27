@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewHolder;
@@ -22,8 +21,10 @@ import com.dzaitsev.marshmallow.databinding.FragmentAbstractNsiBinding;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.response.NsiResponse;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -114,7 +115,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
         final RecyclerView recyclerView = view.findViewById(R.id.abstractNsiListView);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         order = Optional.ofNullable(getArguments())
-                .map(m -> m.getSerializable("order", Order.class)).orElse(null);
+                .map(m -> GsonHelper.deserialize(m.getString("order"), Order.class)).orElse(null);
         if (order != null) {
             binding.checkBoxTriStates.setVisibility(View.GONE);
         }

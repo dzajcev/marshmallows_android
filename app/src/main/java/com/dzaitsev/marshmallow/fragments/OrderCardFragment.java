@@ -34,6 +34,7 @@ import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
@@ -77,7 +78,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        order = requireArguments().getSerializable("order", Order.class);
+        order = GsonHelper.deserialize(requireArguments().getString("order"), Order.class);
         incomingOrder = Objects.requireNonNull(order).clone();
         requireActivity().setTitle("Информация о заказе");
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
@@ -156,7 +157,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             });
             mAdapter.setSelectGoodListener(orderLine -> {
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("order", order);
+                bundle.putString("order",GsonHelper.serialize( order));
                 bundle.putInt("orderline", orderLine.getNum());
                 bundle.putString("source", "orderCard");
                 Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
