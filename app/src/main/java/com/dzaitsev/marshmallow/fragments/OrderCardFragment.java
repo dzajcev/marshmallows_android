@@ -42,7 +42,6 @@ import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
 
 public class OrderCardFragment extends Fragment implements IdentityFragment {
@@ -79,7 +78,14 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         order = GsonHelper.deserialize(requireArguments().getString("order"), Order.class);
-        incomingOrder = Objects.requireNonNull(order).clone();
+        if (order.getId() != null) {
+            new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getOrdersApi().getOrder(order.getId()))
+                    .invoke(deliveryResponse -> {
+                        if (deliveryResponse.isSuccessful()) {
+                            incomingOrder = deliveryResponse.body();
+                        }
+                    });
+        }
         requireActivity().setTitle("Информация о заказе");
         binding = FragmentOrderCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -157,7 +163,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             });
             mAdapter.setSelectGoodListener(orderLine -> {
                 Bundle bundle = new Bundle();
-                bundle.putString("order",GsonHelper.serialize( order));
+                bundle.putString("order", GsonHelper.serialize(order));
                 bundle.putInt("orderline", orderLine.getNum());
                 bundle.putString("source", "orderCard");
                 Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
@@ -337,6 +343,9 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         order.setPhone(binding.phoneNumber.getRawText());
         order.setNeedDelivery(binding.orderCardNeedDelivery.isChecked());
         order.getOrderLines().removeIf(r -> r.getGood() == null);
+        if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getOrderStatus()==OrderStatus.IN_PROGRESS) {
+            order.setOrderStatus(OrderStatus.DONE);
+        }
     }
 
     @Override

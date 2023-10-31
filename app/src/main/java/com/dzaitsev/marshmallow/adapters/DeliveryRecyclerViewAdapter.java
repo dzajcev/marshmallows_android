@@ -12,6 +12,7 @@ import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -73,9 +74,21 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             deliveredOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
                     .stream().filter(f -> f.getOrderStatus() == OrderStatus.SHIPPED)
                     .count()));
-            if (!item.isMy()) {
-                txtAuthor.setText(item.getCreateUser().getFullName());
-                txtExecutor.setText(item.getExecutor().getFullName());
+            if (!item.getCreateUser().equals(item.getExecutor())) {
+                AuthorizationHelper.getInstance().getUserData()
+                        .ifPresent(user -> {
+                            if (item.getCreateUser().getId().equals(user.getId())) {
+                                txtAuthor.setText("Я");
+                            } else {
+                                txtAuthor.setText(item.getCreateUser().getFullName());
+                            }
+                            if (item.getExecutor().getId().equals(user.getId())) {
+                                txtExecutor.setText("Я");
+                            } else {
+                                txtExecutor.setText(item.getExecutor().getFullName());
+                            }
+                        });
+
             } else {
                 executorLayout.setVisibility(View.GONE);
             }

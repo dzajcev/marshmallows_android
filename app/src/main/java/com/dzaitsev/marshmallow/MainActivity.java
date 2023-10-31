@@ -16,17 +16,14 @@ import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
+import com.dzaitsev.marshmallow.dto.ErrorCodes;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
-import com.dzaitsev.marshmallow.fragments.ClientsFragment;
 import com.dzaitsev.marshmallow.fragments.ConfirmRegistrationFragment;
-import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
-import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
 import com.dzaitsev.marshmallow.fragments.LoginFragment;
-import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 import com.dzaitsev.marshmallow.fragments.UserCardFragment;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
@@ -93,7 +90,12 @@ public class MainActivity extends AppCompatActivity {
         NavigationInitializer.init(this, bottomNavigationView);
         processDeliveryFilter();
         processOrderFilter();
-
+//
+//        NetworkExecutorHelper.setAuthorizeListener(user -> {
+//            if (user.getRole()== UserRole.DELIVERYMAN){
+//                bottomNavigationView.setVisibility(View.GONE);
+//            }
+//        });
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         View userCard = toolbar.findViewById(R.id.userCard);
@@ -104,70 +106,46 @@ public class MainActivity extends AppCompatActivity {
                 if ((Navigation.getNavigation().getRootFragments().stream()
                         .anyMatch(a -> a.equals(identityFragment.getUniqueName())))
                         && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
-                    bottomNavigationView.setVisibility(View.VISIBLE);
                     userCard.setVisibility(View.VISIBLE);
                 } else {
-                    bottomNavigationView.setVisibility(View.GONE);
                     userCard.setVisibility(View.GONE);
                 }
             }
         });
-
-        NetworkExecutorHelper.setGlobalErrorListener(code -> {
-            switch (code) {
-                case AUTH006 -> {//обновление токена
-                }
-                case AUTH008 -> {
-                    NetworkService.getInstance().refreshToken(null);
-                    AuthorizationHelper.getInstance().getSignInRequest()
-                            .ifPresent(r -> new NetworkExecutorHelper<>(MainActivity.this, NetworkService.getInstance().getAuthorizationApi()
-                                    .signUp(new SignUpRequest(r.getEmail(), r.getPassword())))
-                                    .invoke(response -> Optional.ofNullable(response.body())
-                                            .ifPresent(jwtSignUpResponse -> {
-                                                Bundle bundle = new Bundle();
-                                                bundle.putInt("ttlCode", jwtSignUpResponse.getVerificationCodeTtl());
-                                                bundle.putString("token", jwtSignUpResponse.getToken());
-                                                bundle.putString("login", r.getEmail());
-                                                bundle.putString("password", r.getPassword());
-                                                Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
-                                            })));
-                }
-                default -> {
-                    Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
-                    Toast.makeText(this, code.getText(), Toast.LENGTH_SHORT).show();
-                    if (!(fragmentById instanceof LoginFragment)) {
-                        AuthorizationHelper.getInstance().updateSignInRequest(null);
-                        Navigation.getNavigation().goForward(new LoginFragment());
+        NetworkExecutorHelper.setGlobalErrorListener(new NetworkExecutorHelper.OnErrorListener() {
+            @Override
+            public void onError(ErrorCodes code, String text) {
+                switch (code) {
+                    case AUTH006 -> {//обновление токена
+                    }
+                    case AUTH008 -> {
+                        NetworkService.getInstance().refreshToken(null);
+                        AuthorizationHelper.getInstance().getSignInRequest()
+                                .ifPresent(r -> new NetworkExecutorHelper<>(MainActivity.this, NetworkService.getInstance().getAuthorizationApi()
+                                        .signUp(new SignUpRequest(r.getEmail(), r.getPassword())))
+                                        .invoke(response -> Optional.ofNullable(response.body())
+                                                .ifPresent(jwtSignUpResponse -> {
+                                                    Bundle bundle = new Bundle();
+                                                    bundle.putInt("ttlCode", jwtSignUpResponse.getVerificationCodeTtl());
+                                                    bundle.putString("token", jwtSignUpResponse.getToken());
+                                                    bundle.putString("login", r.getEmail());
+                                                    bundle.putString("password", r.getPassword());
+                                                    Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
+                                                })));
+                    }
+                    default -> {
+                        Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
+                        Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+                        if (!(fragmentById instanceof LoginFragment)) {
+                            AuthorizationHelper.getInstance().updateSignInRequest(null);
+                            Navigation.getNavigation().goForward(new LoginFragment());
+                        }
                     }
                 }
             }
         });
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Fragment fragmentById = getSupportFragmentManager().findFragmentById(R.id.frame);
-            if (item.getItemId() == R.id.ordersMenu) {
-                if (!(fragmentById instanceof OrdersFragment)) {
-                    Navigation.getNavigation().goForward(new OrdersFragment());
-                    return true;
-                }
 
-            } else if (item.getItemId() == R.id.goodsMenu) {
-                if (!(fragmentById instanceof GoodsFragment)) {
-                    Navigation.getNavigation().goForward(new GoodsFragment());
-                    return true;
-                }
-            } else if (item.getItemId() == R.id.clientsMenu) {
-                if (!(fragmentById instanceof ClientsFragment)) {
-                    Navigation.getNavigation().goForward(new ClientsFragment());
-                    return true;
-                }
-            } else if (item.getItemId() == R.id.deliveryMenu) {
-                if (!(fragmentById instanceof DeliveriesFragment)) {
-                    Navigation.getNavigation().goForward(new DeliveriesFragment());
-                    return true;
-                }
-            }
-            return false;
-        });
+
         List<String> permissionsList = new ArrayList<>(Arrays.asList(Manifest.permission.CALL_PHONE,
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.SEND_SMS));

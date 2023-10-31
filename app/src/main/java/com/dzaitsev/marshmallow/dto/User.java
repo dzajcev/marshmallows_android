@@ -1,9 +1,9 @@
 package com.dzaitsev.marshmallow.dto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
-public class User implements Serializable {
+public class User {
     private Integer id;
     private LocalDateTime createDate;
     private String email;
@@ -63,5 +63,17 @@ public class User implements Serializable {
 
     public void setRole(UserRole role) {
         this.role = role;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

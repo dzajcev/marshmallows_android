@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow.service;
+package com.dzaitsev.marshmallow.utils.network;
 
 import androidx.annotation.NonNull;
 
@@ -12,7 +12,7 @@ public class NetworkExecutor<T> implements Callback<T> {
 
     private final Call<T> call;
 
-    public NetworkExecutor(Call<T> call) {
+    protected NetworkExecutor(Call<T> call) {
         this.call = call;
     }
 

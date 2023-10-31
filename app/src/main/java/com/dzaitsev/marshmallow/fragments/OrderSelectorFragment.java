@@ -38,6 +38,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
                 AlertDialog.Builder builder = new AlertDialog.Builder(OrderSelectorFragment.this.getActivity());
                 builder.setTitle("Сохранить выбор?");
                 builder.setPositiveButton("Да", (dialog, id) -> {
+                    //todo:
 //                    if (DeliveryCardFragment.this.save()) {
 //                        Navigation.getNavigation(DeliveryCardFragment.this.requireActivity()).back();
 //                    }

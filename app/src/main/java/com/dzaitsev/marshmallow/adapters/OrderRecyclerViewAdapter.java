@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
@@ -24,10 +23,10 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
     @Override
     public void onBindViewHolder(@NonNull RecycleViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).getOrderLines().stream().allMatch(OrderLine::isDone)) {
+        if (getShowItems().get(position).getOrderStatus() == OrderStatus.DONE) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
         }
-        if (getShowItems().get(position).getOrderStatus()== OrderStatus.SHIPPED) {
+        if (getShowItems().get(position).getOrderStatus() == OrderStatus.SHIPPED) {
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
         }
     }

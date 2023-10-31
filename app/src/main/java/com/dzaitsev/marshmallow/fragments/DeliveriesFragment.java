@@ -20,7 +20,6 @@ import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
 
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -75,20 +74,15 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getDeliveryApi().getDelivery(item.getId()))
                 .invoke(deliveryResponse -> {
                     if (deliveryResponse.isSuccessful()) {
-                        Delivery delivery = Optional.ofNullable(deliveryResponse.body())
-                                .map(DeliveryResponse::getDeliveries)
-                                .filter(Objects::nonNull)
-                                .filter(f -> !f.isEmpty())
-                                .map(m -> m.iterator().next())
-                                .orElse(null);
                         Bundle bundle = new Bundle();
-                        bundle.putString("delivery", GsonHelper.serialize(delivery));
+                        bundle.putString("delivery", GsonHelper.serialize(deliveryResponse.body()));
                         Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
                     }
                 }));
         binding.deliveriesList.setAdapter(mAdapter);
         binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new DeliveryFilterFragment()));
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();

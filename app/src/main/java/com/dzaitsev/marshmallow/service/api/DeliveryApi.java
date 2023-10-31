@@ -17,7 +17,7 @@ import retrofit2.http.Query;
 
 public interface DeliveryApi {
     @GET("delivery/{id}")
-    Call<DeliveryResponse> getDelivery(@Path("id") Integer deliveryId);
+    Call<Delivery> getDelivery(@Path("id") Integer deliveryId);
 
     @GET("delivery")
     Call<DeliveryResponse> getDeliveries(@Query("start") LocalDate start, @Query("end")LocalDate end,@Query("statuses") List<DeliveryStatus> statuses);

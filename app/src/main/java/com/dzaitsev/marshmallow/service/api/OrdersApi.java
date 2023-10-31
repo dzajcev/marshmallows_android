@@ -24,7 +24,7 @@ public interface OrdersApi {
     Call<OrderResponse> getOrdersForDelivery();
 
     @GET("orders/{id}")
-    Call<OrderResponse> getOrder(@Path("id") Integer orderId);
+    Call<Order> getOrder(@Path("id") Integer orderId);
 
     @POST("orders")
     Call<Void> saveOrder(@Body Order order);

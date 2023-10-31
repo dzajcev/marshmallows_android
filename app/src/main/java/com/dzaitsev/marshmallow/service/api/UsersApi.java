@@ -18,5 +18,4 @@ public interface UsersApi {
 
     @POST("users/change-password")
     Call<Void> changePassword(@Body ChangePasswordRequest request);
-
 }

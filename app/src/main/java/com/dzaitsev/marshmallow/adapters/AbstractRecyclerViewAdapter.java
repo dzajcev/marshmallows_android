@@ -73,7 +73,6 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
         originalItems = items;
         showItems = new ArrayList<>(originalItems);
         notifyDataSetChanged();
-
     }
 
     public List<T> getShowItems() {

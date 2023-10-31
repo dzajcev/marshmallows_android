@@ -7,22 +7,6 @@
     tools:context=".fragments.UserCardFragment">
 
 
-    <TextView
-        android:id="@+id/txtLogin"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/field_background"
-        android:ems="10"
-        android:gravity="start|center_vertical"
-        android:hint="Имя пользователя"
-        android:minHeight="50sp"
-        android:paddingStart="5sp"
-        android:paddingEnd="5sp"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline6"
-        app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toTopOf="@+id/guideline" />
-
     <EditText
         android:id="@+id/txtConfirmPassword"
         android:layout_width="0dp"
@@ -63,7 +47,7 @@
         android:id="@+id/txtLastName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:background="@color/field_background"
         android:ems="10"
         android:hint="Фамилия"
@@ -73,7 +57,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
-        app:layout_constraintTop_toBottomOf="@+id/txtLogin" />
+        app:layout_constraintTop_toTopOf="@+id/guideline" />
 
     <EditText
         android:id="@+id/txtFirstName"
@@ -125,12 +109,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.55" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1" />
+        app:layout_constraintGuide_percent="0.02" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
@@ -164,7 +149,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Изменить пароль"
-        app:layout_constraintEnd_toStartOf="@+id/guideline6"
         app:layout_constraintStart_toStartOf="@+id/guideline2"
         app:layout_constraintTop_toBottomOf="@+id/btnSave" />
 

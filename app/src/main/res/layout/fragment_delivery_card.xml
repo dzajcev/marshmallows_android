@@ -38,13 +38,12 @@
         android:id="@+id/tx1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3sp"
-        android:layout_marginStart="5sp"
-        android:layout_marginEnd="5sp"
-        android:layout_alignParentStart="true"
-        android:gravity="center_vertical"
-        android:layout_alignBottom="@id/deliveryCardStart"
         android:layout_below="@id/deliveryCardDateDelivery"
+        android:layout_alignBottom="@id/deliveryCardStart"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="3sp"
+        android:layout_marginEnd="5sp"
+        android:gravity="center_vertical"
         android:text="Начало доставки"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -52,49 +51,49 @@
 
     <TextView
         android:id="@+id/deliveryCardStart"
-        android:layout_marginTop="3sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|end"
+        android:layout_below="@id/deliveryCardDateDelivery"
         android:layout_marginStart="5sp"
-        android:layout_marginEnd="10sp"
-        android:minHeight="40sp"
+        android:layout_marginTop="3sp"
+        android:layout_marginEnd="5sp"
         android:layout_toStartOf="@id/deliveryCardFinishDelivery"
         android:layout_toEndOf="@id/tx1"
-        android:layout_below="@id/deliveryCardDateDelivery"
         android:background="@color/field_background"
+        android:gravity="center_vertical|end"
         android:hint="Укажите время"
+        android:minHeight="40sp"
         android:textSize="18sp"
         android:textStyle="bold" />
+
     <TextView
         android:id="@+id/tx2"
-        android:layout_marginTop="3sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_marginStart="5sp"
         android:layout_below="@id/deliveryCardStart"
-        android:layout_alignParentStart="true"
-        android:layout_marginEnd="5sp"
         android:layout_alignBottom="@id/deliveryCardEnd"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="3sp"
+        android:layout_marginEnd="5sp"
+        android:gravity="center_vertical"
         android:text="Окончание доставки"
         android:textSize="18sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/deliveryCardEnd"
-        android:layout_marginTop="3sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|end"
-        android:layout_marginStart="5sp"
-        android:layout_marginEnd="10sp"
-        android:minHeight="40sp"
         android:layout_below="@id/deliveryCardStart"
+        android:layout_marginStart="5sp"
+        android:layout_marginTop="3sp"
+        android:layout_marginEnd="5sp"
         android:layout_toStartOf="@id/deliveryCardFinishDelivery"
         android:layout_toEndOf="@id/tx2"
         android:background="@color/field_background"
+        android:gravity="center_vertical|end"
         android:hint="Укажите время"
+        android:minHeight="40sp"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -102,7 +101,7 @@
     <Button
         android:id="@+id/deliveryCardAddOrders"
         android:layout_width="wrap_content"
-        android:layout_below="@id/deliveryCardEnd"
+        android:layout_below="@id/executorLayout"
         android:layout_alignParentStart="true"
         android:layout_height="wrap_content"
         android:layout_marginTop="10sp"
@@ -111,10 +110,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/deliveryCardOrders"
         android:layout_width="match_parent"
-        android:layout_below="@id/deliveryCardAddOrders"
-        android:layout_above="@id/deliveryCardSave"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
+        android:layout_above="@id/deliveryCardSave"
+        android:layout_below="@id/deliveryCardAddOrders"
         android:layout_marginBottom="5sp"
         android:layout_weight="1" />
 
@@ -134,4 +132,27 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="Сохранить" />
+
+    <LinearLayout
+        android:id="@+id/executorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/deliveryCardEnd"
+        android:layout_marginTop="5sp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="3sp"
+            android:text="Исполнитель:"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/txtDeliveryCardExecutor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/field_background"
+            android:textSize="18sp" />
+    </LinearLayout>
 </RelativeLayout>

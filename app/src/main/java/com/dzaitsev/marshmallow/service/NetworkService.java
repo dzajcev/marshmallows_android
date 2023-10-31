@@ -5,6 +5,7 @@ import com.dzaitsev.marshmallow.service.api.AuthorizationApi;
 import com.dzaitsev.marshmallow.service.api.ClientsApi;
 import com.dzaitsev.marshmallow.service.api.DeliveryApi;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
+import com.dzaitsev.marshmallow.service.api.InviteRequestsApi;
 import com.dzaitsev.marshmallow.service.api.OrdersApi;
 import com.dzaitsev.marshmallow.service.api.UsersApi;
 import com.dzaitsev.marshmallow.utils.GsonExt;
@@ -77,6 +78,10 @@ public class NetworkService {
 
     public UsersApi getUsersApi() {
         return mRetrofit.create(UsersApi.class);
+    }
+
+    public InviteRequestsApi getInviteRequestsApi() {
+        return mRetrofit.create(InviteRequestsApi.class);
     }
 
     public AuthorizationApi getAuthorizationApi() {

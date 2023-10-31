@@ -2,23 +2,26 @@ package com.dzaitsev.marshmallow.utils.network;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.dto.ErrorCodes;
 import com.dzaitsev.marshmallow.dto.ErrorDto;
+import com.dzaitsev.marshmallow.dto.User;
+import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
 import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
+import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
-import com.dzaitsev.marshmallow.service.NetworkExecutor;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -36,6 +39,8 @@ public class NetworkExecutorHelper<T> {
 
     private OnErrorListener onErrorListener;
 
+    private static OnAuthorizeListener onAuthorizeListener;
+
     private static OnErrorListener globalErrorListener;
 
     public NetworkExecutorHelper(FragmentActivity activity, Call<T> call) {
@@ -43,6 +48,7 @@ public class NetworkExecutorHelper<T> {
         this.call = call;
         screenCover = new ScreenCover(activity);
     }
+
     public static void authorize(FragmentActivity activity, SignInRequest signInRequest) {
         AuthorizationHelper.getInstance().updateSignInRequest(signInRequest);
         new NetworkExecutorHelper<>(activity, NetworkService.getInstance().getAuthorizationApi().signIn(signInRequest))
@@ -57,11 +63,20 @@ public class NetworkExecutorHelper<T> {
                                                 if (r.isSuccessful()) {
                                                     Optional.ofNullable(r.body())
                                                             .map(UserInfoResponse::getUser)
-                                                            .ifPresent(user -> AuthorizationHelper.getInstance().updateUserData(user));
+                                                            .ifPresent(user -> {
+                                                                AuthorizationHelper.getInstance().updateUserData(user);
+                                                                if (onAuthorizeListener != null) {
+                                                                    onAuthorizeListener.onAuthorize(user);
+                                                                }
+                                                                if (user.getRole() == UserRole.DEVELOPER) {
+                                                                    Navigation.getNavigation().goForward(new OrdersFragment());
+                                                                } else {
+                                                                    Navigation.getNavigation().goForward(new DeliveriesFragment());
+                                                                }
+                                                            });
                                                 }
-
                                             });
-                                    Navigation.getNavigation().goForward(new OrdersFragment());
+
                                 });
                     }
                 });
@@ -76,8 +91,22 @@ public class NetworkExecutorHelper<T> {
         NetworkExecutorHelper.globalErrorListener = globalErrorListener;
     }
 
+    public static void setAuthorizeListener(OnAuthorizeListener onAuthorizeListener) {
+        NetworkExecutorHelper.onAuthorizeListener = onAuthorizeListener;
+    }
+
     public interface OnErrorListener {
-        void onError(ErrorCodes code);
+        default void onError(ErrorCodes code, String text) {
+            onError(new ErrorDto(code, text));
+        }
+
+        default void onError(ErrorDto errorDto) {
+            onError(errorDto.getCode(), errorDto.getMessage());
+        }
+    }
+
+    public interface OnAuthorizeListener {
+        void onAuthorize(User code);
     }
 
     public static class ScreenCover extends AlertDialog {
@@ -92,6 +121,10 @@ public class NetworkExecutorHelper<T> {
         }
     }
 
+    public void invoke() {
+        invoke(null);
+    }
+
     public void invoke(Consumer<Response<T>> consumer) {
         screenCover.show();
         new NetworkExecutor<>(call)
@@ -100,27 +133,27 @@ public class NetworkExecutorHelper<T> {
                     public void onResponse(@NonNull Response<T> response) {
                         if (!response.isSuccessful()) {
                             try {
-                                ErrorCodes errorCode = Optional.ofNullable(response.errorBody())
+                                ErrorDto errorDto = Optional.ofNullable(response.errorBody())
                                         .map(m -> {
                                             try {
-                                                return m.string();
+                                                String string = m.string();
+                                                Log.e("network error", string);
+                                                return string;
                                             } catch (IOException e) {
                                                 throw new RuntimeException(e);
                                             }
                                         })
                                         .map(m -> GsonExt.getGson().fromJson(m, ErrorDto.class))
-                                        .map(ErrorDto::getCode)
-                                        .orElse(ErrorCodes.AUTH000);
-                                if (errorCode == ErrorCodes.AUTH006) {
+                                        .orElse(new ErrorDto(ErrorCodes.AUTH000));
+                                if (errorDto.getCode() == ErrorCodes.AUTH006) {
                                     refreshToken(this);
                                     return;
                                 }
                                 if (onErrorListener != null) {
-                                    onErrorListener.onError(errorCode);
-
+                                    onErrorListener.onError(errorDto);
                                 }
-                                if (globalErrorListener != null) {
-                                    globalErrorListener.onError(errorCode);
+                                if (response.code() == 403 && globalErrorListener != null) {
+                                    globalErrorListener.onError(errorDto);
                                 }
                                 return;
                             } finally {
@@ -129,7 +162,9 @@ public class NetworkExecutorHelper<T> {
                         }
 
                         activity.runOnUiThread(() -> {
-                            consumer.accept(response);
+                            if (consumer != null) {
+                                consumer.accept(response);
+                            }
                             screenCover.dismiss();
                         });
                     }

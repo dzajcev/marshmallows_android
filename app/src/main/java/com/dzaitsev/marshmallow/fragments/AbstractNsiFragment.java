@@ -43,7 +43,6 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
 
     private Order order;
 
-
     private SelectItemListener<T> selectListener;
     private EditItemListener<T> editItemListener;
 
@@ -104,8 +103,8 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                             .orElseThrow(() -> new RuntimeException("error of fetching data"))
                             .stream()
                             .sorted(Comparator.comparing(NsiItem::getName)).collect(Collectors.toList()));
-                    if (!StringUtils.isEmpty(binding.searchClientFld.getQuery().toString())) {
-                        mAdapter.filter(binding.searchClientFld.getQuery().toString());
+                    if (!StringUtils.isEmpty(binding.searchField.getQuery().toString())) {
+                        mAdapter.filter(binding.searchField.getQuery().toString());
                     }
                 }));
     }
@@ -139,9 +138,9 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
             });
         }
         binding.abstractNsiListBack.setOnClickListener(v -> Navigation.getNavigation().back());
-        mAdapter.setFilterPredicate(s -> client -> client.getName().toLowerCase().contains(s.toLowerCase()));
+        mAdapter.setFilterPredicate(s -> item -> item.getName().toLowerCase().contains(s.toLowerCase()));
         recyclerView.setAdapter(mAdapter);
-        binding.searchClientFld.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        binding.searchField.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 return false;

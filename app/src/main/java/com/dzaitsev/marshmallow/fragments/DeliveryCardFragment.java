@@ -26,8 +26,10 @@ import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
@@ -43,6 +45,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     private DeliveryOrderRecyclerViewAdapter mAdapter;
 
     private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
+    private final DeliveryExecutorFragment deliveryExecutorFragment = new DeliveryExecutorFragment(false);
     private final Navigation.OnBackListener backListener = fragment -> {
         if (DeliveryCardFragment.this == fragment) {
             if (DeliveryCardFragment.this.hasChanges()) {
@@ -98,7 +101,15 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     ) {
         delivery = Objects.requireNonNull(GsonHelper.deserialize(requireArguments().getString("delivery"), Delivery.class));
         setHasOptionsMenu(delivery.getId() != null && delivery.isMy());
-        incomingDelivery = delivery.clone();
+        if (delivery.getId() != null) {
+            new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getDeliveryApi().getDelivery(delivery.getId()))
+                    .invoke(deliveryResponse -> {
+                        if (deliveryResponse.isSuccessful()) {
+                            incomingDelivery = deliveryResponse.body();
+                        }
+                    });
+        }
+
         binding = FragmentDeliveryCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -152,12 +163,21 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 });
         binding.deliveryCardSave.setOnClickListener(v -> save());
         if (delivery.isMy()) {
+            binding.txtDeliveryCardExecutor.setOnClickListener(v -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("delivery", GsonHelper.serialize(delivery));
+                Navigation.getNavigation().goForward(deliveryExecutorFragment, bundle);
+            });
             mAdapter.setDeleteItemListener(item -> {
                 delivery.getOrders().remove(item);
                 binding.deliveryCardOrders.setAdapter(mAdapter);
                 mAdapter.setItems(delivery.getOrders());
             });
         }
+        if (delivery.getExecutor() == null) {
+            delivery.setExecutor(AuthorizationHelper.getInstance().getUserData().orElse(null));
+        }
+        binding.txtDeliveryCardExecutor.setText(Optional.ofNullable(delivery.getExecutor()).map(User::getFullName).orElse(""));
         ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
         binding.deliveryCardFinishDelivery.setBackgroundTintList(colorStateList);
         binding.deliveryCardFinishDelivery.setOnClickListener(v -> {
@@ -221,7 +241,6 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     incomingDelivery = delivery;
                     Navigation.getNavigation().back();
                 });
-        incomingDelivery = delivery;
     }
 
     @Override

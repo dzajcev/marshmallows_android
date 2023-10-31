@@ -39,6 +39,12 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+        MenuItem deliverymen = menu.add("Исполнители доставки");
+        deliverymen.setOnMenuItemClickListener(item -> {
+            Navigation.getNavigation().goForward(new InviteRequestsFragment());
+            return false;
+        });
+
         MenuItem deleteOrder = menu.add("Выйти");
         deleteOrder.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -53,6 +59,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
             builder.create().show();
             return false;
         });
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -73,10 +80,9 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requireActivity().setTitle("");
         AuthorizationHelper.getInstance().getUserData()
                 .ifPresent(user -> {
-                    binding.txtLogin.setText(user.getEmail());
+                    requireActivity().setTitle(user.getEmail());
                     binding.txtFirstName.setText(user.getFirstName());
                     binding.txtLastName.setText(user.getLastName());
                 });

@@ -3,6 +3,7 @@ package com.dzaitsev.marshmallow.dto;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.google.gson.Gson;
 
 import java.io.Serializable;
@@ -102,7 +103,10 @@ public class Delivery implements Serializable, Cloneable {
     }
 
     public boolean isMy() {
-        return executor.getId().equals(createUser.getId());
+        return createUser == null || AuthorizationHelper.getInstance().getUserData()
+                .map(User::getId)
+                .filter(f -> f.equals(createUser.getId()))
+                .isPresent();
     }
 
     @Override
@@ -111,13 +115,14 @@ public class Delivery implements Serializable, Cloneable {
         if (o == null || getClass() != o.getClass()) return false;
         Delivery delivery = (Delivery) o;
         return Objects.equals(deliveryDate, delivery.deliveryDate)
+                && Objects.equals(executor, delivery.executor)
                 && Objects.equals(start, delivery.start) && Objects.equals(end, delivery.end)
                 && new HashSet<>(getOrders()).equals(new HashSet<>(delivery.getOrders()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deliveryDate, start, end,
+        return Objects.hash(deliveryDate, start, end, executor,
                 getOrders().stream().sorted(Comparator.comparingInt(Order::hashCode)).collect(Collectors.toList()));
     }
 
