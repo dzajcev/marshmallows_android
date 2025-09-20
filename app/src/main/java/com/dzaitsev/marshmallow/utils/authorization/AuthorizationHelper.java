@@ -3,6 +3,7 @@ package com.dzaitsev.marshmallow.utils.authorization;
 import android.content.SharedPreferences;
 
 import com.dzaitsev.marshmallow.dto.User;
+import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 
@@ -40,6 +41,10 @@ public class AuthorizationHelper {
     public Optional<User> getUserData() {
         return Optional.ofNullable(GsonExt.getGson()
                 .fromJson(preferences.getString(userData, ""), User.class));
+    }
+
+    public UserRole getUserRole() {
+        return getUserData().map(User::getRole).orElse(UserRole.DELIVERYMAN);
     }
 
     public void updateUserData(User user) {

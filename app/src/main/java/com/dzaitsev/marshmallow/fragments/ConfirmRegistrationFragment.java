@@ -11,15 +11,19 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.databinding.FragmentConfirmRegistrationBinding;
+import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
+import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Optional;
+
+import retrofit2.Response;
 
 public class ConfirmRegistrationFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "confirmRegistrationFragment";
@@ -90,7 +94,20 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
                                         AuthorizationHelper.getInstance().updateSignInRequest(new SignInRequest(login, password));
                                         NetworkService.getInstance().refreshToken(s);
                                         timer.cancel();
-                                        Navigation.getNavigation().goForward(new OrdersFragment());
+                                        new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
+                                                .getMyInfo()).invoke(userInfoResponseResponse -> Optional.ofNullable(userInfoResponseResponse)
+                                                .map(Response::body)
+                                                .map(UserInfoResponse::getUser)
+                                                .map(User::getRole)
+                                                .ifPresent(userRole -> {
+                                                    switch (userRole) {
+                                                        case DEVELOPER ->
+                                                                Navigation.getNavigation().goForward(new OrdersFragment());
+                                                        case DELIVERYMAN ->
+                                                                Navigation.getNavigation().goForward(new DeliveriesFragment());
+                                                    }
+                                                }));
+
                                     });
                         }
                     });

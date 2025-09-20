@@ -11,7 +11,9 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.components.AlertDialogComponent;
 import com.dzaitsev.marshmallow.components.LinkChannelPicker;
+import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.components.OrderSimpleDialog;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
@@ -24,13 +26,22 @@ import java.util.Optional;
 
 public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order, DeliveryOrderRecyclerViewAdapter.RecycleViewHolder> {
     private DeleteItemListener deleteItemListener;
+    private SaveOrderListener saveOrderListener;
 
     public interface DeleteItemListener {
         void deleteItem(Order item);
     }
 
+    public interface SaveOrderListener {
+        void save(Order item);
+    }
+
     public void setDeleteItemListener(DeleteItemListener deleteItemListener) {
         this.deleteItemListener = deleteItemListener;
+    }
+
+    public void setSaveOrderListener(SaveOrderListener saveOrderListener) {
+        this.saveOrderListener = saveOrderListener;
     }
 
     @Override
@@ -49,6 +60,8 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
         private final TextView deliveryOrderSum;
         private final TextView deliveryOrderToPay;
         private final ImageButton deliveryOrderItemDelete;
+        private final ImageButton deliveryOrderShipped;
+
 
         @SuppressLint("ResourceAsColor")
         public RecycleViewHolder(@NonNull View itemView) {
@@ -62,7 +75,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderItemDelete = itemView.findViewById(R.id.deliveryOrderItemDelete);
             ImageButton deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
             ImageButton deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
-            ImageButton deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
+            deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
             deliveryOrderListGoods.setOnClickListener(v -> OrderSimpleDialog.builder(getView().getContext())
                     .setTitle("Содержимое заказа")
                     .setItems(getItem().getOrderLines())
@@ -84,12 +97,44 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                     }).build()
                     .show());
             deliveryOrderShipped.setOnClickListener(v -> {
-                if (getItem().getOrderStatus() == OrderStatus.SHIPPED) {
-                    getItem().setOrderStatus(OrderStatus.IN_DELIVERY);
-                } else if (getItem().getOrderStatus() == OrderStatus.IN_DELIVERY) {
-                    getItem().setOrderStatus(OrderStatus.SHIPPED);
+                if (getItem().getOrderStatus() == OrderStatus.IN_DELIVERY) {
+                    AlertDialogComponent.showDialog(getView().getContext(), "Оплата", "Деньги получены?",
+                            new AlertDialogComponent.Action() {
+                                @Override
+                                public void doIn() {
+                                    MoneyPicker.builder(getView().getContext())
+                                            .setTitle("Укажите сумму")
+                                            .setInitialValue(calcToPay(getItem()))
+                                            .setMinValue(1)
+                                            .setMaxValue(100000)
+                                            .positiveButton(value -> {
+                                                getItem().setPaySum(value);
+                                                getItem().setOrderStatus(OrderStatus.SHIPPED);
+                                                setShipped(OrderStatus.SHIPPED);
+                                                saveOrderListener.save(getItem());
+                                            })
+                                            .build()
+                                            .show();
+                                }
+
+                                @Override
+                                public ActionType getAction() {
+                                    return ActionType.POSITIVE;
+                                }
+                            }, new AlertDialogComponent.Action() {
+                                @Override
+                                public void doIn() {
+                                    getItem().setOrderStatus(OrderStatus.SHIPPED);
+                                    setShipped(OrderStatus.SHIPPED);
+                                    saveOrderListener.save(getItem());
+                                }
+
+                                @Override
+                                public ActionType getAction() {
+                                    return ActionType.NEGATIVE;
+                                }
+                            });
                 }
-                setShipped(getItem().getOrderStatus());
             });
         }
 
@@ -100,13 +145,16 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderClientName.setText(getItem().getClient().getName());
             deliveryOrderAddress.setText(getItem().getDeliveryAddress());
             deliveryOrderPhone.setText(getItem().getPhone().replaceFirst("(\\d{3})(\\d{3})(\\d{2})(\\d+)", "+7($1)-$2-$3-$4"));
-            deliveryOrderSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(getItem())));
+            deliveryOrderSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcTotalSum(getItem())));
             deliveryOrderToPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(getItem())));
             deliveryOrderItemDelete.setOnClickListener(v -> {
                 if (deleteItemListener != null && getItem().getOrderStatus() != OrderStatus.SHIPPED) {
                     deleteItemListener.deleteItem(getItem());
                 }
             });
+            if (getItem().getOrderStatus() == OrderStatus.SHIPPED) {
+                deliveryOrderShipped.setVisibility(View.GONE);
+            }
             if (getItem().getOrderStatus() == OrderStatus.SHIPPED || deleteItemListener == null) {
                 deliveryOrderItemDelete.setVisibility(View.GONE);
             } else {
@@ -127,14 +175,14 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
     }
 
     public void setShipped(boolean shipped, Order order) {
-
         order.setOrderStatus(shipped ? OrderStatus.SHIPPED : OrderStatus.IN_DELIVERY);
         notifyDataSetChanged();
     }
 
     private Double calcTotalSum(Order order) {
         return order.getOrderLines().stream()
-                .mapToDouble(m -> Optional.ofNullable(m.getPrice()).orElse(0d) * Optional.ofNullable(m.getCount()).orElse(0))
+                .mapToDouble(m -> Optional.ofNullable(m.getPrice()).orElse(0d)
+                        * Optional.ofNullable(m.getCount()).orElse(0))
                 .sum();
     }
 

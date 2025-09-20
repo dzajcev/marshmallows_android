@@ -94,45 +94,41 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
 
         binding.listInviteRequests.setLayoutManager(new LinearLayoutManager(view.getContext()));
         mAdapter = new InviteRequestsRecyclerViewAdapter();
-        AuthorizationHelper.getInstance().getUserData()
-                .map(User::getRole).ifPresent(userRole -> {
-                    mAdapter.setFilterPredicate(s -> inviteRequest -> inviteRequest.getUser()
-                            .getFullName().toLowerCase().replaceAll(" ", "").contains(s.toLowerCase()));
-                    if (userRole == UserRole.DELIVERYMAN) {
-                        binding.inviteRequestsGroup.setVisibility(View.GONE);
-                        requireActivity().setTitle("Входящие приглашения");
-                        binding.btnInviteRequestsNewRequest.setVisibility(View.GONE);
-                    } else {
-                        binding.inviteRequestsGroup.check(R.id.rbtnOutgoing);
-                        binding.inviteRequestsGroup.setOnCheckedChangeListener((group, checkedId) -> {
-                            if (checkedId == R.id.rbtnIncoming) {
-                                requireActivity().setTitle("Входящие приглашения");
-                            } else {
-                                requireActivity().setTitle("Исходящие приглашения");
-                            }
-                            fillItems();
-                        });
-                        binding.btnInviteRequestsNewRequest.setOnClickListener(v -> {
-                            EditText editText = new EditText(requireContext());
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("Введите логин пользователя")
-                                    .setView(editText)
-                                    .setNegativeButton("Отмена", (dialog, which) -> dialog.cancel())
-                                    .setPositiveButton("Ок", (dialog, which) -> new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance()
-                                            .getInviteRequestsApi().addInviteRequest(new AddInviteRequest(editText.getText().toString())))
-                                            .setOnErrorListener(new NetworkExecutorHelper.OnErrorListener() {
-                                                @Override
-                                                public void onError(ErrorDto errorDto) {
-                                                    Toast.makeText(requireContext(), errorDto.getMessage(), Toast.LENGTH_SHORT).show();
-                                                }
-                                            })
-                                            .invoke(objectResponse -> fillItems()))
-                                    .create().show();
-                        });
-                    }
-                    fillItems();
-                    binding.chkInviteRequestStatus.setOnCheckedChangeListener((buttonView, isChecked) -> fillItems());
-                });
+        if (AuthorizationHelper.getInstance().getUserRole() == UserRole.DELIVERYMAN) {
+            binding.inviteRequestsGroup.setVisibility(View.GONE);
+            requireActivity().setTitle("Входящие приглашения");
+            binding.btnInviteRequestsNewRequest.setVisibility(View.GONE);
+        } else {
+            binding.inviteRequestsGroup.check(R.id.rbtnOutgoing);
+            binding.inviteRequestsGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                if (checkedId == R.id.rbtnIncoming) {
+                    requireActivity().setTitle("Входящие приглашения");
+                } else {
+                    requireActivity().setTitle("Исходящие приглашения");
+                }
+                fillItems();
+            });
+            binding.btnInviteRequestsNewRequest.setOnClickListener(v -> {
+                EditText editText = new EditText(requireContext());
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Введите логин пользователя")
+                        .setView(editText)
+                        .setNegativeButton("Отмена", (dialog, which) -> dialog.cancel())
+                        .setPositiveButton("Ок", (dialog, which) -> new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance()
+                                .getInviteRequestsApi().addInviteRequest(new AddInviteRequest(editText.getText().toString())))
+                                .setOnErrorListener(new NetworkExecutorHelper.OnErrorListener() {
+                                    @Override
+                                    public void onError(ErrorDto errorDto) {
+                                        Toast.makeText(requireContext(), errorDto.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .invoke(objectResponse -> fillItems()))
+                        .create().show();
+            });
+        }
+        fillItems();
+        binding.chkInviteRequestStatus.setOnCheckedChangeListener((buttonView, isChecked) -> fillItems());
+
         mAdapter.setOnAcceptListener(request -> new AlertDialog.Builder(requireContext())
                 .setTitle("Принятие приглашения")
                 .setMessage("Вы уверены?")
@@ -178,7 +174,7 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
     }
 
     private InviteRequestDirection determineDirection() {
-        if (binding.inviteRequestsGroup.getCheckedRadioButtonId() == R.id.rbtnIncoming) {
+        if (AuthorizationHelper.getInstance().getUserRole() == UserRole.DELIVERYMAN || binding.inviteRequestsGroup.getCheckedRadioButtonId() == R.id.rbtnIncoming) {
             return InviteRequestDirection.INCOMING;
         } else {
             return InviteRequestDirection.OUTGOING;

@@ -12,9 +12,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.dzaitsev.marshmallow.adapters.DeliveryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveriesBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
@@ -64,11 +66,15 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
         fillItems();
         binding.deliveriesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        binding.deliveryCreate.setOnClickListener(view1 -> {
-            Bundle bundle = new Bundle();
-            bundle.putString("delivery", GsonHelper.serialize(new Delivery()));
-            Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
-        });
+        if (AuthorizationHelper.getInstance().getUserRole() != UserRole.DELIVERYMAN) {
+            binding.deliveryCreate.setOnClickListener(view1 -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("delivery", GsonHelper.serialize(new Delivery()));
+                Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
+            });
+        } else {
+            binding.deliveryCreate.setVisibility(View.GONE);
+        }
         mAdapter = new DeliveryRecyclerViewAdapter();
         mAdapter.setEditItemListener(item -> new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getDeliveryApi().getDelivery(item.getId()))

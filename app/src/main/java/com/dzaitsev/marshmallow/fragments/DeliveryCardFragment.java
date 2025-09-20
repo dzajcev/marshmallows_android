@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,8 +23,6 @@ import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
-import com.dzaitsev.marshmallow.dto.DeliveryStatus;
-import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
@@ -174,29 +171,22 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 mAdapter.setItems(delivery.getOrders());
             });
         }
+        mAdapter.setSaveOrderListener(item -> new NetworkExecutorHelper<>(requireActivity(),
+                NetworkService.getInstance().getOrdersApi().saveOrder(item)).
+                invoke(response -> {
+                }));
         if (delivery.getExecutor() == null) {
             delivery.setExecutor(AuthorizationHelper.getInstance().getUserData().orElse(null));
         }
-        binding.txtDeliveryCardExecutor.setText(Optional.ofNullable(delivery.getExecutor()).map(User::getFullName).orElse(""));
-        ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
-        binding.deliveryCardFinishDelivery.setBackgroundTintList(colorStateList);
-        binding.deliveryCardFinishDelivery.setOnClickListener(v -> {
-            if (delivery.getOrders().isEmpty()) {
-                return;
-            }
-            boolean toShip = delivery.getOrders().stream().anyMatch(a -> a.getOrderStatus() != OrderStatus.SHIPPED);
-            AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryCardFragment.this.getActivity());
-            builder.setTitle("Вы уверены, что хотите отметить все заказы " +
-                    (toShip ? "" : "не") +
-                    " доставленными?");
-            builder.setPositiveButton("Да", (dialog, id) -> {
-                delivery.setDeliveryStatus(toShip ? DeliveryStatus.DONE : DeliveryStatus.NEW);
-                delivery.getOrders().forEach(o -> mAdapter.setShipped(toShip, o));
-            });
-            builder.setNegativeButton("Нет", (dialog, id) -> {
-            });
-            builder.create().show();
-        });
+        binding.txtDeliveryCardExecutor.setText(Optional.ofNullable(delivery.getExecutor())
+                .map(f -> {
+                    User user = AuthorizationHelper.getInstance().getUserData().orElse(null);
+                    if (user != null && f.getId().equals(user.getId())) {
+                        return "Я";
+                    } else {
+                        return f.getFullName();
+                    }
+                }).orElse(""));
     }
 
     private int getBackgroundColor(View view) {
