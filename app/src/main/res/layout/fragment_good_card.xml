@@ -76,11 +76,23 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goodCardPriceHistoryList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/goodCardSave"
+        android:layout_height="40dp"
         android:layout_below="@id/tx1"
+
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginTop="4dp"
+        android:scrollbars="vertical" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/images"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/goodCardPriceHistoryList"
+        android:layout_above="@id/goodCardCancel"
+        android:gravity="center"
+        android:horizontalSpacing="2dp"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="2dp" />
 
     <Button
         android:id="@+id/goodCardCancel"

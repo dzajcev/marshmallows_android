@@ -18,6 +18,8 @@ public class Good extends NsiItem implements Cloneable {
 
     private final List<Price> prices = new ArrayList<>();
 
+    private List<Attachment> images=new ArrayList<>();
+
     public List<Price> getPrices() {
         return prices;
     }
@@ -38,6 +40,14 @@ public class Good extends NsiItem implements Cloneable {
         this.id = id;
     }
 
+    public List<Attachment> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Attachment> images) {
+        this.images = images;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -51,12 +61,13 @@ public class Good extends NsiItem implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Good good = (Good) o;
-        return Objects.equals(id, good.id) && Objects.equals(getName(), good.getName()) && Objects.equals(price, good.price);
+        return Objects.equals(id, good.id) && Objects.equals(getName(), good.getName()) && Objects.equals(price, good.price)
+                && Objects.equals(images, good.images);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, getName(), price);
+        return Objects.hash(id, getName(), price, images);
     }
 
     @NonNull

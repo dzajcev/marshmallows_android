@@ -7,6 +7,13 @@
     tools:context=".fragments.DeliveriesFragment"
     android:orientation="vertical">
 
+    <Button
+        android:id="@+id/deliveryCreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="Новая доставка"/>
 
     <Button
         android:id="@+id/deliveryFilter"
@@ -16,13 +23,7 @@
         android:layout_alignParentTop="true"
         android:text="Фильтр" />
 
-    <Button
-        android:id="@+id/deliveryCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="Новая доставка"/>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/deliveriesList"

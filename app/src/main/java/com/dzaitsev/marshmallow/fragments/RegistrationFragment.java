@@ -11,16 +11,22 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentRegistrationBinding;
+import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
+import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Optional;
+import java.util.function.Consumer;
+
+import retrofit2.Response;
 
 
 public class RegistrationFragment extends Fragment implements IdentityFragment {
@@ -116,7 +122,21 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
                                             bundle.putString("token", jwtSignUpResponse.getToken());
                                             bundle.putString("login", request.getEmail());
                                             bundle.putString("password", request.getPassword());
-                                            Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
+                                            NetworkService.getInstance().refreshToken(jwtSignUpResponse.getToken());
+
+                                            new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
+                                                    .getMyInfo()).invoke(userInfoResponseResponse -> Optional.ofNullable(userInfoResponseResponse)
+                                                    .map(Response::body)
+                                                    .map(UserInfoResponse::getUser)
+                                                    .ifPresent(user -> {
+                                                        AuthorizationHelper.getInstance().updateUserData(user);
+                                                        switch (user.getRole()) {
+                                                            case DEVELOPER ->
+                                                                    Navigation.getNavigation().goForward(new OrdersFragment());
+                                                            case DELIVERYMAN ->
+                                                                    Navigation.getNavigation().goForward(new DeliveriesFragment());
+                                                        }
+                                                    }));
                                         });
                             }
                         });

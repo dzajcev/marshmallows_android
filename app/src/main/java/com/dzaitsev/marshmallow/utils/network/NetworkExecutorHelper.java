@@ -20,6 +20,7 @@ import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
@@ -126,7 +127,7 @@ public class NetworkExecutorHelper<T> {
     }
 
     public void invoke(Consumer<Response<T>> consumer) {
-        screenCover.show();
+        activity.runOnUiThread(screenCover::show);
         new NetworkExecutor<>(call)
                 .setOnResponseListener(new NetworkExecutor.OnResponseListener<>() {
                     @Override
@@ -158,6 +159,10 @@ public class NetworkExecutorHelper<T> {
                                 return;
                             } finally {
                                 screenCover.dismiss();
+                            }
+                        } else {
+                            if (!StringUtils.isEmpty(response.message())) {
+                                Toast.makeText(activity, response.message(), Toast.LENGTH_SHORT).show();
                             }
                         }
 

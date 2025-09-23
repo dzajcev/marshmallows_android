@@ -34,7 +34,8 @@ android {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation("commons-codec:commons-codec:1.16.0")
     implementation("com.github.arefbhrn:maskededittext:1.0.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

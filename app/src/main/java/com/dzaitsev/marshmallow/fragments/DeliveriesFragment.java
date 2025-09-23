@@ -73,7 +73,7 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                 Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
             });
         } else {
-            binding.deliveryCreate.setVisibility(View.GONE);
+            binding.deliveryCreate.setVisibility(View.INVISIBLE);
         }
         mAdapter = new DeliveryRecyclerViewAdapter();
         mAdapter.setEditItemListener(item -> new NetworkExecutorHelper<>(requireActivity(),
@@ -86,7 +86,9 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                     }
                 }));
         binding.deliveriesList.setAdapter(mAdapter);
-        binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new DeliveryFilterFragment()));
+        binding.deliveryFilter.setOnClickListener(v -> {
+            Navigation.getNavigation().goForward(new DeliveryFilterFragment());
+        });
     }
 
     @Override

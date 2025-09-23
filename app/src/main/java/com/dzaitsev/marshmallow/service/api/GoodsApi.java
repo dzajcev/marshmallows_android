@@ -20,7 +20,7 @@ public interface GoodsApi {
     Call<GoodsResponse> getGood(@Path("id") Integer goodId);
 
     @POST("goods")
-    Call<Void> saveGood(@Body Good good);
+    Call<Good> saveGood(@Body Good good);
 
     @DELETE("goods/{id}")
     Call<Void> deleteGood(@Path("id") Integer goodId);

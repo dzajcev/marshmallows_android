@@ -4,6 +4,7 @@ package com.dzaitsev.marshmallow.service;
 import com.dzaitsev.marshmallow.service.api.AuthorizationApi;
 import com.dzaitsev.marshmallow.service.api.ClientsApi;
 import com.dzaitsev.marshmallow.service.api.DeliveryApi;
+import com.dzaitsev.marshmallow.service.api.FilesApi;
 import com.dzaitsev.marshmallow.service.api.GoodsApi;
 import com.dzaitsev.marshmallow.service.api.InviteRequestsApi;
 import com.dzaitsev.marshmallow.service.api.OrdersApi;
@@ -53,8 +54,8 @@ public class NetworkService {
                 .build();
 
         mRetrofit = new Retrofit.Builder()
-//                .baseUrl("http://5.59.136.54:8115/")
-                .baseUrl("http://192.168.1.102:8080")
+                .baseUrl("http://89.110.75.34:8090")
+//                .baseUrl("http://192.168.1.222:8080")
                 .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
                 .client(okHttpClient)
                 .build();
@@ -62,6 +63,10 @@ public class NetworkService {
 
     public GoodsApi getGoodsApi() {
         return mRetrofit.create(GoodsApi.class);
+    }
+
+    public FilesApi getFilesApi() {
+        return mRetrofit.create(FilesApi.class);
     }
 
     public ClientsApi getClientsApi() {
