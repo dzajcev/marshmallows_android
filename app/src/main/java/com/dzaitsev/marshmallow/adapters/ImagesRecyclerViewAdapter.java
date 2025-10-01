@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,73 +15,110 @@ import com.bumptech.glide.Glide;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.Attachment;
 
-// Предположим, что вы передаете список строк (URL-адресов изображений)
-// Если у вас другой тип данных для изображений (например, объект Good.Image),
-// вам нужно будет адаптировать конструктор и метод onBindViewHolder
-public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, ImagesRecyclerViewAdapter.ImageViewHolder> {
+import lombok.Getter;
 
-    private final Context context; // Контекст все еще может быть полезен для Glide или LayoutInflater
-    private final int size;
+public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerView.ViewHolder> {
+
+    private static final int TYPE_IMAGE = 0;
+    private static final int TYPE_UPLOAD = 1;
+
     private final OnImagePickListener listener;
-
-    // Конструктор теперь принимает DiffUtil.ItemCallback
-    public ImagesRecyclerViewAdapter(@NonNull Context context, int size, OnImagePickListener listener) {
-        super(new ImageDiffCallback());
-        this.context = context;
-        this.size = size;
-        this.listener = listener;
-    }
 
     public interface OnImagePickListener {
         void onPickImage(int position);
+
+        void onDeleteImage(int position);  // новый метод для удаления
+
+        void onSetPrimary(int position);   // новый метод для шаринга
+    }
+
+    public ImagesRecyclerViewAdapter(OnImagePickListener listener) {
+        super(new ImageDiffCallback());
+        this.listener = listener;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        Attachment image = getItem(position);
+        return (image == null) ? TYPE_UPLOAD : TYPE_IMAGE;
     }
 
     @NonNull
     @Override
-    public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);
-        return new ImageViewHolder(view);
+        if (viewType == TYPE_UPLOAD) {
+            View view = inflater.inflate(R.layout.item_upload, parent, false);
+            return new UploadViewHolder(view);
+        } else {
+            View view = inflater.inflate(R.layout.item_image, parent, false);
+            return new ImageViewHolder(view);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-        Attachment image = getItem(position);
-        ViewGroup.LayoutParams params = holder.imageViewItem.getLayoutParams();
-
-        params.width = size; // например, 100 px или из ресурса
-        params.height = size;
-        holder.imageViewItem.setLayoutParams(params);
-        if (image == null) {
-            Glide.with(holder.itemView.getContext())
-                    .load(R.drawable.upload)
-//                    .placeholder(R.drawable.ic_placeholder_image)
-//                    .error(R.drawable.ic_error_image)
-                    .into(holder.imageViewItem);
-            holder.imageViewItem.setOnClickListener(v -> listener.onPickImage(holder.getAdapterPosition()));
-
-        } else {
-            String url;
-            if (image.getThumbnailUrl() != null) {
-                url = image.getThumbnailUrl();
-            } else if (image.getUrl() != null) {
-                url = image.getUrl();
-            } else {
-                url = "";
-            }
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof UploadViewHolder) {
+            holder.itemView.setOnClickListener(v -> listener.onPickImage(holder.getAdapterPosition()));
+        } else if (holder instanceof ImageViewHolder iv) {
+            Attachment image = getItem(position);
+            String url = (image.getThumbnailUrl() != null) ? image.getThumbnailUrl()
+                    : (image.getUrl() != null ? image.getUrl() : "");
+            iv.setPrimary(image.isPrimary());
             Glide.with(holder.itemView.getContext())
                     .load(url)
-//                    .placeholder(R.drawable.ic_placeholder_image)
-//                    .error(R.drawable.ic_error_image)
-                    .into(holder.imageViewItem);
-        }
+                    .centerCrop()
+                    .error(R.drawable.error)
+                    .into(iv.imageViewItem);
 
+            holder.itemView.setOnLongClickListener(v -> {
+                PopupMenu popup = new PopupMenu(v.getContext(), v);
+                popup.getMenuInflater().inflate(R.menu.image_context_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(item -> {
+                    int pos = holder.getAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return false;
+                    int id = item.getItemId();
+                    if (id == R.id.menu_delete) {
+                        listener.onDeleteImage(pos);
+                        return true;
+                    } else if (id == R.id.menu_share) {
+                        listener.onSetPrimary(pos);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+                popup.show();
+                return true;
+            });
+        }
     }
 
+    @Getter
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageViewItem;
+        ImageView star;
 
         ImageViewHolder(@NonNull View itemView) {
+            super(itemView);
+            imageViewItem = itemView.findViewById(R.id.imageViewItem);
+            star = itemView.findViewById(R.id.primary_image);
+        }
+
+        public void setPrimary(boolean primary) {
+            if (primary) {
+                star.setVisibility(View.VISIBLE);
+            } else {
+                star.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    public static class UploadViewHolder extends RecyclerView.ViewHolder {
+        ImageView imageViewItem;
+
+        UploadViewHolder(@NonNull View itemView) {
             super(itemView);
             imageViewItem = itemView.findViewById(R.id.imageViewItem);
         }

@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +28,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.adapters.GridSpacingItemDecoration;
 import com.dzaitsev.marshmallow.adapters.ImagesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.PriceHistoryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
@@ -43,14 +43,16 @@ import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
+import org.apache.commons.collections4.SetUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import okhttp3.MediaType;
@@ -74,7 +76,10 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 builder.setTitle("Запись изменена. Сохранить?");
                 builder.setPositiveButton("Да", (dialog, id) -> GoodCardFragment.this.save());
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
-                builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
+                builder.setNegativeButton("Нет", (dialog, id) -> {
+                    clearImages();
+                    Navigation.getNavigation().back();
+                });
                 builder.create().show();
             } else {
                 Navigation.getNavigation().back();
@@ -82,6 +87,22 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         }
         return false;
     };
+
+    private void clearImages() {
+        Set<Integer> existed = incomingGood.getImages()
+                .stream()
+                .map(Attachment::getId)
+                .collect(Collectors.toSet());
+        Set<Integer> all = imagesAdapter.getCurrentList()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(Attachment::getId)
+                .collect(Collectors.toSet());
+        SetUtils.difference(all, existed)
+                .forEach(f -> new NetworkExecutorHelper<>(requireActivity(),
+                        NetworkService.getInstance().getFilesApi().delete(f))
+                        .invoke());
+    }
 
     private boolean hasChanges() {
         fillGood();
@@ -142,7 +163,11 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         good = GsonHelper.deserialize(requireArguments().getString("good"), Good.class);
-        incomingGood = Objects.requireNonNull(good).clone();
+        try {
+            incomingGood = Objects.requireNonNull(good).clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
         setHasOptionsMenu(good.getId() != null);
         binding = FragmentGoodCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -157,9 +182,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
 
         // Сначала пытаемся получить имя через ContentResolver (для content:// URI)
         if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-            Cursor cursor = null;
-            try {
-                cursor = context.getContentResolver().query(uri, null, null, null, null);
+            try (Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                     if (nameIndex != -1) {
@@ -168,10 +191,6 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 }
             } catch (Exception e) {
                 // Сброс на случай ошибки
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
             }
         }
 
@@ -192,7 +211,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         if (fileName != null) {
             try {
                 fileName = URLDecoder.decode(fileName, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
+            } catch (UnsupportedEncodingException ignored) {
             }
         }
 
@@ -264,18 +283,16 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
 
                             new NetworkExecutorHelper<>(requireActivity(),
                                     NetworkService.getInstance().getFilesApi().saveAttachment(body))
-                                    .invoke(response -> {
-                                        requireActivity().runOnUiThread(() -> {
-                                            if (response.isSuccessful() && response.body() != null) {
-                                                good.getImages().add(response.body());
-                                                imageUrls.set(currentPosition, response.body());
-                                                if (imageUrls.size() < 9) imageUrls.add(null);
-                                                imagesAdapter.notifyItemChanged(currentPosition);
-                                            } else {
-                                                Toast.makeText(requireContext(), "Ошибка загрузки", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                                    });
+                                    .invoke(response -> requireActivity().runOnUiThread(() -> {
+                                        if (response.isSuccessful() && response.body() != null) {
+                                            good.getImages().add(response.body());
+                                            imageUrls.set(currentPosition, response.body());
+                                            if (imageUrls.size() < 9) imageUrls.add(null);
+                                            imagesAdapter.notifyItemChanged(currentPosition);
+                                        } else {
+                                            Toast.makeText(requireContext(), "Ошибка загрузки", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }));
                         }
                     }
                 }
@@ -284,25 +301,50 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         binding.images.post(() -> {
             int recyclerViewWidth = binding.images.getWidth();
             if (recyclerViewWidth > 0) {
-                float v = ((float) recyclerViewWidth / 3);
-                GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 3);
-                binding.images.setLayoutManager(gridLayoutManager);
-
                 if (binding.images.getAdapter() == null) {
-                    imagesAdapter = new ImagesRecyclerViewAdapter(requireContext(), (int) v - 4,
-                            position -> {
-                                currentPosition = position;
-                                openGallery();
-                            });
-                    binding.images.setAdapter(imagesAdapter);
+                    imagesAdapter = new ImagesRecyclerViewAdapter(new ImagesRecyclerViewAdapter.OnImagePickListener() {
+                        @Override
+                        public void onPickImage(int position) {
+                            currentPosition = position;
+                            openGallery();
+                        }
 
+                        @Override
+                        public void onDeleteImage(int position) {
+                            imageUrls.remove(position);
+                            imagesAdapter.notifyItemRemoved(position);
+
+                        }
+
+                        @Override
+                        public void onSetPrimary(int position) {
+                            List<Attachment> currentList = new ArrayList<>();
+                            for (int i = 0; i < imagesAdapter.getCurrentList().size(); i++) {
+                                if (imagesAdapter.getCurrentList().get(i) != null) {
+                                    Attachment attachment = imagesAdapter.getCurrentList().get(i).copy();
+                                    attachment.setPrimary(i == position);
+                                    currentList.add(attachment);
+                                } else {
+                                    currentList.add(null);
+                                }
+                            }
+                            resortImages(currentList);
+                            imagesAdapter.submitList(currentList);
+                        }
+                    });
+                    int spanCount = 3;
+                    GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), spanCount);
+                    binding.images.setLayoutManager(gridLayoutManager);
+                    binding.images.setAdapter(imagesAdapter);
+                    int spacing = (int) (8 * getResources().getDisplayMetrics().density);
+                    binding.images.addItemDecoration(new GridSpacingItemDecoration(spanCount, spacing, true));
                     if (good != null && good.getImages() != null && !good.getImages().isEmpty()) {
                         imageUrls.addAll(good.getImages());
                     }
                     if (imageUrls.size() < 9) {
                         imageUrls.add(null);
                     }
-
+                    resortImages(imageUrls);
                     imagesAdapter.submitList(imageUrls);
                 }
 
@@ -321,6 +363,19 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
 
         priceHistoryRecyclerViewAdapter.setItems(good.getPrices().stream()
                 .sorted((price, t1) -> t1.getCreateDate().compareTo(price.getCreateDate())).collect(Collectors.toList()));
+    }
+
+
+    private void resortImages(List<Attachment> attachments) {
+        attachments.sort((o1, o2) -> {
+            if (o1 == null) {
+                return 1;
+            }
+            if (o2 == null) {
+                return -1;
+            }
+            return Boolean.compare(o2.isPrimary(), o1.isPrimary());
+        });
     }
 
     private void openGallery() {
@@ -384,6 +439,10 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         good.setImages(imagesAdapter.getCurrentList().stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
+        if (good.getImages().size() == 1 || (!good.getImages().isEmpty() && good.getImages().stream()
+                .noneMatch(Attachment::isPrimary))) {
+            good.getImages().get(0).setPrimary(true);
+        }
         good.setPrice(MoneyUtils.getInstance().stringToDouble(binding.goodCardPrice.getText().toString()));
     }
 

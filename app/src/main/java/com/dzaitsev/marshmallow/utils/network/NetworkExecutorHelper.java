@@ -146,6 +146,9 @@ public class NetworkExecutorHelper<T> {
                                         })
                                         .map(m -> GsonExt.getGson().fromJson(m, ErrorDto.class))
                                         .orElse(new ErrorDto(ErrorCodes.AUTH000));
+                                if (errorDto.getCode()==null){
+                                    Toast.makeText(activity, "Неожиданная ошибка", Toast.LENGTH_SHORT).show();
+                                }
                                 if (errorDto.getCode() == ErrorCodes.AUTH006) {
                                     refreshToken(this);
                                     return;

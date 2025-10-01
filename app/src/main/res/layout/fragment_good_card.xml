@@ -90,9 +90,7 @@
         android:layout_below="@id/goodCardPriceHistoryList"
         android:layout_above="@id/goodCardCancel"
         android:gravity="center"
-        android:horizontalSpacing="2dp"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="2dp" />
+        android:stretchMode="spacingWidth" />
 
     <Button
         android:id="@+id/goodCardCancel"

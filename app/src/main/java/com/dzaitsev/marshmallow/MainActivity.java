@@ -118,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
                 switch (code) {
                     case AUTH006 -> {//обновление токена
                     }
+                    case AUTH001 -> //код неверный
+                            Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
                     case AUTH008 -> {
                         NetworkService.getInstance().refreshToken(null);
                         AuthorizationHelper.getInstance().getSignInRequest()

@@ -9,13 +9,12 @@ public class ImageDiffCallback extends DiffUtil.ItemCallback<Attachment> {
 
     @Override
     public boolean areItemsTheSame(@NonNull Attachment oldItem, @NonNull Attachment newItem) {
-        // URL-адреса уникальны, поэтому их можно использовать для проверки идентичности элемента
-        return oldItem.equals(newItem);
+        return oldItem.getId().equals(newItem.getId()); // только по ID
     }
 
     @Override
     public boolean areContentsTheSame(@NonNull Attachment oldItem, @NonNull Attachment newItem) {
-        // Для строк содержимое и элемент - это одно и то же
-        return oldItem.equals(newItem);
+        return oldItem.equals(newItem) &&
+                oldItem.isPrimary() == newItem.isPrimary(); // учитываем isPrimary
     }
 }
