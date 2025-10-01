@@ -8,11 +8,13 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.dzaitsev.marshmallow.R;
+import com.dzaitsev.marshmallow.fragments.FullScreenImageDialogFragment;
 import com.dzaitsev.marshmallow.dto.Attachment;
 
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
     private static final int TYPE_UPLOAD = 1;
 
     private final OnImagePickListener listener;
+    private final Context context;
 
     public interface OnImagePickListener {
         void onPickImage(int position);
@@ -32,9 +35,10 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
         void onSetPrimary(int position);   // новый метод для шаринга
     }
 
-    public ImagesRecyclerViewAdapter(OnImagePickListener listener) {
+    public ImagesRecyclerViewAdapter(Context context, OnImagePickListener listener) {
         super(new ImageDiffCallback());
         this.listener = listener;
+        this.context = context;
     }
 
     @Override
@@ -71,7 +75,14 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
                     .centerCrop()
                     .error(R.drawable.error)
                     .into(iv.imageViewItem);
-
+            holder.itemView.setOnClickListener(v -> {
+                Attachment a = getItem(holder.getAdapterPosition());
+                if (a != null && a.getUrl() != null) {
+                    FullScreenImageDialogFragment dialog = FullScreenImageDialogFragment
+                            .newInstance(image.getUrl());
+                    dialog.show(((FragmentActivity) context).getSupportFragmentManager(), "full_screen_image");
+                }
+            });
             holder.itemView.setOnLongClickListener(v -> {
                 PopupMenu popup = new PopupMenu(v.getContext(), v);
                 popup.getMenuInflater().inflate(R.menu.image_context_menu, popup.getMenu());

@@ -302,7 +302,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
             int recyclerViewWidth = binding.images.getWidth();
             if (recyclerViewWidth > 0) {
                 if (binding.images.getAdapter() == null) {
-                    imagesAdapter = new ImagesRecyclerViewAdapter(new ImagesRecyclerViewAdapter.OnImagePickListener() {
+                    imagesAdapter = new ImagesRecyclerViewAdapter(requireContext(), new ImagesRecyclerViewAdapter.OnImagePickListener() {
                         @Override
                         public void onPickImage(int position) {
                             currentPosition = position;
