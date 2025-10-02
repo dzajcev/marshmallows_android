@@ -1,5 +1,10 @@
 package com.dzaitsev.marshmallow.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public enum ErrorCodes {
     AUTH000("Неизвестная ошибка"),
     AUTH001("Код верификации не верный"),
@@ -10,17 +15,8 @@ public enum ErrorCodes {
     AUTH006("Время жизни токена истекло"),
     AUTH007("Неверный логин или пароль"),
     AUTH008("Требуется подтверждение учетной записи"),
-    IU001("Пользователь с таким логином не найден")
-
-            ;
+    IU001("Пользователь с таким логином не найден");
 
     private final String text;
 
-    ErrorCodes(String text) {
-        this.text = text;
-    }
-
-    public String getText() {
-        return text;
-    }
 }

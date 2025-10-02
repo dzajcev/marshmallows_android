@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -27,30 +28,38 @@
         android:minHeight="50sp"
         android:minLines="2"
         android:scrollbars="vertical"
-        android:textSize="14sp" />
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/goodCardPrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
         android:layout_below="@id/goodCardName"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_margin="2pt"
         android:layout_marginBottom="5sp"
         android:background="@color/field_background"
-        android:gravity="top|start"
+        android:gravity="center|end"
         android:hint="Цена зефирки"
         android:minHeight="40sp"
         android:scrollbars="vertical"
-        android:textSize="14sp" />
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goodCardName" />
 
     <EditText
         android:id="@+id/goodCardDescription"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/goodCardPrice"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_margin="2pt"
         android:background="@color/field_background"
         android:ems="10"
         android:gravity="top|start"
@@ -60,8 +69,12 @@
         android:maxLines="5"
         android:minHeight="50sp"
         android:minLines="2"
+        android:padding="2pt"
         android:scrollbars="vertical"
-        android:textSize="14sp" />
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/goodCardPrice"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goodCardName" />
 
     <TextView
         android:id="@+id/tx1"
@@ -70,27 +83,35 @@
         android:layout_below="@id/goodCardDescription"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
+        android:layout_margin="2pt"
         android:text="История цен"
-        android:textSize="16sp" />
+        android:textSize="25sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goodCardDescription" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/goodCardPriceHistoryList"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_margin="2pt"
         android:layout_below="@id/tx1"
-
         android:layout_alignParentStart="true"
         android:layout_marginTop="4dp"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tx1" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/images"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/goodCardPriceHistoryList"
         android:layout_above="@id/goodCardCancel"
+        android:layout_below="@id/goodCardPriceHistoryList"
         android:gravity="center"
-        android:stretchMode="spacingWidth" />
+        android:layout_margin="2pt"
+        android:stretchMode="spacingWidth"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goodCardPriceHistoryList" />
 
     <Button
         android:id="@+id/goodCardCancel"
@@ -98,7 +119,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:text="Отмена" />
+        android:text="Отмена"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/goodCardSave"
@@ -106,7 +129,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:text="Сохранить" />
+        android:text="Сохранить"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

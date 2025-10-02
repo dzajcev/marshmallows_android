@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Client extends NsiItem implements Cloneable {
     private Integer id;
 
@@ -23,50 +28,6 @@ public class Client extends NsiItem implements Cloneable {
 
 
     private List<LinkChannel> linkChannels = new ArrayList<>();
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public String getDefaultDeliveryAddress() {
-        return defaultDeliveryAddress;
-    }
-
-    public void setDefaultDeliveryAddress(String defaultDeliveryAddress) {
-        this.defaultDeliveryAddress = defaultDeliveryAddress;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public List<LinkChannel> getLinkChannels() {
-        return linkChannels;
-    }
-
-    public void setLinkChannels(List<LinkChannel> linkChannels) {
-        this.linkChannels = linkChannels;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 
     @Override
     public boolean equals(Object o) {

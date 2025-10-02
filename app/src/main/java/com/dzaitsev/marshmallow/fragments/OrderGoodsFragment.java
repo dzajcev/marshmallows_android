@@ -78,7 +78,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
                             order.getOrderLines().get(i).setNum(i + 1);
                         }
                     }
-                    bundle.putString("order",GsonHelper.serialize( order));
+                    bundle.putString("order", GsonHelper.serialize(order));
                     Navigation.getNavigation().goForward(new OrderClientFragment(), bundle);
                 } catch (Exception e) {
 //do nothing
@@ -102,6 +102,11 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             OrderLine orderLine = new OrderLine();
             orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum)).map(OrderLine::getNum).map(m -> m + 1).orElse(1));
             mAdapter.addItem(orderLine);
+            Bundle bundle = new Bundle();
+            bundle.putString("order", GsonHelper.serialize(order));
+            bundle.putInt("orderline", orderLine.getNum());
+            bundle.putString("source", "orderCard");
+            Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
         mAdapter = new OrderLinesRecyclerViewAdapter();
@@ -121,16 +126,13 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             bundle.putString("source", "orderGoods");
             Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
         });
-        mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.getInstance()
-                .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));
+        mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));
         mAdapter.setItems(order.getOrderLines());
         orderLinesList.setAdapter(mAdapter);
-        binding.orderGoodsSum.setText(MoneyUtils.getInstance()
-                .moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems())));
+        binding.orderGoodsSum.setText(MoneyUtils.moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems())));
         if (order.getOrderLines().isEmpty()) {
             binding.orderGoodsLinesList.callOnClick();
         }
-
     }
 
     private Double calsSum(List<OrderLine> orderLines) {

@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.fragments.FullScreenImageDialogFragment;
 import com.dzaitsev.marshmallow.dto.Attachment;
+import com.dzaitsev.marshmallow.fragments.FullScreenImageDialogFragment;
 
 import lombok.Getter;
 
@@ -86,6 +86,7 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
             holder.itemView.setOnLongClickListener(v -> {
                 PopupMenu popup = new PopupMenu(v.getContext(), v);
                 popup.getMenuInflater().inflate(R.menu.image_context_menu, popup.getMenu());
+                popup.getMenu().findItem(R.id.menu_primary).setVisible(!image.isPrimary());
                 popup.setOnMenuItemClickListener(item -> {
                     int pos = holder.getAdapterPosition();
                     if (pos == RecyclerView.NO_POSITION) return false;
@@ -93,7 +94,7 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
                     if (id == R.id.menu_delete) {
                         listener.onDeleteImage(pos);
                         return true;
-                    } else if (id == R.id.menu_share) {
+                    } else if (id == R.id.menu_primary) {
                         listener.onSetPrimary(pos);
                         return true;
                     } else {

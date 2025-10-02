@@ -39,7 +39,7 @@ public class Good extends NsiItem implements Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, getName(), price, images);
+        return Objects.hash(getId(), getName(), getPrice(), getImages(), getDescription(), isActive());
     }
 
     @NonNull

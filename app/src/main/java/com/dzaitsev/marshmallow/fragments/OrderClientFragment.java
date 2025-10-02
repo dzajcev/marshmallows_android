@@ -72,8 +72,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
                 .setTitle("Укажите сумму")
                 .setMinValue(0)
                 .positiveButton(value -> {
-                    binding.prePayment.setText(String.format("%s", MoneyUtils.getInstance()
-                            .moneyWithCurrencyToString(value)));
+                    binding.prePayment.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                     order.setPrePaymentSum(value);
                 })
                 .build()
@@ -87,7 +86,7 @@ public class OrderClientFragment extends Fragment implements IdentityFragment {
         binding.clientName.setText(Optional.ofNullable(order.getClient()).map(Client::getName).orElse(""));
 
         EditTextUtil.setText(binding.comment, Optional.ofNullable(order.getComment()).orElse(""));
-        binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(order.getPrePaymentSum()));
+        binding.prePayment.setText(MoneyUtils.moneyWithCurrencyToString(order.getPrePaymentSum()));
         binding.orderClientsNeedDelivery.setChecked(order.isNeedDelivery());
         Optional.ofNullable(order.getDeadline())
                 .ifPresent(o -> {

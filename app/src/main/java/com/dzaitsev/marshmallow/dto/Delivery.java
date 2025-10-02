@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Delivery implements Serializable, Cloneable {
 
     private Integer id;
@@ -27,80 +32,9 @@ public class Delivery implements Serializable, Cloneable {
     private LocalDate deliveryDate;
     private LocalTime start;
     private LocalTime end;
-    private List<Order> orders;
+    private List<Order> orders=new ArrayList<>();
 
     private DeliveryStatus deliveryStatus;
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public LocalDate getDeliveryDate() {
-        return deliveryDate;
-    }
-
-    public void setDeliveryDate(LocalDate deliveryDate) {
-        this.deliveryDate = deliveryDate;
-    }
-
-    public LocalTime getStart() {
-        return start;
-    }
-
-    public void setStart(LocalTime start) {
-        this.start = start;
-    }
-
-    public LocalTime getEnd() {
-        return end;
-    }
-
-    public void setEnd(LocalTime end) {
-        this.end = end;
-    }
-
-    public List<Order> getOrders() {
-        if (orders == null) {
-            orders = new ArrayList<>();
-        }
-        return orders;
-    }
-
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getExecutor() {
-        return executor;
-    }
-
-    public void setExecutor(User executor) {
-        this.executor = executor;
-    }
-
-    public DeliveryStatus getDeliveryStatus() {
-        return deliveryStatus;
-    }
-
-    public void setDeliveryStatus(DeliveryStatus deliveryStatus) {
-        this.deliveryStatus = deliveryStatus;
-    }
-
-    public User getCreateUser() {
-        return createUser;
-    }
-
-    public void setCreateUser(User createUser) {
-        this.createUser = createUser;
-    }
 
     public boolean isMy() {
         return createUser == null || AuthorizationHelper.getInstance().getUserData()

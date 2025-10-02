@@ -1,11 +1,14 @@
 package com.dzaitsev.marshmallow.adapters;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
@@ -13,9 +16,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.ViewTarget;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.CustomNumberPicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
+import com.dzaitsev.marshmallow.dto.Attachment;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
@@ -24,6 +30,9 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import lombok.Setter;
+
+@Setter
 public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<OrderLine, OrderLinesRecyclerViewAdapter.RecyclerViewHolder> {
     private RemoveListener removeListener;
 
@@ -33,22 +42,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
 
     private DoneListener doneListener;
 
-    public void setRemoveListener(RemoveListener removeListener) {
-        this.removeListener = removeListener;
-    }
 
-
-    public void setSelectGoodListener(SelectGoodListener selectGoodListener) {
-        this.selectGoodListener = selectGoodListener;
-    }
-
-    public void setChangeSumListener(ChangeSumListener changeSumListener) {
-        this.changeSumListener = changeSumListener;
-    }
-
-    public void setDoneListener(DoneListener doneListener) {
-        this.doneListener = doneListener;
-    }
 
     public interface RemoveListener {
         void onRemove(int position);
@@ -67,20 +61,22 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     }
 
     public class RecyclerViewHolder extends AbstractRecyclerViewHolder<OrderLine> {
-        private final TextView npp;
         private final TextView good;
         private final TextView price;
         private final TextView count;
+        private final TextView total;
         private final ImageButton done;
-        private final ImageButton delete;
 
+        private final ImageView imageView;
+        private final Context context;
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public RecyclerViewHolder(View itemView) {
             super(itemView);
-            npp = itemView.findViewById(R.id.order_line_npp);
+            context = itemView.getContext();
             good = itemView.findViewById(R.id.order_line_name);
             price = itemView.findViewById(R.id.order_line_price);
-
+            total = itemView.findViewById(R.id.order_line_sum);
+            imageView = itemView.findViewById(R.id.imageGood);
             itemView.setOnClickListener(v -> {
                 if (selectGoodListener != null) {
                     selectGoodListener.onSelectGood(getItem());
@@ -95,9 +91,9 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                             .setMaxValue(100000)
                             .positiveButton(value -> {
                                 if (changeSumListener != null) {
-                                    price.setText(String.format("%s", MoneyUtils.getInstance()
-                                            .moneyWithCurrencyToString(value)));
+                                    price.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                                     getItem().setPrice(value);
+                                    total.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
                                     changeSumListener.onChange();
                                 }
                             })
@@ -119,6 +115,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                                     if (changeSumListener != null) {
                                         count.setText(String.format("%s", value));
                                         getItem().setCount(value);
+                                        total.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
                                         changeSumListener.onChange();
                                     }
                                 }
@@ -137,41 +134,50 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                 }
             });
 
-            delete = itemView.findViewById(R.id.orderLineDelete);
-            delete.setOnClickListener(v -> {
-                if (removeListener != null) {
-                    int adapterPosition = getAdapterPosition();
-                    removeItem(adapterPosition);
-                    removeListener.onRemove(adapterPosition);
-                }
-            });
+//            delete = itemView.findViewById(R.id.orderLineDelete);
+//            delete.setOnClickListener(v -> {
+//                if (removeListener != null) {
+//                    int adapterPosition = getAdapterPosition();
+//                    removeItem(adapterPosition);
+//                    removeListener.onRemove(adapterPosition);
+//                }
+//            });
             done = itemView.findViewById(R.id.orderLineDone);
             if (doneListener != null) {
                 done.setVisibility(View.VISIBLE);
                 done.setOnClickListener(v -> {
                     doneListener.onDone(getItem(), RecyclerViewHolder.this);
-                    if (getItem().isDone()) {
-                        delete.setVisibility(View.GONE);
-                    } else {
-                        delete.setVisibility(View.VISIBLE);
-                    }
+//                    if (getItem().isDone()) {
+//                        delete.setVisibility(View.GONE);
+//                    } else {
+//                        delete.setVisibility(View.VISIBLE);
+//                    }
                 });
             }
         }
 
         public void bind(OrderLine orderLine) {
             super.bind(orderLine);
-            npp.setText(String.format("#%s", orderLine.getNum()));
             good.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
-            price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(orderLine.getPrice()));
+            price.setText(MoneyUtils.moneyWithCurrencyToString(orderLine.getPrice()));
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
+            total.setText(MoneyUtils.moneyWithCurrencyToString(Optional.ofNullable(orderLine.getPrice()).orElse(0d)
+                    * Optional.ofNullable(orderLine.getCount()).orElse(0)));
             if (orderLine.getGood() == null) {
                 done.setVisibility(View.GONE);
                 price.setFocusable(false);
                 count.setFocusable(false);
-            }
-            if (orderLine.isDone()) {
-                delete.setVisibility(View.GONE);
+            }else{
+                orderLine.getGood().getImages().stream()
+                        .filter(Attachment::isPrimary)
+                        .findAny()
+                        .ifPresent(f -> {
+                            ViewTarget<ImageView, Drawable> into = Glide.with(context)
+                                    .load(f.getThumbnailUrl())
+                                    .centerCrop()
+                                    .error(R.drawable.error)
+                                    .into(imageView);
+                        });
             }
         }
     }

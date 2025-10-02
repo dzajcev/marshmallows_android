@@ -6,19 +6,12 @@ import java.text.ParseException;
 import java.util.Optional;
 
 public class MoneyUtils {
-    private final NumberFormat MONEY_WITH_CURRENCY_FORMATTER = new DecimalFormat("#0.00р");
-    private final NumberFormat MONEY_FORMATTER = new DecimalFormat("#0.00");
+    private final static NumberFormat MONEY_WITH_CURRENCY_FORMATTER = new DecimalFormat("#0.00р");
+    private final static NumberFormat MONEY_FORMATTER = new DecimalFormat("#0.00");
 
-    private static MoneyUtils moneyUtils;
 
-    public static MoneyUtils getInstance() {
-        if (moneyUtils == null) {
-            moneyUtils = new MoneyUtils();
-        }
-        return moneyUtils;
-    }
 
-    public String moneyWithCurrencyToString(Double money) {
+    public static String moneyWithCurrencyToString(Double money) {
         return Optional.ofNullable(money)
                 .map(m -> {
                     if (money - money.intValue() == 0) {
@@ -29,7 +22,7 @@ public class MoneyUtils {
                 }).orElse("");
     }
 
-    public String moneyToString(Double money) {
+    public static String moneyToString(Double money) {
         return Optional.ofNullable(money)
                 .map(m -> {
                     if (money - money.intValue() == 0) {
@@ -40,7 +33,7 @@ public class MoneyUtils {
                 }).orElse("");
     }
 
-    public Double stringToDouble(String money) {
+    public static Double stringToDouble(String money) {
         return Optional.ofNullable(money)
                 .map(m -> StringUtils.isEmpty(m) ? null : m)
                 .map(m -> {

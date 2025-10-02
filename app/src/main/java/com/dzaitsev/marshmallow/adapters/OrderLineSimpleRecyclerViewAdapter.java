@@ -39,9 +39,9 @@ public class OrderLineSimpleRecyclerViewAdapter extends AbstractRecyclerViewAdap
         public void bind(OrderLine item) {
             super.bind(item);
             orderLinesSimpleGoodName.setText(item.getGood().getName());
-            orderLinesSimplePrice.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(getItem().getPrice()));
+            orderLinesSimplePrice.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice()));
             orderLinesSimpleCount.setText(String.format("%s", item.getCount()));
-            orderLinesSimpleSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
+            orderLinesSimpleSum.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
         }
     }
 }

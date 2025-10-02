@@ -1,5 +1,8 @@
 package com.dzaitsev.marshmallow.dto;
 
+import lombok.Getter;
+
+@Getter
 public class ErrorDto {
     private final ErrorCodes code;
 
@@ -12,14 +15,6 @@ public class ErrorDto {
 
     public ErrorDto(ErrorCodes code) {
         this.code = code;
-    }
-
-    public ErrorCodes getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
 }

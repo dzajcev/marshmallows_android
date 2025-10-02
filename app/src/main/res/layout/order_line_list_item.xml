@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/orderItemLayout"
     android:layout_width="match_parent"
@@ -8,69 +8,123 @@
     android:layout_marginEnd="3sp"
     android:orientation="horizontal">
 
-    <ImageButton
-        android:id="@+id/orderLineDelete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="40sp"
-        app:srcCompat="@drawable/delete_32" />
+    <ImageView
+        android:id="@+id/imageGood"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:minHeight="80sp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/order_line_npp"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight=".1"
-        android:gravity="center_horizontal|center_vertical"
-        android:minHeight="40sp"
-        android:paddingStart="3sp"
-        android:paddingEnd="3sp"
-        android:text=""
-        android:textSize="16sp"
-        android:tooltipText="Эываа" />
 
     <TextView
         android:id="@+id/order_line_name"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_weight=".55"
-        android:gravity="center_vertical"
-        android:hint="Выберите товар"
-        android:minHeight="40sp"
-        android:paddingStart="3sp"
-        android:paddingEnd="3sp"
-        android:textSize="16sp" />
+        android:layout_height="60dp"
+        android:text=""
+        android:textSize="24sp"
+        app:layout_constraintLeft_toRightOf="@id/imageGood"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/order_line_price"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.25"
-        android:gravity="center_vertical|end"
-        android:minHeight="40sp"
-        android:paddingStart="3sp"
-        android:paddingEnd="3sp"
-        android:text=""
-        android:textSize="16sp" />
+        android:layout_height="40dp"
+        android:gravity="bottom|end"
+
+        android:text="TextView"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/guideline11"
+        app:layout_constraintRight_toRightOf="@id/guideline12"
+        app:layout_constraintTop_toBottomOf="@id/order_line_name"
+
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/order_line_count"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="0.1"
-        android:gravity="center_vertical|end"
-        android:minHeight="40sp"
-        android:paddingStart="3sp"
-        android:paddingEnd="3sp"
+        android:layout_height="40dp"
+        android:gravity="bottom|start"
         android:text=""
-        android:textSize="16sp" />
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/guideline14"
+        app:layout_constraintRight_toLeftOf="@id/guideline13"
+        app:layout_constraintTop_toBottomOf="@id/order_line_name"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/order_line_sum"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="ап"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="bottom|start"
+        android:layout_gravity="bottom|start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toRightOf="@id/imageGood"
+        app:layout_constraintRight_toLeftOf="@id/guideline11"
+        app:layout_constraintTop_toBottomOf="@id/order_line_name"
+
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:textSize="20sp"
+        app:layout_constraintLeft_toRightOf="@id/guideline12"
+        app:layout_constraintRight_toLeftOf="@id/guideline14"
+        android:gravity="bottom|center"
+        app:layout_constraintTop_toBottomOf="@id/order_line_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="x" />
 
     <ImageButton
         android:id="@+id/orderLineDone"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="bottom|center"
+        android:foregroundGravity="bottom"
+        android:src="@drawable/done_32"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/order_line_name"
+        app:layout_constraintLeft_toRightOf="@id/guideline13"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline11"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|center_vertical"
-        android:src="@drawable/done_32"
-        android:visibility="gone" />
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.53" />
 
-</LinearLayout>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.77037036" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.89382714" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline14"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.82" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

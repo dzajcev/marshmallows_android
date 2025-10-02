@@ -10,8 +10,8 @@
 
     <!-- Пункт "Поделиться" -->
     <item
-        android:id="@+id/menu_share"
-        android:title="Поделиться"
+        android:id="@+id/menu_primary"
+        android:title="Сделать главным"
         app:showAsAction="never" />
 
 </menu>

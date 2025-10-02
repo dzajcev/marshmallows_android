@@ -1,7 +1,6 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -40,7 +39,7 @@ public class PriceHistoryRecyclerViewAdapter extends AbstractRecyclerViewAdapter
         public void bind(Price item) {
             super.bind(item);
             createDate.setText(dateTimeFormatter.format(getItem().getCreateDate()));
-            price.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(getItem().getPrice()));
+            price.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice()));
         }
     }
 }

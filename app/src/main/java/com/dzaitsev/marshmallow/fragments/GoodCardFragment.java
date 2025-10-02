@@ -251,15 +251,14 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         binding.goodCardName.setOnKeyListener(keyListener);
         binding.goodCardName.setText(good.getName());
         binding.goodCardPrice.setOnKeyListener(keyListener);
-        binding.goodCardPrice.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(good.getPrice()));
+        binding.goodCardPrice.setText(MoneyUtils.moneyWithCurrencyToString(good.getPrice()));
         binding.goodCardPrice.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                 .setTitle("Укажите сумму")
                 .setInitialValue(good.getPrice())
                 .setMinValue(1)
                 .setMaxValue(100000)
                 .positiveButton(value -> {
-                    binding.goodCardPrice.setText(String.format("%s", MoneyUtils.getInstance()
-                            .moneyWithCurrencyToString(value)));
+                    binding.goodCardPrice.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                     good.setPrice(value);
                 })
                 .build()
@@ -443,7 +442,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 .noneMatch(Attachment::isPrimary))) {
             good.getImages().get(0).setPrimary(true);
         }
-        good.setPrice(MoneyUtils.getInstance().stringToDouble(binding.goodCardPrice.getText().toString()));
+        good.setPrice(MoneyUtils.stringToDouble(binding.goodCardPrice.getText().toString()));
     }
 
     @Override

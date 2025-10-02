@@ -85,14 +85,13 @@ public class MoneyPicker extends View {
         }
 
         public Builder setInitialValue(Double maxValue) {
-            MoneyPicker.this.money.setText(MoneyUtils.getInstance().moneyToString(maxValue));
+            MoneyPicker.this.money.setText(MoneyUtils.moneyToString(maxValue));
             return this;
         }
 
         public Builder positiveButton(Consumer<Double> supplier) {
             positiveButton = view -> {
-                Optional.ofNullable(MoneyUtils.getInstance()
-                        .stringToDouble(money.getText().toString())).ifPresent(val -> {
+                Optional.ofNullable(MoneyUtils.stringToDouble(money.getText().toString())).ifPresent(val -> {
                     boolean badValue = minValue != null && val < minValue;
                     if (maxValue != null && val > maxValue) {
                         badValue = true;

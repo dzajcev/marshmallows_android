@@ -129,7 +129,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         EditTextUtil.setText(binding.comment, order.getComment());
         EditTextUtil.setText(binding.delivery, order.getDeliveryAddress());
 
-        binding.prePayment.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
+        binding.prePayment.setText(MoneyUtils.moneyWithCurrencyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
         binding.orderCardNeedDelivery.setChecked(order.isNeedDelivery());
         binding.deadline.setText(dateTimeFormatter.format(order.getDeadline()));
 
@@ -146,6 +146,11 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                 orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum))
                         .map(OrderLine::getNum).map(m -> m + 1).orElse(1));
                 mAdapter.addItem(orderLine);
+                Bundle bundle = new Bundle();
+                bundle.putString("order", GsonHelper.serialize(order));
+                bundle.putInt("orderline", orderLine.getNum());
+                bundle.putString("source", "orderCard");
+                Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
             });
         }
 
@@ -184,8 +189,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                     .setTitle("Укажите сумму")
                     .setMinValue(0)
                     .positiveButton(value -> {
-                        binding.prePayment.setText(String.format("%s", MoneyUtils.getInstance()
-                                .moneyWithCurrencyToString(value)));
+                        binding.prePayment.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                         order.setPrePaymentSum(value);
                         bindSums();
                     })
@@ -229,7 +233,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             binding.orderCardPaid.setVisibility(View.GONE);
         }
         binding.orderCardPaid.setOnClickListener(v -> MoneyPicker.builder(requireContext())
-                .setInitialValue(MoneyUtils.getInstance().stringToDouble(binding.toPay.getText().toString()))
+                .setInitialValue(MoneyUtils.stringToDouble(binding.toPay.getText().toString()))
                 .setTitle("Оплата")
                 .setMessage("Подтвердите сумму оплаты")
                 .setMinValue(0)
@@ -263,10 +267,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     }
 
     private void bindSums() {
-        binding.totalSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcTotalSum()));
+        binding.totalSum.setText(MoneyUtils.moneyWithCurrencyToString(calcTotalSum()));
         Double calcToPay = calcToPay();
-        binding.toPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay));
-        binding.paid.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(order.getPaySum()));
+        binding.toPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay));
+        binding.paid.setText(MoneyUtils.moneyWithCurrencyToString(order.getPaySum()));
         if (calcToPay.equals(0d)) {
             binding.toPay.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         }
@@ -343,7 +347,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         order.setPhone(binding.phoneNumber.getRawText());
         order.setNeedDelivery(binding.orderCardNeedDelivery.isChecked());
         order.getOrderLines().removeIf(r -> r.getGood() == null);
-        if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getOrderStatus()==OrderStatus.IN_PROGRESS) {
+        if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getOrderStatus() == OrderStatus.IN_PROGRESS) {
             order.setOrderStatus(OrderStatus.DONE);
         }
     }

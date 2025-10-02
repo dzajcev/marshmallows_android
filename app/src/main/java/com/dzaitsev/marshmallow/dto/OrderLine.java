@@ -9,6 +9,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class OrderLine implements Serializable, Cloneable {
 
     private Integer id;
@@ -25,71 +30,19 @@ public class OrderLine implements Serializable, Cloneable {
 
     private Integer count;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getNum() {
-        return num;
-    }
-
-    public void setNum(Integer num) {
-        this.num = num;
-    }
-
-    public LocalDateTime getCreateDate() {
-        return createDate;
-    }
-
-    public Good getGood() {
-        return good;
-    }
-
-    public void setGood(Good good) {
-        this.good = good;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public boolean isDone() {
-        return done;
-    }
-
-    public void setDone(boolean done) {
-        this.done = done;
-    }
-
-    public Integer getCount() {
-        return count;
-    }
-
-    public void setCount(Integer count) {
-        this.count = count;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OrderLine orderLine = (OrderLine) o;
-        return Objects.equals(num, orderLine.num) && Objects.equals(good, orderLine.good)
+        return Objects.equals(good, orderLine.good)
                 && Objects.equals(price, orderLine.price) && Objects.equals(done, orderLine.done)
                 && Objects.equals(count, orderLine.count);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(num, good, price, done, count);
+        return Objects.hash(good, price, done, count);
     }
 
     @NonNull

@@ -64,7 +64,7 @@ public class OrderSelectorRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             super.bind(item);
             orderSelectorItemId.setText(String.format("#%s", item.getId()));
             orderSelectorClientName.setText(item.getClient().getName());
-            orderSelectorToPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(item)));
+            orderSelectorToPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay(item)));
             orderSelectorDeliveryDate.setText(dateTimeFormatter.format(getItem().getDeadline()));
             CheckBox orderSelectorSelect = itemView.findViewById(R.id.orderSelectorSelect);
             getView().setOnClickListener(v -> orderSelectorSelect.setChecked(!orderSelectorSelect.isChecked()));

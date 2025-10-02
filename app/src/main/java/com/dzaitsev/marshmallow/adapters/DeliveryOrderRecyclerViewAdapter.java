@@ -24,6 +24,9 @@ import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.util.Optional;
 
+import lombok.Setter;
+
+@Setter
 public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order, DeliveryOrderRecyclerViewAdapter.RecycleViewHolder> {
     private DeleteItemListener deleteItemListener;
     private SaveOrderListener saveOrderListener;
@@ -34,14 +37,6 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
 
     public interface SaveOrderListener {
         void save(Order item);
-    }
-
-    public void setDeleteItemListener(DeleteItemListener deleteItemListener) {
-        this.deleteItemListener = deleteItemListener;
-    }
-
-    public void setSaveOrderListener(SaveOrderListener saveOrderListener) {
-        this.saveOrderListener = saveOrderListener;
     }
 
     @Override
@@ -145,8 +140,8 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderClientName.setText(getItem().getClient().getName());
             deliveryOrderAddress.setText(getItem().getDeliveryAddress());
             deliveryOrderPhone.setText(getItem().getPhone().replaceFirst("(\\d{3})(\\d{3})(\\d{2})(\\d+)", "+7($1)-$2-$3-$4"));
-            deliveryOrderSum.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcTotalSum(getItem())));
-            deliveryOrderToPay.setText(MoneyUtils.getInstance().moneyWithCurrencyToString(calcToPay(getItem())));
+            deliveryOrderSum.setText(MoneyUtils.moneyWithCurrencyToString(calcTotalSum(getItem())));
+            deliveryOrderToPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay(getItem())));
             deliveryOrderItemDelete.setOnClickListener(v -> {
                 if (deleteItemListener != null && getItem().getOrderStatus() != OrderStatus.SHIPPED) {
                     deleteItemListener.deleteItem(getItem());
@@ -172,11 +167,6 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                 changeBackgroundTintColor();
             }
         }
-    }
-
-    public void setShipped(boolean shipped, Order order) {
-        order.setOrderStatus(shipped ? OrderStatus.SHIPPED : OrderStatus.IN_DELIVERY);
-        notifyDataSetChanged();
     }
 
     private Double calcTotalSum(Order order) {
