@@ -6,6 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="3sp"
     android:layout_marginEnd="3sp"
+    android:layout_marginBottom="1sp"
+    android:layout_marginTop="1sp"
     android:orientation="horizontal">
 
     <ImageView
@@ -15,7 +17,7 @@
         android:minHeight="80sp"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 
@@ -25,6 +27,9 @@
         android:layout_height="60dp"
         android:text=""
         android:textSize="24sp"
+        android:paddingStart="2sp"
+        android:paddingEnd="2sp"
+        android:layout_marginStart="10dp"
         app:layout_constraintLeft_toRightOf="@id/imageGood"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -62,6 +67,8 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:text="ап"
+        android:paddingStart="2sp"
+        android:paddingEnd="2sp"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="bottom|start"
@@ -71,7 +78,7 @@
         app:layout_constraintLeft_toRightOf="@id/imageGood"
         app:layout_constraintRight_toLeftOf="@id/guideline11"
         app:layout_constraintTop_toBottomOf="@id/order_line_name"
-
+        android:layout_marginStart="10dp"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView

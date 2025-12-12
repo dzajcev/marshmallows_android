@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- when selected (done) -> light green -->
+    <item android:color="@color/done_bg" android:state_selected="true"/>
+    <!-- default -> white -->
+    <item android:color="@color/white"/>
+</selector>

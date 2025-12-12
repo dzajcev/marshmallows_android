@@ -109,7 +109,7 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        mAdapter = new OrderLinesRecyclerViewAdapter();
+        mAdapter = new OrderLinesRecyclerViewAdapter(order);
         mAdapter.setRemoveListener(position -> {
             if (position >= 0) {
                 for (int i = position; i < mAdapter.getOriginalItems().size(); i++) {

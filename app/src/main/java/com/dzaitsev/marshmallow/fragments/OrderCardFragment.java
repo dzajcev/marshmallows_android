@@ -26,6 +26,8 @@ import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.LinkChannelPicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderCardBinding;
+import com.dzaitsev.marshmallow.databinding.FragmentOrderClientBinding;
+import com.dzaitsev.marshmallow.databinding.FragmentOrderNewBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
@@ -49,7 +51,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
 
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    private FragmentOrderCardBinding binding;
+    private FragmentOrderNewBinding binding;
     private Order incomingOrder;
     private Order order;
 
@@ -87,7 +89,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                     });
         }
         requireActivity().setTitle("Информация о заказе");
-        binding = FragmentOrderCardBinding.inflate(inflater, container, false);
+        binding = FragmentOrderNewBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
     }
@@ -120,41 +122,42 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setHasOptionsMenu(order.getId() != null);
-        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
+        //todo:
+//        binding.orderCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
 
         Navigation.getNavigation().addOnBackListener(backListener);
         requireActivity().setTitle("Заказ");
-        binding.clientName.setText(order.getClient().getName());
-        EditTextUtil.setText(binding.phoneNumber, order.getPhone());
-        EditTextUtil.setText(binding.comment, order.getComment());
-        EditTextUtil.setText(binding.delivery, order.getDeliveryAddress());
+        binding.tvClient.setText(order.getClient().getName());
+        EditTextUtil.setText(binding.tvPhone, order.getPhone());
+        EditTextUtil.setText(binding.etComment, order.getComment());
+        EditTextUtil.setText(binding.tvAddress, order.getDeliveryAddress());
 
-        binding.prePayment.setText(MoneyUtils.moneyWithCurrencyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
-        binding.orderCardNeedDelivery.setChecked(order.isNeedDelivery());
-        binding.deadline.setText(dateTimeFormatter.format(order.getDeadline()));
+        binding.tvPrePay.setText(MoneyUtils.moneyWithCurrencyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
+        binding.cbDelivery.setChecked(order.isNeedDelivery());
+        binding.tvIssue.setText(dateTimeFormatter.format(order.getDeadline()));
 
-        binding.createDate.setText(dateTimeFormatter.format(order.getCreateDate()));
+        binding.tvCreated.setText(dateTimeFormatter.format(order.getCreateDate()));
         bindSums();
-        RecyclerView orderLinesList = view.findViewById(R.id.orderLinesList);
+        RecyclerView orderLinesList = view.findViewById(R.id.rvOrderLines);
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 
-        if (order.getOrderStatus() == OrderStatus.SHIPPED || order.getOrderStatus() == OrderStatus.IN_DELIVERY) {
-            binding.orderCardLineAdd.setVisibility(View.GONE);
-        } else {
-            binding.orderCardLineAdd.setOnClickListener(v -> {
-                OrderLine orderLine = new OrderLine();
-                orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum))
-                        .map(OrderLine::getNum).map(m -> m + 1).orElse(1));
-                mAdapter.addItem(orderLine);
-                Bundle bundle = new Bundle();
-                bundle.putString("order", GsonHelper.serialize(order));
-                bundle.putInt("orderline", orderLine.getNum());
-                bundle.putString("source", "orderCard");
-                Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
-            });
-        }
+//        if (order.getOrderStatus() == OrderStatus.SHIPPED || order.getOrderStatus() == OrderStatus.IN_DELIVERY) {
+//            binding.orderCardLineAdd.setVisibility(View.GONE);
+//        } else {
+//            binding.orderCardLineAdd.setOnClickListener(v -> {
+//                OrderLine orderLine = new OrderLine();
+//                orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum))
+//                        .map(OrderLine::getNum).map(m -> m + 1).orElse(1));
+//                mAdapter.addItem(orderLine);
+//                Bundle bundle = new Bundle();
+//                bundle.putString("order", GsonHelper.serialize(order));
+//                bundle.putInt("orderline", orderLine.getNum());
+//                bundle.putString("source", "orderCard");
+//                Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
+//            });
+//        }
 
-        mAdapter = new OrderLinesRecyclerViewAdapter();
+        mAdapter = new OrderLinesRecyclerViewAdapter(order);
         if (order.getOrderStatus() == OrderStatus.IN_PROGRESS || order.getOrderStatus() == OrderStatus.DONE) {
             mAdapter.setRemoveListener(position -> {
                 if (position >= 0) {
@@ -175,31 +178,31 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
             });
             mAdapter.setChangeSumListener(this::bindSums);
 
-            binding.deadline.setOnClickListener(v -> {
+            binding.tvIssue.setOnClickListener(v -> {
                 DatePicker datePicker = new DatePicker(requireActivity(),
                         date -> {
                             order.setDeadline(date);
-                            binding.deadline.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date));
-                            binding.deadline.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
+                            binding.tvIssue.setText(DateTimeFormatter.ofPattern("dd.MM.yyyy").format(date));
+                            binding.tvIssue.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
                         }, "Выбор даты", "Укажите дату выдачи");
                 datePicker.show();
             });
 
-            binding.prePayment.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
+            binding.tvPrePay.setOnClickListener(v -> MoneyPicker.builder(view.getContext())
                     .setTitle("Укажите сумму")
                     .setMinValue(0)
                     .positiveButton(value -> {
-                        binding.prePayment.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
+                        binding.tvPrePay.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                         order.setPrePaymentSum(value);
                         bindSums();
                     })
                     .setInitialValue(order.getPrePaymentSum())
                     .build()
                     .show());
-            binding.connect.setOnClickListener(v -> LinkChannelPicker.builder(v.getContext())
+            binding.btnShare.setOnClickListener(v -> LinkChannelPicker.builder(v.getContext())
                     .setTitle("Выберите канал связи")
                     .setAction((alertDialog, linkChannel) -> {
-                        String phone = String.format("+7%s", binding.phoneNumber.getRawText());
+                        String phone = String.format("+7%s", binding.tvPhone.getText().toString());
                         switch (linkChannel) {
                             case PHONE ->
                                     CallPhoneService.getInstance().call(requireContext(), phone);
@@ -211,7 +214,7 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                         alertDialog.dismiss();
                     }).build()
                     .show());
-            binding.delivery.setOnClickListener(v -> v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background)));
+            binding.tvAddress.setOnClickListener(v -> v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background)));
             mAdapter.setDoneListener((orderLine, v) -> {
                 orderLine.setDone(!orderLine.isDone());
                 if (orderLine.isDone()) {
@@ -221,34 +224,36 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
                 }
             });
         } else {
-            binding.phoneNumber.setInputType(InputType.TYPE_NULL);
-            binding.delivery.setInputType(InputType.TYPE_NULL);
-            binding.comment.setInputType(InputType.TYPE_NULL);
-            binding.orderCardNeedDelivery.setEnabled(false);
+            binding.tvPhone.setInputType(InputType.TYPE_NULL);
+            binding.tvAddress.setInputType(InputType.TYPE_NULL);
+            binding.etComment.setInputType(InputType.TYPE_NULL);
+            binding.cbDelivery.setEnabled(false);
         }
-        if (calcToPay() == 0) {
-            binding.orderCardPaid.setVisibility(View.GONE);
-        }
-        if (order.getOrderStatus() != OrderStatus.DONE) {
-            binding.orderCardPaid.setVisibility(View.GONE);
-        }
-        binding.orderCardPaid.setOnClickListener(v -> MoneyPicker.builder(requireContext())
-                .setInitialValue(MoneyUtils.stringToDouble(binding.toPay.getText().toString()))
-                .setTitle("Оплата")
-                .setMessage("Подтвердите сумму оплаты")
-                .setMinValue(0)
-                .positiveButton(sum -> {
-                    order.setPaySum(Optional.ofNullable(order.getPaySum()).orElse(0d) + sum);
-                    bindSums();
-                }).build().show());
+//        if (calcToPay() == 0) {
+//            binding.orderCardPaid.setVisibility(View.INVISIBLE);
+//        }
+//        if (order.getOrderStatus() != OrderStatus.DONE) {
+//            binding.orderCardPaid.setVisibility(View.INVISIBLE);
+//        } else {
+//            binding.orderCardLineAdd.setVisibility(View.INVISIBLE);
+//        }
+//        binding.orderCardPaid.setOnClickListener(v -> MoneyPicker.builder(requireContext())
+//                .setInitialValue(MoneyUtils.stringToDouble(binding.toPay.getText().toString()))
+//                .setTitle("Оплата")
+//                .setMessage("Подтвердите сумму оплаты")
+//                .setMinValue(0)
+//                .positiveButton(sum -> {
+//                    order.setPaySum(Optional.ofNullable(order.getPaySum()).orElse(0d) + sum);
+//                    bindSums();
+//                }).build().show());
 
-        binding.orderCardSave.setOnClickListener(v -> save());
+        binding.saveButton.setOnClickListener(v -> save());
 
         orderLinesList.setAdapter(mAdapter);
         order.getOrderLines().sort(Comparator.comparing(OrderLine::getNum));
         mAdapter.setItems(order.getOrderLines());
         ColorStateList colorStateList = ColorStateList.valueOf(getBackgroundColor(view));
-        binding.connect.setBackgroundTintList(colorStateList);
+        binding.btnShare.setBackgroundTintList(colorStateList);
     }
 
     private int getBackgroundColor(View view) {
@@ -269,10 +274,10 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     private void bindSums() {
         binding.totalSum.setText(MoneyUtils.moneyWithCurrencyToString(calcTotalSum()));
         Double calcToPay = calcToPay();
-        binding.toPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay));
-        binding.paid.setText(MoneyUtils.moneyWithCurrencyToString(order.getPaySum()));
+        binding.tvToPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay));
+//        binding.paid.setText(MoneyUtils.moneyWithCurrencyToString(order.getPaySum()));
         if (calcToPay.equals(0d)) {
-            binding.toPay.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
+            binding.tvToPay.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         }
     }
 
@@ -291,16 +296,16 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
         boolean fail = false;
         fillOrder();
         if (order.getClient() == null) {
-            binding.clientName.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            binding.tvClient.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (StringUtils.isEmpty(order.getPhone())
                 || order.getPhone().length() != 10) {
-            binding.phoneNumber.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            binding.tvPhone.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         if (order.isNeedDelivery() && StringUtils.isEmpty(order.getDeliveryAddress())) {
-            binding.delivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
+            binding.tvAddress.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
             fail = true;
         }
         mAdapter.getOriginalItems().removeIf(g -> g.getGood() == null);
@@ -342,15 +347,19 @@ public class OrderCardFragment extends Fragment implements IdentityFragment {
     }
 
     private void fillOrder() {
-        order.setComment(binding.comment.getText().toString());
-        order.setDeliveryAddress(binding.delivery.getText().toString());
-        order.setPhone(binding.phoneNumber.getRawText());
-        order.setNeedDelivery(binding.orderCardNeedDelivery.isChecked());
+        order.setComment(binding.etComment.getText().toString());
+        order.setDeliveryAddress(binding.tvAddress.getText().toString());
+        order.setPhone(binding.tvPhone.getText().toString());
+        order.setNeedDelivery(binding.cbDelivery.isChecked());
         order.getOrderLines().removeIf(r -> r.getGood() == null);
-        if (order.getOrderLines().stream().allMatch(OrderLine::isDone) && order.getOrderStatus() == OrderStatus.IN_PROGRESS) {
+        if (order.getOrderLines().stream().anyMatch(x -> !x.isDone())) {
+            order.setOrderStatus(OrderStatus.IN_PROGRESS);
+        } else {
             order.setOrderStatus(OrderStatus.DONE);
         }
+
     }
+
 
     @Override
     public void onDestroyView() {

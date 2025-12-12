@@ -54,8 +54,8 @@ public class NetworkService {
                 .build();
 
         mRetrofit = new Retrofit.Builder()
-                .baseUrl("http://89.110.75.34:7001")
-//                .baseUrl("http://192.168.1.222:8080")
+//                .baseUrl("http://89.110.75.34:7001")
+                .baseUrl("http://192.168.1.222:8080")
                 .addConverterFactory(GsonConverterFactory.create(GsonExt.getGson()))
                 .client(okHttpClient)
                 .build();

@@ -2,11 +2,11 @@ package com.dzaitsev.marshmallow.adapters;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
@@ -17,14 +17,15 @@ import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.ViewTarget;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.CustomNumberPicker;
 import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.dto.Attachment;
 import com.dzaitsev.marshmallow.dto.Good;
+import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -42,7 +43,11 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
 
     private DoneListener doneListener;
 
+    private final Order order;
 
+    public OrderLinesRecyclerViewAdapter(Order order) {
+        this.order = order;
+    }
 
     public interface RemoveListener {
         void onRemove(int position);
@@ -65,24 +70,35 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
         private final TextView price;
         private final TextView count;
         private final TextView total;
-        private final ImageButton done;
+        private final MaterialCheckBox done;
 
         private final ImageView imageView;
         private final Context context;
+
+        @Setter
+        private boolean lock;
+
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public RecyclerViewHolder(View itemView) {
             super(itemView);
             context = itemView.getContext();
-            good = itemView.findViewById(R.id.order_line_name);
-            price = itemView.findViewById(R.id.order_line_price);
-            total = itemView.findViewById(R.id.order_line_sum);
-            imageView = itemView.findViewById(R.id.imageGood);
+            good = itemView.findViewById(R.id.tvName);
+            price = itemView.findViewById(R.id.tvPrice);
+            total = itemView.findViewById(R.id.tvLineTotal);
+            imageView = itemView.findViewById(R.id.imgProduct);
+            count = itemView.findViewById(R.id.tvQuantity);
             itemView.setOnClickListener(v -> {
+                if (lock) {
+                    return;
+                }
                 if (selectGoodListener != null) {
                     selectGoodListener.onSelectGood(getItem());
                 }
             });
             price.setOnClickListener(v -> {
+                if (lock) {
+                    return;
+                }
                 if (getItem().getGood() != null) {
                     MoneyPicker.builder(getView().getContext())
                             .setTitle("Укажите сумму")
@@ -101,8 +117,10 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                             .show();
                 }
             });
-            count = itemView.findViewById(R.id.order_line_count);
             count.setOnClickListener(v -> {
+                if (lock) {
+                    return;
+                }
                 if (getItem().getGood() != null) {
                     CustomNumberPicker.builder(getView().getContext())
                             .setTitle("Укажите количество")
@@ -142,11 +160,12 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
 //                    removeListener.onRemove(adapterPosition);
 //                }
 //            });
-            done = itemView.findViewById(R.id.orderLineDone);
+            done = itemView.findViewById(R.id.checkbox);
             if (doneListener != null) {
                 done.setVisibility(View.VISIBLE);
                 done.setOnClickListener(v -> {
                     doneListener.onDone(getItem(), RecyclerViewHolder.this);
+                    lock = !lock;
 //                    if (getItem().isDone()) {
 //                        delete.setVisibility(View.GONE);
 //                    } else {
@@ -167,12 +186,12 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                 done.setVisibility(View.GONE);
                 price.setFocusable(false);
                 count.setFocusable(false);
-            }else{
+            } else {
                 orderLine.getGood().getImages().stream()
                         .filter(Attachment::isPrimary)
                         .findAny()
                         .ifPresent(f -> {
-                            ViewTarget<ImageView, Drawable> into = Glide.with(context)
+                            Glide.with(context)
                                     .load(f.getThumbnailUrl())
                                     .centerCrop()
                                     .error(R.drawable.error)
@@ -188,7 +207,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     public RecyclerViewHolder onCreateViewHolder(ViewGroup parent,
                                                  int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.order_line_list_item, parent, false);
+                .inflate(R.layout.item_order_line_new, parent, false);
         return new RecyclerViewHolder(view);
     }
 
@@ -196,7 +215,10 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (getShowItems().get(position).isDone()) {
+            holder.setLock(true);
             holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
+        } else {
+            holder.setLock(false);
         }
     }
 
