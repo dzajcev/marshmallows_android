@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.dzaitsev.marshmallow.adapters.ClientRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.dto.Client;
-import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
 import com.dzaitsev.marshmallow.dto.response.ClientResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
@@ -23,22 +23,26 @@ public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse,
         super.onCreate(savedInstanceState);
         setAdapter(new ClientRecyclerViewAdapter());
         requireActivity().setTitle("Клиенты");
-        Order order = Optional.ofNullable(getArguments()).map(m -> GsonHelper.deserialize(m.getString("order"), Order.class)).orElse(null);
-        setSelectListener(Optional.ofNullable(order).map(m -> (SelectItemListener<Client>) item -> {
-            m.setClient(item);
+        OrderCardBundle orderCardBundle = Optional.ofNullable(getArguments()).map(m -> GsonHelper.deserialize(m.getString("orderCardBundle"),
+                OrderCardBundle.class)).orElse(null);
+        setSelectListener(Optional.ofNullable(orderCardBundle).map(m -> (SelectItemListener<Client>) item -> {
+            m.getOrder().setClient(item);
+            m.getOrder().setPhone(item.getPhone());
+            m.getOrder().setDeliveryAddress(item.getDefaultDeliveryAddress());
             Bundle bundle = new Bundle();
-            bundle.putString("order", GsonHelper.serialize(m));
+            m.setActiveTab(0);
+            bundle.putString("orderCardBundle", GsonHelper.serialize(m));
             Navigation.getNavigation().back(bundle);
         }).orElse(null));
         setEditItemListener(client -> {
             Bundle bundle = new Bundle();
-            bundle.putString("client",GsonHelper.serialize(client));
-            Navigation.getNavigation().goForward(new ClientCardFragment(), bundle);
+            bundle.putString("client", GsonHelper.serialize(client));
+            Navigation.getNavigation().forward(ClientCardFragment.IDENTITY, bundle);
         });
         setOnCreateListener(() -> {
             Bundle bundle = new Bundle();
             bundle.putString("client", GsonHelper.serialize(new Client()));
-            Navigation.getNavigation().goForward(new ClientCardFragment(), bundle);
+            Navigation.getNavigation().forward(ClientCardFragment.IDENTITY, bundle);
         });
     }
 

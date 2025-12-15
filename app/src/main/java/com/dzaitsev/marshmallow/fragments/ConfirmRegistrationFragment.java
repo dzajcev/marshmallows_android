@@ -66,7 +66,7 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
 
             }
         }.start();
-        binding.btnCancel.setOnClickListener(v -> Navigation.getNavigation().goForward(new LoginFragment()));
+        binding.btnCancel.setOnClickListener(v -> Navigation.getNavigation().forward(LoginFragment.IDENTITY, null));
         binding.btnRequestCode.setEnabled(false);
         timer.start();
         binding.btnRequestCode.setOnClickListener(v -> {
@@ -102,9 +102,9 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
                                                 .ifPresent(userRole -> {
                                                     switch (userRole) {
                                                         case DEVELOPER ->
-                                                                Navigation.getNavigation().goForward(new OrdersFragment());
+                                                                Navigation.getNavigation().forward(OrdersFragment.IDENTITY);
                                                         case DELIVERYMAN ->
-                                                                Navigation.getNavigation().goForward(new DeliveriesFragment());
+                                                                Navigation.getNavigation().forward(DeliveriesFragment.IDENTITY);
                                                     }
                                                 }));
 

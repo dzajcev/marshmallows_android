@@ -1,56 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/orderGoodsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingLeft="3sp"
-    android:paddingRight="3sp"
+    android:background="@color/bg_primary"
     tools:context=".fragments.OrderGoodsFragment">
 
-    <Button
-        android:id="@+id/orderGoodsLineAdd"
+    <!-- ================= ВЕРХНЯЯ ПАНЕЛЬ (ПОИСК И ФИЛЬТР) ================= -->
+
+    <!-- Строка поиска -->
+    <EditText
+        android:id="@+id/searchLine"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_bg_white"
+        android:drawableStart="@drawable/ic_search_24"
+        android:drawablePadding="12dp"
+        android:elevation="2dp"
+        android:hint="Поиск товара..."
+        android:inputType="text"
+        android:maxLines="1"
+        android:paddingHorizontal="12dp"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/filterActive"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Фильтр (Чекбокс) -->
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/filterActive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="Добавить позицию" />
+        android:layout_marginEnd="16dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:text="Все"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/searchLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/searchLine" />
 
-    <TextView
-        android:id="@+id/orderGoodsSum"
+
+    <!-- ================= ОСНОВНАЯ КАРТОЧКА С КОНТЕНТОМ ================= -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contentCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomButtonsContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchLine">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp">
+
+            <!-- Кнопка добавления -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/orderGoodsLineAdd"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Добавить позицию"
+                android:textColor="?attr/colorPrimary"
+                app:icon="@drawable/ic_add_24"
+                app:iconTint="?attr/colorPrimary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Сумма заказа -->
+            <TextView
+                android:id="@+id/orderGoodsSum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:text="0 ₽"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/orderGoodsLineAdd"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/orderGoodsLineAdd"
+                tools:text="15 350 ₽" />
+
+            <!-- Разделитель -->
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="4dp"
+                android:background="#E0E0E0"
+                app:layout_constraintTop_toBottomOf="@+id/orderGoodsLineAdd" />
+
+            <!-- Список товаров -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/orderGoodsLinesList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:clipToPadding="false"
+                android:paddingBottom="8dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                tools:listitem="@layout/goods_list_item" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <!-- ================= НИЖНЯЯ ПАНЕЛЬ КНОПОК ================= -->
+    <!-- LinearLayout гарантирует, что кнопки будут стоять ровно -->
+
+    <LinearLayout
+        android:id="@+id/bottomButtonsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|end"
-        android:layout_toEndOf="@id/orderGoodsLineAdd"
-        android:layout_alignBottom="@id/orderGoodsLineAdd"
-        android:layout_alignParentTop="true"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:background="@android:color/transparent"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/orderGoodsLinesList"
-        android:layout_width="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/orderGoodsLineAdd"
-        android:layout_above="@id/ordersGoodsBackward"
-        android:layout_height="match_parent" />
+        <!-- Кнопка "Отмена" -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ordersGoodsBackward"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Отмена"
+            app:cornerRadius="28dp" />
 
-    <Button
-        android:id="@+id/ordersGoodsBackward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:text="Отмена" />
+        <!-- Кнопка "Далее" -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ordersGoodsForward"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/btn_issue_bg"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Далее"
+            app:cornerRadius="28dp" />
 
-    <Button
-        android:id="@+id/ordersGoodsForward"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:padding="5sp"
-        android:text="Далее" />
+    </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

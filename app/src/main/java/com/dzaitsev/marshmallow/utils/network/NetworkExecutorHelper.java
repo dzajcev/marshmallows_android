@@ -70,9 +70,9 @@ public class NetworkExecutorHelper<T> {
                                                                     onAuthorizeListener.onAuthorize(user);
                                                                 }
                                                                 if (user.getRole() == UserRole.DEVELOPER) {
-                                                                    Navigation.getNavigation().goForward(new OrdersFragment());
+                                                                    Navigation.getNavigation().forward(OrdersFragment.IDENTITY);
                                                                 } else {
-                                                                    Navigation.getNavigation().goForward(new DeliveriesFragment());
+                                                                    Navigation.getNavigation().forward(DeliveriesFragment.IDENTITY);
                                                                 }
                                                             });
                                                 }

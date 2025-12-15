@@ -8,7 +8,7 @@ public class NavigationInitializer {
 
     public static void init(FragmentActivity activity, BottomNavigationView bottomNavigationView) {
         Navigation.getNavigation()
-                .setActivity(activity)
-                .setBottomNavigationView(bottomNavigationView);
+                .attachActivity(activity)
+                .attachBottomNav(bottomNavigationView);
     }
 }

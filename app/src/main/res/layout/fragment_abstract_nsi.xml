@@ -1,53 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/clientsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/bg_primary"
     tools:context=".fragments.ClientsFragment">
 
-    <Button
-        android:id="@+id/nsiCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_gravity="center_vertical"
-        android:text="Новая запись" />
+    <!-- ================= ВЕРХНЯЯ ПАНЕЛЬ ================= -->
 
+    <!-- Строка поиска -->
+    <!-- Заменили SearchView на EditText для единого стиля с OrderGoods -->
+    <EditText
+        android:id="@+id/search_field"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_bg_white"
+        android:drawableStart="@drawable/ic_search_24"
+        android:drawablePadding="12dp"
+        android:elevation="2dp"
+        android:hint="Поиск..."
+        android:inputType="text"
+        android:maxLines="1"
+        android:paddingHorizontal="12dp"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxTriStates"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Ваш кастомный чекбокс (Активные) -->
+    <!-- Разместили справа от поиска -->
     <com.dzaitsev.marshmallow.components.CheckBoxTriStates
         android:id="@+id/checkBoxTriStates"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/search_field"
-        android:text="Активные" />
+        android:layout_marginEnd="16dp"
+        android:minHeight="48dp"
+        android:text="Активные"
+        android:gravity="center_vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/search_field"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/search_field" />
 
-    <Button
-        android:id="@+id/abstractNsiListBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="center_vertical"
-        android:text="Назад" />
+    <!-- ================= ОСНОВНАЯ КАРТОЧКА ================= -->
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/search_field"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/contentCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_field">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp">
+
+            <!-- Кнопка "Новая запись" -->
+            <!-- Переместили внутрь карточки как заголовок -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/nsiCreate"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="Новая запись"
+                android:textColor="?attr/colorPrimary"
+                app:icon="@drawable/ic_add_24"
+                app:iconTint="?attr/colorPrimary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Разделитель -->
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="4dp"
+                android:background="#E0E0E0"
+                app:layout_constraintTop_toBottomOf="@+id/nsiCreate" />
+
+            <!-- Список -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/abstractNsiListView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:clipToPadding="false"
+                android:paddingBottom="8dp"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ================= НИЖНЯЯ ПАНЕЛЬ ================= -->
+
+    <LinearLayout
+        android:id="@+id/bottomContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/nsiCreate"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/nsiCreate" />
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
+        <!-- Кнопка "Назад" -->
+        <!-- Растянута во всю ширину или можно сделать wrap_content -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/abstractNsiListBack"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Назад"
+            app:cornerRadius="28dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/abstractNsiListView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/abstractNsiListBack"
-        android:layout_below="@id/checkBoxTriStates"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
-</RelativeLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

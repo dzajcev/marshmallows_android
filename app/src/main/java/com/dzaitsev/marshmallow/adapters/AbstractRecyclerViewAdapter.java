@@ -16,22 +16,22 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerViewHolder<T>> extends RecyclerView.Adapter<A> {
+    @Getter
     private List<T> originalItems = new ArrayList<>();
+    @Getter
     private List<T> showItems = new ArrayList<>();
+    @Setter
     private Function<String, Predicate<T>> filterPredicate;
 
+    @Setter
     private EditItemListener<T> editItemListener;
+    @Setter
     private SelectItemListener<T> selectItemListener;
 
-
-    public void setEditItemListener(EditItemListener<T> editItemListener) {
-        this.editItemListener = editItemListener;
-    }
-
-    public void setSelectItemListener(SelectItemListener<T> selectItemListener) {
-        this.selectItemListener = selectItemListener;
-    }
 
     @Override
     public void onBindViewHolder(@NonNull A holder, int position) {
@@ -65,22 +65,10 @@ public abstract class AbstractRecyclerViewAdapter<T, A extends AbstractRecyclerV
 
     }
 
-    public void setFilterPredicate(Function<String, Predicate<T>> filterPredicate) {
-        this.filterPredicate = filterPredicate;
-    }
-
     public void setItems(List<T> items) {
         originalItems = items;
         showItems = new ArrayList<>(originalItems);
         notifyDataSetChanged();
-    }
-
-    public List<T> getShowItems() {
-        return showItems;
-    }
-
-    public List<T> getOriginalItems() {
-        return originalItems;
     }
 
     public void removeItem(int position) {

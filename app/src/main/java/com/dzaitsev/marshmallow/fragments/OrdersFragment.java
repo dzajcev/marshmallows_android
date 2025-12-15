@@ -9,16 +9,20 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.utils.GsonHelper;
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.adapters.OrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
 import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
+import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
 import com.dzaitsev.marshmallow.dto.response.OrderResponse;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.service.NetworkService;
+import com.dzaitsev.marshmallow.utils.GsonHelper;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,7 +34,6 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
     private FragmentOrdersBinding binding;
 
     private OrderRecyclerViewAdapter mAdapter;
-
 
     @Override
     public View onCreateView(
@@ -68,17 +71,21 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
 
         binding.orderCreate.setOnClickListener(view1 -> {
             Bundle bundle = new Bundle();
-            bundle.putString("order", GsonHelper.serialize(new Order()));
-            Navigation.getNavigation().goForward(new OrderGoodsFragment(), bundle);
+            bundle.putString("orderCardBundle", GsonHelper.serialize((new OrderCardBundle(Order.builder()
+                    .orderStatus(OrderStatus.IN_LINE)
+                    .createDate(LocalDateTime.now())
+                    .build(), new ArrayList<>(), 0))));
+            Navigation.getNavigation().forward(OrderFragment.IDENTITY, bundle);
         });
+
         mAdapter = new OrderRecyclerViewAdapter();
         mAdapter.setFilterPredicate(s -> order -> order.getClient().getName().toLowerCase().contains(s.toLowerCase()));
         mAdapter.setEditItemListener(item -> {
             Bundle bundle = new Bundle();
-            bundle.putString("order", GsonHelper.serialize(item));
-            Navigation.getNavigation().goForward(new OrderCardFragment(), bundle);
+            bundle.putString("orderCardBundle", GsonHelper.serialize(new OrderCardBundle(item, item.getOrderLines(), 1)));
+            Navigation.getNavigation().forward(OrderFragment.IDENTITY, bundle);
         });
-        binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation().goForward(new OrderFilterFragment()));
+        binding.orderListFilter.setOnClickListener(v -> Navigation.getNavigation().forward(OrderFilterFragment.IDENTITY));
         binding.ordersList.setAdapter(mAdapter);
 
     }

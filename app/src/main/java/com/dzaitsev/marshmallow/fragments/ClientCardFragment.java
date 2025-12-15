@@ -37,7 +37,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
 
 
     private final Navigation.OnBackListener backListener = fragment -> {
-        if (ClientCardFragment.this == fragment) {
+        if (ClientCardFragment.IDENTITY.equals(fragment.identity())) {
             if (ClientCardFragment.this.hasChanges()) {
                 AlertDialogComponent.showDialog(requireContext(), "Запись изменена.", "Сохранить?",
                         new AlertDialogComponent.Action() {

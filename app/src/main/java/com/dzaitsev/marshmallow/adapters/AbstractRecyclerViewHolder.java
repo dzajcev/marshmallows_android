@@ -17,9 +17,13 @@ import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+
 public abstract class AbstractRecyclerViewHolder<T> extends RecyclerView.ViewHolder {
+    @Getter
     private T item;
 
+    @Getter
     private final View view;
 
     protected int originalColor = R.color.white;
@@ -63,8 +67,7 @@ public abstract class AbstractRecyclerViewHolder<T> extends RecyclerView.ViewHol
     }
 
     public void changeBackgroundTintColor(int color) {
-        ColorStateList colorStateList = ColorStateList.valueOf(color);
-        getViewsForChangeColor().forEach(v -> v.setBackgroundTintList(colorStateList));
+        getViewsForChangeColor().forEach(v -> v.setBackgroundColor(color));
     }
 
     protected List<View> getViewsForChangeColor() {
@@ -100,17 +103,10 @@ public abstract class AbstractRecyclerViewHolder<T> extends RecyclerView.ViewHol
         }
     }
 
-    public View getView() {
-        return view;
-    }
-
     public void bind(T item) {
         this.item = item;
         changeBackgroundTintColor(getBackgroundColor());
     }
 
 
-    public T getItem() {
-        return item;
-    }
 }

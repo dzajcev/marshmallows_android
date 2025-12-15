@@ -41,7 +41,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
     public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
         MenuItem deliverymen = menu.add("Исполнители доставки");
         deliverymen.setOnMenuItemClickListener(item -> {
-            Navigation.getNavigation().goForward(new InviteRequestsFragment());
+            Navigation.getNavigation().forward(InviteRequestsFragment.IDENTITY);
             return false;
         });
 
@@ -53,7 +53,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                 AuthorizationHelper.getInstance().updateSignInRequest(null);
                 AuthorizationHelper.getInstance().updateUserData(null);
                 NetworkService.getInstance().refreshToken(null);
-                Navigation.getNavigation().goForward(new LoginFragment());
+                Navigation.getNavigation().forward(LoginFragment.IDENTITY);
             });
             builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
             builder.create().show();
@@ -149,7 +149,7 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
                                             signInRequest.setPassword(s);
                                             AuthorizationHelper.getInstance().updateSignInRequest(signInRequest);
                                         });
-                                Navigation.getNavigation().goForward(new LoginFragment());
+                                Navigation.getNavigation().forward(LoginFragment.IDENTITY);
                             } else {
                                 Toast.makeText(getContext(), "Ошибка при изменении пароля", Toast.LENGTH_SHORT).show();
                             }

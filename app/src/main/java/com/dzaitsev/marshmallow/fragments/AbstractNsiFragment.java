@@ -1,12 +1,13 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -103,8 +104,8 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                             .orElseThrow(() -> new RuntimeException("error of fetching data"))
                             .stream()
                             .sorted(Comparator.comparing(NsiItem::getName)).collect(Collectors.toList()));
-                    if (!StringUtils.isEmpty(binding.searchField.getQuery().toString())) {
-                        mAdapter.filter(binding.searchField.getQuery().toString());
+                    if (!StringUtils.isEmpty(binding.searchField.getText().toString())) {
+                        mAdapter.filter(binding.searchField.toString());
                     }
                 }));
     }
@@ -140,16 +141,18 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
         binding.abstractNsiListBack.setOnClickListener(v -> Navigation.getNavigation().back());
         mAdapter.setFilterPredicate(s -> item -> item.getName().toLowerCase().contains(s.toLowerCase()));
         recyclerView.setAdapter(mAdapter);
-        binding.searchField.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        binding.searchField.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
+            public void afterTextChanged(Editable s) {
+                mAdapter.filter(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                mAdapter.filter(newText);
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
         binding.nsiCreate.setOnClickListener(view1 -> {

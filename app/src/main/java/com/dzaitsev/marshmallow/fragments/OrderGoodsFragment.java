@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.OrderLinesRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderGoodsBinding;
-import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
+import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.StringUtils;
@@ -32,13 +32,13 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderGoodsFragment";
     private FragmentOrderGoodsBinding binding;
 
-    private Order order;
+    private OrderCardBundle orderCardBundle;
 
     private OrderLinesRecyclerViewAdapter mAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        order = GsonHelper.deserialize(requireArguments().getString("order"), Order.class);
+        orderCardBundle = GsonHelper.deserialize(requireArguments().getString("orderCardBundle"), OrderCardBundle.class);
         binding = FragmentOrderGoodsBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -49,14 +49,14 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
         requireActivity().setTitle("Позиции заказа");
         RecyclerView orderLinesList = view.findViewById(R.id.orderGoodsLinesList);
         binding.ordersGoodsForward.setOnClickListener(view1 -> {
-            if (order.getOrderLines().isEmpty() || order.getOrderLines().stream().noneMatch(f -> f.getGood() != null)) {
+            if (orderCardBundle.getOrderLines().isEmpty() || orderCardBundle.getOrderLines().stream().noneMatch(f -> f.getGood() != null)) {
                 new StringUtils.ErrorDialog(requireActivity(), "Не заполнен перечень товаров").show();
             } else {
                 Bundle bundle = new Bundle();
-                int size = order.getOrderLines().size();
-                order.getOrderLines().removeIf(f -> f.getGood() == null);
+                int size = orderCardBundle.getOrderLines().size();
+                orderCardBundle.getOrderLines().removeIf(f -> f.getGood() == null);
                 try {
-                    List<OrderLine> collect = order.getOrderLines().stream().collect(Collectors.groupingBy(x -> x.getGood().getId()))
+                    List<OrderLine> collect = orderCardBundle.getOrderLines().stream().collect(Collectors.groupingBy(x -> x.getGood().getId()))
                             .values()
                             .stream()
                             .map(m -> m.stream().reduce(null, (orderLine, orderLine2) -> {
@@ -72,14 +72,14 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
                                         + (orderLine2.getCount() == null ? 0 : orderLine2.getCount()));
                                 return orderLine;
                             })).collect(Collectors.toList());
-                    order.setOrderLines(collect);
-                    if (order.getOrderLines().size() != size) {
-                        for (int i = 0; i < order.getOrderLines().size(); i++) {
-                            order.getOrderLines().get(i).setNum(i + 1);
+                    orderCardBundle.setOrderLines(collect);
+                    if (orderCardBundle.getOrderLines().size() != size) {
+                        for (int i = 0; i < orderCardBundle.getOrderLines().size(); i++) {
+                            orderCardBundle.getOrderLines().get(i).setNum(i + 1);
                         }
                     }
-                    bundle.putString("order", GsonHelper.serialize(order));
-                    Navigation.getNavigation().goForward(new OrderClientFragment(), bundle);
+                    bundle.putString("orderCardBundle", GsonHelper.serialize(orderCardBundle));
+                    Navigation.getNavigation().forward(OrderInfoFragment.IDENTITY, bundle);
                 } catch (Exception e) {
 //do nothing
                 }
@@ -87,8 +87,8 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             }
         });
         binding.ordersGoodsBackward.setOnClickListener(view1 -> {
-            if (!order.getOrderLines().isEmpty() && order.getOrderLines().stream().anyMatch(f -> f.getGood() != null)) {
-                order.getOrderLines().removeIf(f -> f.getGood() == null);
+            if (!orderCardBundle.getOrderLines().isEmpty() && orderCardBundle.getOrderLines().stream().anyMatch(f -> f.getGood() != null)) {
+                orderCardBundle.getOrderLines().removeIf(f -> f.getGood() == null);
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle("Есть не сохраненные данные. Продолжить?");
                 builder.setPositiveButton("Да", (dialog, id) -> Navigation.getNavigation().back());
@@ -103,13 +103,13 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
             orderLine.setNum(mAdapter.getOriginalItems().stream().max(Comparator.comparing(OrderLine::getNum)).map(OrderLine::getNum).map(m -> m + 1).orElse(1));
             mAdapter.addItem(orderLine);
             Bundle bundle = new Bundle();
-            bundle.putString("order", GsonHelper.serialize(order));
+            bundle.putString("orderCardBundle", GsonHelper.serialize(orderCardBundle));
             bundle.putInt("orderline", orderLine.getNum());
             bundle.putString("source", "orderCard");
-            Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
+            Navigation.getNavigation().forward(GoodsFragment.IDENTITY, bundle);
         });
         orderLinesList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        mAdapter = new OrderLinesRecyclerViewAdapter(order);
+        mAdapter = new OrderLinesRecyclerViewAdapter();
         mAdapter.setRemoveListener(position -> {
             if (position >= 0) {
                 for (int i = position; i < mAdapter.getOriginalItems().size(); i++) {
@@ -121,16 +121,16 @@ public class OrderGoodsFragment extends Fragment implements IdentityFragment {
         });
         mAdapter.setSelectGoodListener(orderLine -> {
             Bundle bundle = new Bundle();
-            bundle.putString("order", GsonHelper.serialize(order));
+            bundle.putString("orderCardBundle", GsonHelper.serialize(orderCardBundle));
             bundle.putInt("orderline", orderLine.getNum());
             bundle.putString("source", "orderGoods");
-            Navigation.getNavigation().goForward(new GoodsFragment(), bundle);
+            Navigation.getNavigation().forward(GoodsFragment.IDENTITY, bundle);
         });
         mAdapter.setChangeSumListener(() -> binding.orderGoodsSum.setText(MoneyUtils.moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems()))));
-        mAdapter.setItems(order.getOrderLines());
+        mAdapter.setItems(orderCardBundle.getOrderLines());
         orderLinesList.setAdapter(mAdapter);
         binding.orderGoodsSum.setText(MoneyUtils.moneyWithCurrencyToString(calsSum(mAdapter.getOriginalItems())));
-        if (order.getOrderLines().isEmpty()) {
+        if (orderCardBundle.getOrderLines().isEmpty()) {
             binding.orderGoodsLinesList.callOnClick();
         }
     }

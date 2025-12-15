@@ -70,7 +70,7 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
             binding.deliveryCreate.setOnClickListener(view1 -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("delivery", GsonHelper.serialize(new Delivery()));
-                Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
+                Navigation.getNavigation().forward(DeliveryCardFragment.IDENTITY, bundle);
             });
         } else {
             binding.deliveryCreate.setVisibility(View.INVISIBLE);
@@ -82,13 +82,11 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                     if (deliveryResponse.isSuccessful()) {
                         Bundle bundle = new Bundle();
                         bundle.putString("delivery", GsonHelper.serialize(deliveryResponse.body()));
-                        Navigation.getNavigation().goForward(new DeliveryCardFragment(), bundle);
+                        Navigation.getNavigation().forward(DeliveryCardFragment.IDENTITY, bundle);
                     }
                 }));
         binding.deliveriesList.setAdapter(mAdapter);
-        binding.deliveryFilter.setOnClickListener(v -> {
-            Navigation.getNavigation().goForward(new DeliveryFilterFragment());
-        });
+        binding.deliveryFilter.setOnClickListener(v -> Navigation.getNavigation().forward(DeliveryFilterFragment.IDENTITY, null));
     }
 
     @Override

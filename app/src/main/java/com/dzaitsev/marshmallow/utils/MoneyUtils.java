@@ -6,7 +6,7 @@ import java.text.ParseException;
 import java.util.Optional;
 
 public class MoneyUtils {
-    private final static NumberFormat MONEY_WITH_CURRENCY_FORMATTER = new DecimalFormat("#0.00р");
+    private final static NumberFormat MONEY_WITH_CURRENCY_FORMATTER = new DecimalFormat("#0.00₽");
     private final static NumberFormat MONEY_FORMATTER = new DecimalFormat("#0.00");
 
 
@@ -15,7 +15,7 @@ public class MoneyUtils {
         return Optional.ofNullable(money)
                 .map(m -> {
                     if (money - money.intValue() == 0) {
-                        return String.format("%sр", money.intValue());
+                        return String.format("%s₽", money.intValue());
                     } else {
                         return MONEY_WITH_CURRENCY_FORMATTER.format(money);
                     }

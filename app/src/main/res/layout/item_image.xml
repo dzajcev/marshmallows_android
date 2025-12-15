@@ -10,6 +10,7 @@
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/bg_image_rounded"
         app:layout_constraintTop_toTopOf="parent" />
     <ImageView
         android:id="@+id/primary_image"

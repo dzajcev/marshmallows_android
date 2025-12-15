@@ -1,35 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ordersFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/bg_primary"
     tools:context=".fragments.OrdersFragment">
 
-    <Button
-        android:id="@+id/orderCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginBottom="10sp"
-        android:text="Новый заказ" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/ordersList"
+    <!-- Заголовок / Поиск / Фильтры -->
+    <LinearLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/orderCreate"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true" />
-
-    <Button
-        android:id="@+id/orderListFilter"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:text="Фильтр" />
-</RelativeLayout>
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Кнопка "Фильтр" -->
+        <!-- Лучше использовать иконку или TonalButton -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/orderListFilter"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Фильтр"
+            app:icon="@drawable/ic_search_24"
+            android:layout_marginEnd="8dp"
+            app:cornerRadius="8dp"/>
+        <!-- Примечание: Если иконки фильтра нет, можно использовать ic_search_24 временно или убрать app:icon -->
+
+        <!-- Кнопка "Новый заказ" растягивается -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/orderCreate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="+ Новый заказ"
+            android:backgroundTint="@color/btn_issue_bg"
+            android:textColor="@android:color/white"
+            app:cornerRadius="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Основная карточка со списком -->
+    <!-- Создает эффект "листа бумаги" на фоне -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/listCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ordersList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            tools:listitem="@layout/order_list_item" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

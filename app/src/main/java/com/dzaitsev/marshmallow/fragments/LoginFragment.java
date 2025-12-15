@@ -1,7 +1,5 @@
 package com.dzaitsev.marshmallow.fragments;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +9,16 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.databinding.FragmentLoginBinding;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
-import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
+import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 public class LoginFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "loginFragment";
     private FragmentLoginBinding binding;
-    private SharedPreferences preferences;
 
     private final View.OnClickListener restoreStateListener =
             v -> v.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
@@ -43,7 +40,6 @@ public class LoginFragment extends Fragment implements IdentityFragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("");
-        preferences = requireActivity().getPreferences(Context.MODE_PRIVATE);
         binding.txtPassword.setOnClickListener(restoreStateListener);
         binding.txtLogin.setOnClickListener(restoreStateListener);
         binding.btnLogin.setOnClickListener(v -> {
@@ -65,7 +61,7 @@ public class LoginFragment extends Fragment implements IdentityFragment {
             ));
         });
         binding.btnRegistration.setOnClickListener(v -> Navigation.getNavigation()
-                .goForward(new RegistrationFragment()));
+                .forward(RegistrationFragment.IDENTITY));
     }
 
     @Override

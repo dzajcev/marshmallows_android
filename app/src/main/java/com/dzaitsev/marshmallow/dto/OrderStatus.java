@@ -6,12 +6,18 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum OrderStatus {
-    IN_PROGRESS("В процессе"),
-    DONE("Выполнен"),
-    IN_DELIVERY("В доставке"),
-    SHIPPED("Доставлен");
+
+    IN_LINE("В очереди", true),
+    IN_PROGRESS("В процессе", true),
+    DONE("Выполнен", true),
+    IN_DELIVERY("В доставке", false),
+    SHIPPED("Доставлен", false),
+    ISSUED("Выдан",false);
+
 
     private final String text;
 
+    private final boolean isEditable;
 
-}
+
+    }

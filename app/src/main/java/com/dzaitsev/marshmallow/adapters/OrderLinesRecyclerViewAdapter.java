@@ -1,35 +1,34 @@
 package com.dzaitsev.marshmallow.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.graphics.Paint;
 import android.os.Build;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.components.CustomNumberPicker;
-import com.dzaitsev.marshmallow.components.MoneyPicker;
 import com.dzaitsev.marshmallow.dto.Attachment;
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
-import com.google.android.material.checkbox.MaterialCheckBox;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import lombok.Setter;
 
@@ -43,10 +42,8 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
 
     private DoneListener doneListener;
 
-    private final Order order;
 
-    public OrderLinesRecyclerViewAdapter(Order order) {
-        this.order = order;
+    public OrderLinesRecyclerViewAdapter() {
     }
 
     public interface RemoveListener {
@@ -66,27 +63,33 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     }
 
     public class RecyclerViewHolder extends AbstractRecyclerViewHolder<OrderLine> {
-        private final TextView good;
-        private final TextView price;
+        private final TextView titleGood;
+        private final EditText price;
         private final TextView count;
         private final TextView total;
-        private final MaterialCheckBox done;
+        private final CheckBox done;
 
+
+        private final ImageButton minus;
+        private final ImageButton plus;
         private final ImageView imageView;
         private final Context context;
 
-        @Setter
         private boolean lock;
 
         @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
         public RecyclerViewHolder(View itemView) {
             super(itemView);
             context = itemView.getContext();
-            good = itemView.findViewById(R.id.tvName);
-            price = itemView.findViewById(R.id.tvPrice);
-            total = itemView.findViewById(R.id.tvLineTotal);
-            imageView = itemView.findViewById(R.id.imgProduct);
-            count = itemView.findViewById(R.id.tvQuantity);
+            titleGood = itemView.findViewById(R.id.titleGood);
+            price = itemView.findViewById(R.id.price);
+            total = itemView.findViewById(R.id.total);
+            imageView = itemView.findViewById(R.id.imageGood);
+            count = itemView.findViewById(R.id.count);
+            TextView currency = itemView.findViewById(R.id.curr_txt);
+            minus = itemView.findViewById(R.id.minus);
+            plus = itemView.findViewById(R.id.plus);
+            ConstraintLayout priceLayout = itemView.findViewById(R.id.price_layout);
             itemView.setOnClickListener(v -> {
                 if (lock) {
                     return;
@@ -95,110 +98,156 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                     selectGoodListener.onSelectGood(getItem());
                 }
             });
-            price.setOnClickListener(v -> {
+            View.OnClickListener editPriceClickListener = v -> {
                 if (lock) {
                     return;
                 }
-                if (getItem().getGood() != null) {
-                    MoneyPicker.builder(getView().getContext())
-                            .setTitle("Укажите сумму")
-                            .setInitialValue(getItem().getPrice())
-                            .setMinValue(1)
-                            .setMaxValue(100000)
-                            .positiveButton(value -> {
-                                if (changeSumListener != null) {
-                                    price.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
-                                    getItem().setPrice(value);
-                                    total.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
-                                    changeSumListener.onChange();
-                                }
-                            })
-                            .build()
-                            .show();
-                }
-            });
-            count.setOnClickListener(v -> {
-                if (lock) {
-                    return;
-                }
-                if (getItem().getGood() != null) {
-                    CustomNumberPicker.builder(getView().getContext())
-                            .setTitle("Укажите количество")
-                            .setInitialValue(getItem().getCount())
-                            .setMinValue(1)
-                            .setMaxValue(1000)
-                            .positiveButton(new Consumer<>() {
-                                @Override
-                                public void accept(Integer value) {
-                                    if (changeSumListener != null) {
-                                        count.setText(String.format("%s", value));
-                                        getItem().setCount(value);
-                                        total.setText(MoneyUtils.moneyWithCurrencyToString(getItem().getPrice() * getItem().getCount()));
-                                        changeSumListener.onChange();
-                                    }
-                                }
-                            })
-                            .dialogShowListener(new BiConsumer<>() {
-                                @Override
-                                public void accept(DialogInterface dialogInterface, NumberPicker numberPicker) {
-                                    if (getItem().getGood() != null) {
-                                        int s = Integer.parseInt(count.getText().toString());
-                                        numberPicker.setValue(Math.max(s, numberPicker.getMinValue()));
-                                    }
-                                }
-                            })
-                            .build()
-                            .show();
-                }
-            });
+                price.setFocusable(true);
+                price.setFocusableInTouchMode(true);
+                price.setCursorVisible(true);
+                price.setClickable(true);
 
-//            delete = itemView.findViewById(R.id.orderLineDelete);
-//            delete.setOnClickListener(v -> {
-//                if (removeListener != null) {
-//                    int adapterPosition = getAdapterPosition();
-//                    removeItem(adapterPosition);
-//                    removeListener.onRemove(adapterPosition);
-//                }
-//            });
-            done = itemView.findViewById(R.id.checkbox);
+                price.post(() -> {
+                    price.requestFocus();
+                    price.setSelection(price.getText().length());
+                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(price, InputMethodManager.SHOW_IMPLICIT);
+                });
+            };
+            priceLayout.setOnClickListener(editPriceClickListener);
+            currency.setOnClickListener(editPriceClickListener);
+            done = itemView.findViewById(R.id.done);
+
+            done.setOnCheckedChangeListener((b, checked) -> {
+                itemView.setAlpha(checked ? 0.5f : 1f);
+                titleGood.setPaintFlags(
+                        checked
+                                ? titleGood.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
+                                : titleGood.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG
+                );
+            });
             if (doneListener != null) {
                 done.setVisibility(View.VISIBLE);
                 done.setOnClickListener(v -> {
                     doneListener.onDone(getItem(), RecyclerViewHolder.this);
-                    lock = !lock;
-//                    if (getItem().isDone()) {
-//                        delete.setVisibility(View.GONE);
-//                    } else {
-//                        delete.setVisibility(View.VISIBLE);
-//                    }
+                    setLock(!lock);
                 });
+            } else {
+                done.setVisibility(View.GONE);
             }
+        }
+
+        private void setLock(boolean lock) {
+            this.lock = lock;
+
+            if (lock) {
+                // Заблокирован — выглядит как TextView
+                price.setFocusable(false);
+                price.setFocusableInTouchMode(false);
+                price.setCursorVisible(false);
+                price.setClickable(false);
+                price.setBackground(null); // убираем бордер EditText
+            } else {
+                // Разблокирован — можно редактировать
+                price.setFocusable(true);
+                price.setFocusableInTouchMode(true);
+                price.setCursorVisible(true);
+                price.setClickable(true);
+            }
+
+            minus.setEnabled(!lock);
+            plus.setEnabled(!lock);
         }
 
         public void bind(OrderLine orderLine) {
             super.bind(orderLine);
-            good.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
-            price.setText(MoneyUtils.moneyWithCurrencyToString(orderLine.getPrice()));
+            done.setChecked(orderLine.isDone());
+            titleGood.setText(Optional.ofNullable(orderLine.getGood()).map(Good::getName).orElse(""));
+            price.setText(MoneyUtils.moneyToString(orderLine.getPrice()));
             count.setText(Optional.ofNullable(orderLine.getCount()).map(String::valueOf).orElse(""));
-            total.setText(MoneyUtils.moneyWithCurrencyToString(Optional.ofNullable(orderLine.getPrice()).orElse(0d)
-                    * Optional.ofNullable(orderLine.getCount()).orElse(0)));
+            updateTotal(orderLine);
             if (orderLine.getGood() == null) {
                 done.setVisibility(View.GONE);
-                price.setFocusable(false);
                 count.setFocusable(false);
             } else {
                 orderLine.getGood().getImages().stream()
                         .filter(Attachment::isPrimary)
                         .findAny()
-                        .ifPresent(f -> {
-                            Glide.with(context)
-                                    .load(f.getThumbnailUrl())
-                                    .centerCrop()
-                                    .error(R.drawable.error)
-                                    .into(imageView);
-                        });
+                        .ifPresent(f -> Glide.with(context)
+                                .load(f.getThumbnailUrl())
+                                .centerCrop()
+                                .error(R.drawable.error)
+                                .into(imageView));
+            }
+            price.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void afterTextChanged(Editable s) {
+                    double prePay = s.toString().isEmpty() ? 0 : Double.parseDouble(s.toString());
+                    if (prePay < 1) {
+                        price.setError("Количество не может быть меньше 1");
+                        price.setText("1");
+                    }
+                    updateTotal(orderLine);
+                }
+
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+            });
+            plus.setOnClickListener(v -> {
+                int c = Integer.parseInt(count.getText().toString()) + 1;
+                count.setText(String.valueOf(c));
+                updateTotal(orderLine);
+            });
+
+            minus.setOnClickListener(v -> {
+                int c = Math.max(0, Integer.parseInt(count.getText().toString()) - 1);
+                if (c > 0) {
+                    count.setText(String.valueOf(c));
+                    updateTotal(orderLine);
+                } else {
+                    new AlertDialog.Builder(context)
+                            .setTitle("Удаление товара")
+                            .setMessage("Вы хотите удалить эту запись?")
+                            .setPositiveButton("Да", (dialog, which) -> {
+                                dialog.dismiss();
+                                if (removeListener != null) {
+                                    int adapterPosition = getBindingAdapterPosition();
+                                    removeItem(adapterPosition);
+                                    removeListener.onRemove(adapterPosition);
+                                }
+                            })
+                            .setNegativeButton("Нет", (dialog, which) -> dialog.dismiss())
+                            .show();
+                }
+            });
+        }
+
+        private void updateTotal(OrderLine orderLine) {
+            double price = Optional.ofNullable(this.price.getText())
+                    .map(Object::toString)
+                    .map(MoneyUtils::stringToDouble)
+                    .orElse(0d);
+            int count = Optional.ofNullable(this.count.getText())
+                    .map(Object::toString)
+                    .filter(f -> !StringUtils.isEmpty(f))
+                    .map(Integer::parseInt)
+                    .orElse(0);
+            double oldTotal = Optional.ofNullable(orderLine.getCount()).orElse(0)
+                    * Optional.ofNullable(orderLine.getPrice()).orElse(0d);
+            orderLine.setCount(count);
+            orderLine.setPrice(price);
+            double total = price * count;
+            this.total.setText(String.format("Итого: %s ₽", total));
+            if (changeSumListener != null && total != oldTotal) {
+                changeSumListener.onChange();
             }
         }
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
@@ -207,19 +256,14 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
     public RecyclerViewHolder onCreateViewHolder(ViewGroup parent,
                                                  int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_order_line_new, parent, false);
+                .inflate(R.layout.item_order_line, parent, false);
         return new RecyclerViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).isDone()) {
-            holder.setLock(true);
-            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
-        } else {
-            holder.setLock(false);
-        }
+        holder.setLock(getShowItems().get(position).isDone());
     }
 
 }

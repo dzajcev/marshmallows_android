@@ -41,10 +41,10 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     private FragmentDeliveryCardBinding binding;
     private DeliveryOrderRecyclerViewAdapter mAdapter;
 
-    private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
-    private final DeliveryExecutorFragment deliveryExecutorFragment = new DeliveryExecutorFragment(false);
+//    private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
+//    private final DeliveryExecutorFragment deliveryExecutorFragment = new DeliveryExecutorFragment(false);
     private final Navigation.OnBackListener backListener = fragment -> {
-        if (DeliveryCardFragment.this == fragment) {
+        if (DeliveryCardFragment.IDENTITY.equals(fragment.identity())) {
             if (DeliveryCardFragment.this.hasChanges()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryCardFragment.this.getActivity());
                 builder.setTitle("Запись изменена. Сохранить?");
@@ -122,7 +122,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         binding.deliveryCardAddOrders.setOnClickListener(v -> {
             Bundle orders = new Bundle();
             orders.putString("delivery", GsonHelper.serialize(delivery));
-            Navigation.getNavigation().goForward(orderSelectorFragment, orders);
+            Navigation.getNavigation().forward(OrderSelectorFragment.IDENTITY, orders);
         });
         binding.deliveryCardDateDelivery.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
@@ -163,7 +163,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             binding.txtDeliveryCardExecutor.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("delivery", GsonHelper.serialize(delivery));
-                Navigation.getNavigation().goForward(deliveryExecutorFragment, bundle);
+                Navigation.getNavigation().forward(DeliveryExecutorFragment.IDENTITY, bundle);
             });
             mAdapter.setDeleteItemListener(item -> {
                 delivery.getOrders().remove(item);
@@ -188,16 +188,6 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     }
                 }).orElse(""));
     }
-
-    private int getBackgroundColor(View view) {
-        Drawable background = view.getBackground();
-        if (background instanceof ColorDrawable colorDrawable) {
-            return colorDrawable.getColor();
-        } else {
-            return ContextCompat.getColor(requireContext(), R.color.white);
-        }
-    }
-
     private void save() {
         boolean fail = false;
         if (delivery.getDeliveryDate() == null) {

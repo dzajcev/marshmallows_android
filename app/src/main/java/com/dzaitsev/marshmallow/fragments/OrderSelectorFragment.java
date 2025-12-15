@@ -33,7 +33,7 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
     private OrderSelectorRecyclerViewAdapter mAdapter;
 
     private final Navigation.OnBackListener backListener = fragment -> {
-        if (OrderSelectorFragment.this == fragment) {
+        if (OrderSelectorFragment.IDENTITY.equals(fragment.identity())) {
             if (OrderSelectorFragment.this.hasChanges()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(OrderSelectorFragment.this.getActivity());
                 builder.setTitle("Сохранить выбор?");

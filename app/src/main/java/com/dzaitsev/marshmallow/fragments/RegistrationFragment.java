@@ -116,7 +116,7 @@ public class RegistrationFragment extends Fragment implements IdentityFragment {
                                             bundle.putString("token", jwtSignUpResponse.getToken());
                                             bundle.putString("login", request.getEmail());
                                             bundle.putString("password", request.getPassword());
-                                            Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
+                                            Navigation.getNavigation().forward( ConfirmRegistrationFragment.IDENTITY, bundle);
                                         });
                             }
                         });

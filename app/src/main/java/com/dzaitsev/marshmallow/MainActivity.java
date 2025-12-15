@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
@@ -54,9 +55,7 @@ public class MainActivity extends AppCompatActivity {
             deliveryFilter = FiltersHelper.getInstance().getDeliveryFilter().get();
         } else {
             deliveryFilter = new DeliveryFilter();
-            deliveryFilter.getStatuses().add(DeliveryStatus.IN_PROGRESS);
-            deliveryFilter.getStatuses().add(DeliveryStatus.DONE);
-            deliveryFilter.getStatuses().add(DeliveryStatus.NEW);
+            deliveryFilter.getStatuses().addAll(Arrays.asList(DeliveryStatus.values()));
         }
         deliveryFilter.setStart(LocalDate.now().minusWeeks(1));
         deliveryFilter.setEnd(LocalDate.now().plusWeeks(1));
@@ -69,10 +68,7 @@ public class MainActivity extends AppCompatActivity {
             ordersFilter = FiltersHelper.getInstance().getOrderFilter().get();
         } else {
             ordersFilter = new OrdersFilter();
-            ordersFilter.getStatuses().add(OrderStatus.IN_PROGRESS);
-            ordersFilter.getStatuses().add(OrderStatus.SHIPPED);
-            ordersFilter.getStatuses().add(OrderStatus.DONE);
-            ordersFilter.getStatuses().add(OrderStatus.IN_DELIVERY);
+            ordersFilter.getStatuses().addAll(Arrays.asList(OrderStatus.values()));
         }
         ordersFilter.setStart(LocalDate.now().minusWeeks(1));
         ordersFilter.setEnd(LocalDate.now().plusWeeks(1));
@@ -99,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         View userCard = toolbar.findViewById(R.id.userCard);
-        userCard.setOnClickListener(v -> Navigation.getNavigation().goForward(new UserCardFragment()));
+        userCard.setOnClickListener(v -> Navigation.getNavigation().forward( UserCardFragment.IDENTITY));
 
         getSupportFragmentManager().addFragmentOnAttachListener((fragmentManager, fragment) -> {
             if (fragment instanceof IdentityFragment identityFragment) {
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                                                     bundle.putString("token", jwtSignUpResponse.getToken());
                                                     bundle.putString("login", r.getEmail());
                                                     bundle.putString("password", r.getPassword());
-                                                    Navigation.getNavigation().goForward(new ConfirmRegistrationFragment(), bundle);
+                                                    Navigation.getNavigation().forward( ConfirmRegistrationFragment.IDENTITY, bundle);
                                                 })));
                     }
                     default -> {
@@ -140,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
                         if (!(fragmentById instanceof LoginFragment)) {
                             AuthorizationHelper.getInstance().updateSignInRequest(null);
-                            Navigation.getNavigation().goForward(new LoginFragment());
+                            Navigation.getNavigation().forward(LoginFragment.IDENTITY);
                         }
                     }
                 }
@@ -156,8 +152,28 @@ public class MainActivity extends AppCompatActivity {
         if (request.isPresent()) {
             NetworkExecutorHelper.authorize(MainActivity.this, request.get());
         } else {
-            Navigation.getNavigation().goForward(new LoginFragment(), new Bundle());
+            Navigation.getNavigation().forward( LoginFragment.IDENTITY, new Bundle());
         }
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.frame);
+                if (fragment instanceof IdentityFragment identityFragment) {
+                    boolean handled = Navigation.getNavigation().callbackBack();
+                    if (!handled) {
+                        // Если фрагмент не обработал back — вызываем стандартное поведение
+                        setEnabled(false);
+                        onBackPressed();
+                        setEnabled(true);
+                    }
+                } else {
+                    // Нет активного IdentityFragment — стандартный back
+                    setEnabled(false);
+                    onBackPressed();
+                    setEnabled(true);
+                }
+            }
+        });
     }
 
     private AlertDialog alertDialog;
@@ -185,10 +201,5 @@ public class MainActivity extends AppCompatActivity {
         } else {
             showPermissionDialog();
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        Navigation.getNavigation().callbackBack();
     }
 }

@@ -1,133 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/orderItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="3sp"
-    android:layout_marginEnd="3sp"
-    android:layout_marginBottom="1sp"
-    android:orientation="vertical">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:rippleColor="#20000000">
 
-        <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- ID заказа -->
+        <TextView
+            android:id="@+id/orderItemId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="#1024" />
+
+        <!-- Имя клиента -->
+        <TextView
+            android:id="@+id/orderItemClientName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@id/orderItemId"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/orderItemId"
+            tools:text="Иван Иванов" />
+
+        <!-- Разделитель -->
+        <View
+            android:id="@+id/dividerHeader"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="#F0F0F0"
+            app:layout_constraintTop_toBottomOf="@id/orderItemClientName" />
 
-            <TextView
-                android:id="@+id/orderItemId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start|top"
-                android:layout_margin="3sp"
-                android:gravity="start|top"
-                android:minHeight="30sp"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+        <!-- Блок дат (Создан / Дедлайн) -->
+        <TextView
+            android:id="@+id/labelCreated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Создан:"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/dividerHeader" />
 
-            <TextView
-                android:id="@+id/orderItemClientName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start|top"
-                android:layout_margin="3sp"
-                android:layout_weight="1"
-                android:gravity="start|top"
-                android:minHeight="30sp"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/orderItemDateCreate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/labelCreated"
+            app:layout_constraintStart_toEndOf="@id/labelCreated"
+            tools:text="12.05.2023" />
 
-        </LinearLayout>
+        <TextView
+            android:id="@+id/labelDeadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Дедлайн:"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            app:layout_constraintBaseline_toBaselineOf="@id/labelCreated"
+            app:layout_constraintStart_toEndOf="@id/orderItemDateCreate" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+        <TextView
+            android:id="@+id/orderItemDeadline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="@color/design_default_color_error"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@id/labelDeadline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/labelDeadline"
+            tools:text="20.05.2023" />
 
-            <TextView
-                android:id="@+id/text"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="bottom"
-                android:text="Создан" />
+        <!-- Статус -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/ordertemStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="false"
+            android:minHeight="32dp"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            app:chipBackgroundColor="#F5F5F5"
+            app:chipCornerRadius="8dp"
+            app:chipMinTouchTargetSize="0dp"
+            app:ensureMinTouchTargetSize="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/labelCreated"
+            tools:text="В работе" />
 
-            <TextView
-                android:id="@+id/orderItemDateCreate"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="3sp"
-                android:layout_marginEnd="3sp"
-                android:gravity="bottom" />
+        <!-- Сумма к оплате (справа от статуса) -->
+        <TextView
+            android:id="@+id/labelPay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="К оплате:"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium"
+            app:layout_constraintBottom_toBottomOf="@id/orderItemToPay"
+            app:layout_constraintEnd_toStartOf="@id/orderItemToPay"
+            app:layout_constraintTop_toTopOf="@id/orderItemToPay"
+            android:layout_marginEnd="6dp"/>
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="bottom" />
+        <TextView
+            android:id="@+id/orderItemToPay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/ordertemStatus"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/ordertemStatus"
+            tools:text="15 500 ₽" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="bottom"
-                android:text="Выдача" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/orderItemDeadline"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="3sp"
-                android:layout_marginEnd="3sp"
-                android:gravity="bottom"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="bottom"
-                android:text="К оплате"
-                android:textStyle="italic" />
-
-            <TextView
-                android:id="@+id/orderItemToPay"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="3sp"
-                android:layout_marginEnd="3sp"
-                android:gravity="bottom"
-                android:textStyle="bold|italic" />
-
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="bottom" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="end"
-                android:gravity="bottom"
-                android:text="Статус" />
-
-            <TextView
-                android:id="@+id/ordertemStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="end"
-                android:layout_marginStart="3sp"
-                android:layout_marginEnd="3sp"
-                android:gravity="bottom"
-                android:text="defsdfgds"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-    </LinearLayout>
-
+</com.google.android.material.card.MaterialCardView>

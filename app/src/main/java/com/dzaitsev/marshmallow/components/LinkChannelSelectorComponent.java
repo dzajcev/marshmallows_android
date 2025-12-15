@@ -5,7 +5,6 @@ import android.content.res.TypedArray;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -13,24 +12,31 @@ import android.view.View;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.dto.LinkChannel;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class LinkChannelSelectorComponent extends ConstraintLayout {
     private ImageView background;
     private ImageView checkbox;
+    @Getter
     private boolean isChecked;
 
+    @Getter
     private final LinkChannel linkChannel;
 
+    @Setter
     private OnCheckedChangeListener onCheckedChangeListener;
 
+    @Setter
     private OnButtonClickListener onButtonClickListener;
 
+    @Getter
     public enum Mode {
         CHECKBOX(0), BUTTON(1), NONE(-1),
         ;
@@ -41,25 +47,16 @@ public class LinkChannelSelectorComponent extends ConstraintLayout {
             this.idx = idx;
         }
 
-        public int getIdx() {
-            return idx;
-        }
     }
 
     private Mode mode = Mode.NONE;
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     public LinkChannelSelectorComponent(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         try (TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.LinkChannelSelectorComponent, 0, 0)) {
             linkChannel = LinkChannel.values()[a.getInt(R.styleable.LinkChannelSelectorComponent_linkChannelType, 0)];
         }
         initControl(context);
-    }
-
-
-    public LinkChannel getLinkChannel() {
-        return linkChannel;
     }
 
 
@@ -120,10 +117,6 @@ public class LinkChannelSelectorComponent extends ConstraintLayout {
         fireChecked();
     }
 
-    public boolean isChecked() {
-        return isChecked;
-    }
-
     public void setMode(Mode mode) {
         this.mode = mode;
         if (mode == Mode.CHECKBOX) {
@@ -158,14 +151,6 @@ public class LinkChannelSelectorComponent extends ConstraintLayout {
 
     public Drawable getBackground() {
         return background.getBackground();
-    }
-
-    public void setOnCheckedChangeListener(OnCheckedChangeListener onCheckedChangeListener) {
-        this.onCheckedChangeListener = onCheckedChangeListener;
-    }
-
-    public void setOnButtonClickListener(OnButtonClickListener onClickListener) {
-        this.onButtonClickListener = onClickListener;
     }
 
     public interface OnCheckedChangeListener {

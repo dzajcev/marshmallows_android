@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- when selected (done) -> light green -->
-    <item android:color="@color/done_bg" android:state_selected="true"/>
-    <!-- default -> white -->
-    <item android:color="@color/white"/>
+    <!-- Цвет для выбранного состояния (CHECKED) -->
+    <item android:color="@color/green" android:state_checked="true"/>
+
+    <!-- Цвет для активированного состояния (иногда используется как checked) -->
+    <item android:color="@color/green" android:state_activated="true"/>
+
+    <!-- Цвет по умолчанию (белый) -->
+    <item android:color="@android:color/white"/>
 </selector>
