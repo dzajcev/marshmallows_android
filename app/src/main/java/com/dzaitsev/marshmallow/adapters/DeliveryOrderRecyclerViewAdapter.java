@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.adapters;
 
 import android.annotation.SuppressLint;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import com.dzaitsev.marshmallow.service.CallPhoneService;
 import com.dzaitsev.marshmallow.service.SendSmsService;
 import com.dzaitsev.marshmallow.service.SendWhatsappService;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.Optional;
 
@@ -55,7 +57,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
         private final TextView deliveryOrderSum;
         private final TextView deliveryOrderToPay;
         private final ImageButton deliveryOrderItemDelete;
-        private final ImageButton deliveryOrderShipped;
+        private final MaterialButton deliveryOrderShipped;
 
 
         @SuppressLint("ResourceAsColor")
@@ -68,8 +70,8 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             deliveryOrderSum = itemView.findViewById(R.id.deliveryOrderSum);
             deliveryOrderToPay = itemView.findViewById(R.id.deliveryOrderToPay);
             deliveryOrderItemDelete = itemView.findViewById(R.id.deliveryOrderItemDelete);
-            ImageButton deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
-            ImageButton deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
+            MaterialButton deliveryOrderListGoods = itemView.findViewById(R.id.deliveryOrderListGoods);
+            MaterialButton deliveryOrderConnect = itemView.findViewById(R.id.deliveryOrderConnect);
             deliveryOrderShipped = itemView.findViewById(R.id.deliveryOrderShipped);
             deliveryOrderListGoods.setOnClickListener(v -> OrderSimpleDialog.builder(getView().getContext())
                     .setTitle("Содержимое заказа")
@@ -93,44 +95,54 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                     .show());
             deliveryOrderShipped.setOnClickListener(v -> {
                 if (getItem().getOrderStatus() == OrderStatus.IN_DELIVERY) {
-                    AlertDialogComponent.showDialog(getView().getContext(), "Оплата", "Деньги получены?",
-                            new AlertDialogComponent.Action() {
-                                @Override
-                                public void doIn() {
-                                    MoneyPicker.builder(getView().getContext())
-                                            .setTitle("Укажите сумму")
-                                            .setInitialValue(calcToPay(getItem()))
-                                            .setMinValue(1)
-                                            .setMaxValue(100000)
-                                            .positiveButton(value -> {
-                                                getItem().setPaySum(value);
-                                                getItem().setOrderStatus(OrderStatus.SHIPPED);
-                                                setShipped(OrderStatus.SHIPPED);
-                                                saveOrderListener.save(getItem());
-                                            })
-                                            .build()
-                                            .show();
-                                }
+                    if (calcToPay(getItem()) > 0) {
+                        AlertDialogComponent.showDialog(getView().getContext(), "Оплата", "Деньги получены?",
+                                new AlertDialogComponent.Action() {
+                                    @Override
+                                    public void doIn() {
+                                        MoneyPicker.builder(getView().getContext())
+                                                .setTitle("Укажите сумму")
+                                                .setInitialValue(calcToPay(getItem()))
+                                                .setMinValue(1)
+                                                .setMaxValue(calcToPay(getItem()).intValue())
+                                                .positiveButton(value -> {
+                                                    getItem().setPaySum(value);
+                                                    markDeliveryOrder();
+                                                })
+                                                .build()
+                                                .show();
+                                    }
 
-                                @Override
-                                public ActionType getAction() {
-                                    return ActionType.POSITIVE;
-                                }
-                            }, new AlertDialogComponent.Action() {
-                                @Override
-                                public void doIn() {
-                                    getItem().setOrderStatus(OrderStatus.SHIPPED);
-                                    setShipped(OrderStatus.SHIPPED);
-                                    saveOrderListener.save(getItem());
-                                }
+                                    @Override
+                                    public ActionType getAction() {
+                                        return ActionType.POSITIVE;
+                                    }
+                                }, new AlertDialogComponent.Action() {
+                                    @Override
+                                    public void doIn() {
+                                        markDeliveryOrder();
+                                    }
 
-                                @Override
-                                public ActionType getAction() {
-                                    return ActionType.NEGATIVE;
-                                }
-                            });
+                                    @Override
+                                    public ActionType getAction() {
+                                        return ActionType.NEGATIVE;
+                                    }
+                                });
+                    } else {
+                        markDeliveryOrder();
+                    }
                 }
             });
+        }
+
+        private void markDeliveryOrder() {
+            getItem().setOrderStatus(OrderStatus.SHIPPED);
+            setShipped(OrderStatus.SHIPPED);
+            saveOrderListener.save(getItem());
+            deliveryOrderShipped.setEnabled(false);
+            itemView.setAlpha(0.5f);
+            deliveryOrderClientName.setPaintFlags(
+                    deliveryOrderClientName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
         @Override
@@ -149,6 +161,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
             });
             if (getItem().getOrderStatus() == OrderStatus.SHIPPED) {
                 deliveryOrderShipped.setVisibility(View.GONE);
+                markDeliveryOrder();
             }
             if (getItem().getOrderStatus() == OrderStatus.SHIPPED || deleteItemListener == null) {
                 deliveryOrderItemDelete.setVisibility(View.GONE);

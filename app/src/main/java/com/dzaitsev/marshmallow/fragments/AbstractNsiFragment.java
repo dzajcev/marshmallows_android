@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.Setter;
 import retrofit2.Call;
 
 public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiResponse<T>,
@@ -44,22 +45,13 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
 
     private Order order;
 
+    @Setter
     private SelectItemListener<T> selectListener;
+    @Setter
     private EditItemListener<T> editItemListener;
 
+    @Setter
     private OnCreateListener onCreateListener;
-
-    public void setSelectListener(SelectItemListener<T> selectListener) {
-        this.selectListener = selectListener;
-    }
-
-    public void setOnCreateListener(OnCreateListener onCreateListener) {
-        this.onCreateListener = onCreateListener;
-    }
-
-    public void setEditItemListener(EditItemListener<T> editItemListener) {
-        this.editItemListener = editItemListener;
-    }
 
     public void setAdapter(A mAdapter) {
         this.mAdapter = mAdapter;
@@ -96,16 +88,19 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
     protected abstract Call<K> getCall(Boolean bool);
 
     private void refresh() {
+
         new NetworkExecutorHelper<>(requireActivity(),
                 getCall(determineRequestValue())).invoke(response -> Optional.ofNullable(response.body())
                 .ifPresent(r -> {
-                    mAdapter.setItems(Optional.of(r)
-                            .map(NsiResponse::getItems)
-                            .orElseThrow(() -> new RuntimeException("error of fetching data"))
-                            .stream()
-                            .sorted(Comparator.comparing(NsiItem::getName)).collect(Collectors.toList()));
-                    if (!StringUtils.isEmpty(binding.searchField.getText().toString())) {
-                        mAdapter.filter(binding.searchField.toString());
+                    if (mAdapter != null) {
+                        mAdapter.setItems(Optional.of(r)
+                                .map(NsiResponse::getItems)
+                                .orElseThrow(() -> new RuntimeException("error of fetching data"))
+                                .stream()
+                                .sorted(Comparator.comparing(NsiItem::getName)).collect(Collectors.toList()));
+                        if (!StringUtils.isEmpty(binding.searchField.getText().toString())) {
+                            mAdapter.filter(binding.searchField.getText().toString());
+                        }
                     }
                 }));
     }
@@ -120,7 +115,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
             binding.checkBoxTriStates.setVisibility(View.GONE);
         }
         binding.checkBoxTriStates.setOnCheckedChangeListener((buttonView, isChecked) -> refresh());
-        refresh();
+
         if (selectListener == null) {
             binding.abstractNsiListBack.setVisibility(View.GONE);
         }
@@ -160,6 +155,8 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                 onCreateListener.onCreateItem();
             }
         });
+
+        refresh();
     }
 
     @Override

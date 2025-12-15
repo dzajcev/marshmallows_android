@@ -88,7 +88,6 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
                         .collect(Collectors.toList()))));
         binding.orderSelectorItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.orderSelectorItems.setAdapter(mAdapter);
-        binding.orderSelectorCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
 
         binding.orderSelectorSave.setOnClickListener(v -> {
             Bundle bundle = new Bundle();

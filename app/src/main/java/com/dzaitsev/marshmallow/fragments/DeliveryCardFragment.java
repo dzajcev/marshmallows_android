@@ -1,8 +1,6 @@
 package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +21,9 @@ import com.dzaitsev.marshmallow.components.DatePicker;
 import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
+import com.dzaitsev.marshmallow.dto.DeliveryStatus;
+import com.dzaitsev.marshmallow.dto.Order;
+import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
@@ -33,6 +34,11 @@ import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import retrofit2.Response;
 
 public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "deliveryCardFragment";
@@ -41,14 +47,14 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     private FragmentDeliveryCardBinding binding;
     private DeliveryOrderRecyclerViewAdapter mAdapter;
 
-//    private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
+    //    private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
 //    private final DeliveryExecutorFragment deliveryExecutorFragment = new DeliveryExecutorFragment(false);
     private final Navigation.OnBackListener backListener = fragment -> {
         if (DeliveryCardFragment.IDENTITY.equals(fragment.identity())) {
             if (DeliveryCardFragment.this.hasChanges()) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(DeliveryCardFragment.this.getActivity());
                 builder.setTitle("Запись изменена. Сохранить?");
-                builder.setPositiveButton("Да", (dialog, id) -> DeliveryCardFragment.this.save());
+                builder.setPositiveButton("Да", (dialog, id) -> DeliveryCardFragment.this.save(true));
                 builder.setNeutralButton("Отмена", (dialog, id) -> dialog.cancel());
                 builder.setNegativeButton("Нет", (dialog, id) -> Navigation.getNavigation().back());
                 builder.create().show();
@@ -158,7 +164,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     binding.deliveryCardDateDelivery.setText(Optional.ofNullable(d.getDeliveryDate()).map(dateTimeFormatter::format).orElse(""));
                     mAdapter.setItems(d.getOrders());
                 });
-        binding.deliveryCardSave.setOnClickListener(v -> save());
+        binding.deliveryCardSave.setOnClickListener(v -> save(true));
         if (delivery.isMy()) {
             binding.txtDeliveryCardExecutor.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
@@ -166,6 +172,14 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 Navigation.getNavigation().forward(DeliveryExecutorFragment.IDENTITY, bundle);
             });
             mAdapter.setDeleteItemListener(item -> {
+                new NetworkExecutorHelper<>(requireActivity(),
+                        NetworkService.getInstance().getDeliveryApi().deleteDeliveryOrder(delivery.getId(), item.getId()))
+                        .invoke(new Consumer<Response<Void>>() {
+                            @Override
+                            public void accept(Response<Void> voidResponse) {
+
+                            }
+                        });
                 delivery.getOrders().remove(item);
                 binding.deliveryCardOrders.setAdapter(mAdapter);
                 mAdapter.setItems(delivery.getOrders());
@@ -174,6 +188,23 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         mAdapter.setSaveOrderListener(item -> new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(item)).
                 invoke(response -> {
+                    if (response.isSuccessful()) {
+                        Set<OrderStatus> statuses = delivery.getOrders()
+                                .stream()
+                                .map(Order::getOrderStatus)
+                                .collect(Collectors.toSet());
+                        if (statuses.size() > 1) {
+                            delivery.setDeliveryStatus(DeliveryStatus.IN_PROGRESS);
+                        } else {
+                            OrderStatus status = statuses.iterator().next();
+                            if (status == OrderStatus.IN_DELIVERY) {
+                                delivery.setDeliveryStatus(DeliveryStatus.NEW);
+                            } else if (status == OrderStatus.SHIPPED) {
+                                delivery.setDeliveryStatus(DeliveryStatus.DONE);
+                            }
+                        }
+                        save(false);
+                    }
                 }));
         if (delivery.getExecutor() == null) {
             delivery.setExecutor(AuthorizationHelper.getInstance().getUserData().orElse(null));
@@ -188,7 +219,8 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                     }
                 }).orElse(""));
     }
-    private void save() {
+
+    private void save(boolean withBack) {
         boolean fail = false;
         if (delivery.getDeliveryDate() == null) {
             binding.deliveryCardDateDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
@@ -219,7 +251,9 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getDeliveryApi().saveDelivery(delivery)).
                 invoke(response -> {
                     incomingDelivery = delivery;
-                    Navigation.getNavigation().back();
+                    if (withBack) {
+                        Navigation.getNavigation().back();
+                    }
                 });
     }
 

@@ -28,4 +28,7 @@ public interface DeliveryApi {
     @DELETE("delivery/{id}")
     Call<Void> deleteDelivery(@Path("id") Integer delivery);
 
+    @DELETE("delivery/{id}/{orderId}")
+    Call<Void> deleteDeliveryOrder(@Path("id") Integer delivery, @Path("orderId") Integer orderId);
+
 }

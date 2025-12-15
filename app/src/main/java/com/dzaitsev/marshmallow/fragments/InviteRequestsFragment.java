@@ -2,6 +2,8 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +11,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -18,7 +19,6 @@ import com.dzaitsev.marshmallow.adapters.InviteRequestsRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentInviteRequestsBinding;
 import com.dzaitsev.marshmallow.dto.ErrorDto;
 import com.dzaitsev.marshmallow.dto.InviteRequestDirection;
-import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.request.AcceptInviteRequest;
 import com.dzaitsev.marshmallow.dto.request.AddInviteRequest;
@@ -157,18 +157,21 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
                         })
                         .invoke(objectResponse -> fillItems()))
                 .create().show());
-        binding.searchInviteRequests.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        binding.searchInviteRequests.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
+            public void afterTextChanged(Editable s) {
+                mAdapter.filter(s.toString());
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
-                mAdapter.filter(newText);
-                return false;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
+
         binding.listInviteRequests.setAdapter(mAdapter);
         binding.btnInviteRequestsBack.setOnClickListener(v -> Navigation.getNavigation().back());
     }

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.dzaitsev.marshmallow.adapters.listeners.DeliveryExecutorSelectorRecyclerViewAdapter;
+import com.dzaitsev.marshmallow.adapters.DeliveryExecutorSelectorRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryExecutorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.User;
@@ -72,7 +72,6 @@ public class DeliveryExecutorFragment extends Fragment implements IdentityFragme
         }
         binding.deliveryExecutorsItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.deliveryExecutorsItems.setAdapter(mAdapter);
-        binding.deliveryExecutorSelectorCancel.setOnClickListener(v -> Navigation.getNavigation().back());
     }
 
 

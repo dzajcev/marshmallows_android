@@ -161,7 +161,11 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
-        cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> getOrderCardBundle().getOrder().setNeedDelivery(isChecked));
+        cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            getOrderCardBundle().getOrder().setNeedDelivery(isChecked);
+            viewModel.notifyDeliveryChanged();
+
+        });
         etPrePay.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
@@ -189,7 +193,6 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             return orderFragment.getOrderCardBundle();
         }
         return GsonHelper.deserialize(requireArguments().getString("orderCardBundle"), OrderCardBundle.class);
-//        throw new IllegalStateException("Parent must be OrderFragment");
     }
 
     @Override

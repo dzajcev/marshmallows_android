@@ -84,6 +84,7 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         isViewCreated = true;
         tryUpdateUI();
     }
+
     private boolean hasChanges() {
         orderCardBundle.getOrderLines()
                 .removeIf(orderLine -> orderLine.getGood() == null || orderLine.getCount() == 0);
@@ -181,7 +182,11 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         binding.btnIssue.setEnabled(getOrderCardBundle().getOrderLines().stream()
                 .allMatch(OrderLine::isDone) && getOrderCardBundle().getOrder().getOrderStatus() == OrderStatus.DONE);
         binding.saveButton.setEnabled(getOrderCardBundle().getOrder().getOrderStatus().isEditable());
-        viewModel.getDoneChanged().observe(getViewLifecycleOwner(), unused -> binding.btnIssue.setEnabled(getOrderCardBundle().getOrderLines().stream()
+        viewModel.getDoneChanged().observe(getViewLifecycleOwner(), unused -> binding.btnIssue.setEnabled(!getOrderCardBundle().getOrder()
+                .isNeedDelivery() && getOrderCardBundle().getOrderLines().stream()
+                .allMatch(OrderLine::isDone)));
+        viewModel.getDeliveryChanged().observe(getViewLifecycleOwner(), unused -> binding.btnIssue.setEnabled(!getOrderCardBundle().getOrder()
+                .isNeedDelivery() && getOrderCardBundle().getOrderLines().stream()
                 .allMatch(OrderLine::isDone)));
         Navigation.getNavigation().addOnBackListener(backListener);
         OrderTabsPagerAdapter adapter = new OrderTabsPagerAdapter(this);
@@ -190,7 +195,6 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         new TabLayoutMediator(binding.orderTabLayout, binding.viewPager,
                 (tab, position) -> tab.setText(position == 0 ? "Информация" : "Позиции")
         ).attach();
-//        binding.viewPager.post(() -> binding.viewPager.setCurrentItem(orderCardBundle.getActiveTab(), false));
     }
 
     @Override

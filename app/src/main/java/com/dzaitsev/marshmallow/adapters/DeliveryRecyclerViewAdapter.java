@@ -1,8 +1,10 @@
 package com.dzaitsev.marshmallow.adapters;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,6 +15,7 @@ import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
+import com.google.android.material.card.MaterialCardView;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,11 +29,21 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
     @Override
     public void onBindViewHolder(@NonNull RecycleViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (getShowItems().get(position).getDeliveryStatus() == DeliveryStatus.DONE) {
-            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
-        }
-        if (getShowItems().get(position).getDeliveryStatus() == DeliveryStatus.IN_PROGRESS) {
-            holder.changeBackgroundTintColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
+
+        Delivery item = getShowItems().get(position);
+
+        // Работаем с цветом фона карточки через MaterialCardView
+        if (holder.itemView instanceof MaterialCardView) {
+            MaterialCardView card = (MaterialCardView) holder.itemView;
+
+            if (item.getDeliveryStatus() == DeliveryStatus.DONE) {
+                card.setCardBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.green));
+            } else if (item.getDeliveryStatus() == DeliveryStatus.IN_PROGRESS) {
+                card.setCardBackgroundColor(ContextCompat.getColor(holder.getView().getContext(), R.color.light_green));
+            } else {
+                // Сбрасываем на белый для остальных статусов (важно при переиспользовании view)
+                card.setCardBackgroundColor(Color.WHITE);
+            }
         }
     }
 
@@ -40,9 +53,12 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
         private final TextView deliveryDate;
         private final TextView start;
         private final TextView end;
-        private final TextView totalOrders;
-        private final TextView deliveredOrders;
         private final TextView deliveryStatus;
+
+        // Новые поля для прогресса
+        private final TextView ordersCountText;
+        private final ProgressBar ordersProgress;
+
         private final View executorLayout;
         private final TextView txtAuthor;
         private final TextView txtExecutor;
@@ -53,28 +69,55 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
             deliveryDate = itemView.findViewById(R.id.deliveryDate);
             start = itemView.findViewById(R.id.deliveryStart);
             end = itemView.findViewById(R.id.deliveryEnd);
-            totalOrders = itemView.findViewById(R.id.totalOrders);
-            deliveredOrders = itemView.findViewById(R.id.deliveredOrders);
             deliveryStatus = itemView.findViewById(R.id.deliveryStatus);
+
+            // Инициализация новых View
+            ordersCountText = itemView.findViewById(R.id.ordersCountText);
+            ordersProgress = itemView.findViewById(R.id.ordersProgress);
+
             executorLayout = itemView.findViewById(R.id.executorLayout);
             txtAuthor = itemView.findViewById(R.id.txtAuthor);
             txtExecutor = itemView.findViewById(R.id.txtExecutor);
-
         }
 
         @Override
         public void bind(Delivery item) {
             super.bind(item);
             id.setText(String.format("#%s", getItem().getId()));
-            deliveryDate.setText(dateTimeFormatter.format(item.getDeliveryDate()));
-            start.setText(timeFormatter.format(item.getStart()));
-            end.setText(timeFormatter.format(item.getEnd()));
-            totalOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).map(List::size).orElse(0)));
+
+            if (item.getDeliveryDate() != null) {
+                deliveryDate.setText(dateTimeFormatter.format(item.getDeliveryDate()));
+            }
+            if (item.getStart() != null) {
+                start.setText(timeFormatter.format(item.getStart()));
+            }
+            if (item.getEnd() != null) {
+                end.setText(timeFormatter.format(item.getEnd()));
+            }
+
             deliveryStatus.setText(item.getDeliveryStatus().getText());
-            deliveredOrders.setText(String.format("%s", Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
+
+            // --- Логика подсчета заказов и прогресса ---
+            int total = Optional.ofNullable(item.getOrders()).map(List::size).orElse(0);
+            long doneCount = Optional.ofNullable(item.getOrders()).orElse(new ArrayList<>())
                     .stream().filter(f -> f.getOrderStatus() == OrderStatus.SHIPPED)
-                    .count()));
-            if (!item.getCreateUser().equals(item.getExecutor())) {
+                    .count();
+            int done = (int) doneCount;
+
+            // Установка текста "5 / 10"
+            ordersCountText.setText(String.format("%d / %d", done, total));
+
+            // Установка прогресс-бара
+            if (total > 0) {
+                int progress = (int) ((float) done / total * 100);
+                ordersProgress.setProgress(progress);
+            } else {
+                ordersProgress.setProgress(0);
+            }
+            // -------------------------------------------
+
+            if (item.getCreateUser() != null && item.getExecutor() != null && !item.getCreateUser().equals(item.getExecutor())) {
+                executorLayout.setVisibility(View.VISIBLE);
                 AuthorizationHelper.getInstance().getUserData()
                         .ifPresent(user -> {
                             if (item.getCreateUser().getId().equals(user.getId())) {
@@ -102,6 +145,4 @@ public class DeliveryRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Del
                 .inflate(R.layout.delivery_list_item, parent, false);
         return new RecycleViewHolder(inflate);
     }
-
-
 }

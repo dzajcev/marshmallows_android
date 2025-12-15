@@ -63,7 +63,7 @@ public class OrderLinesFragment extends Fragment implements IdentityFragment {
         getOrderInfoBundle().getOrderLines().sort(Comparator.comparing(OrderLine::getNum));
         mAdapter.setItems(getOrderInfoBundle().getOrderLines());
         mAdapter.setChangeSumListener(() -> viewModel.notifySumsChanged());
-        viewModel.getOrder().observe(getViewLifecycleOwner(), order -> {
+        viewModel.getOrderLiveData().observe(getViewLifecycleOwner(), order -> {
             if (order == null) return;
             binding.btnAddPosition.post(() -> {
                 if (order.getOrderStatus().isEditable()) {

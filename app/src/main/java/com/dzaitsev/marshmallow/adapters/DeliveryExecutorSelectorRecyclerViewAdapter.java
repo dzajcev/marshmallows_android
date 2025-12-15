@@ -1,4 +1,4 @@
-package com.dzaitsev.marshmallow.adapters.listeners;
+package com.dzaitsev.marshmallow.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +9,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewAdapter;
-import com.dzaitsev.marshmallow.adapters.AbstractRecyclerViewHolder;
 import com.dzaitsev.marshmallow.dto.User;
 
 import java.util.HashMap;
@@ -18,17 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.Setter;
+
 public class DeliveryExecutorSelectorRecyclerViewAdapter extends AbstractRecyclerViewAdapter<User, DeliveryExecutorSelectorRecyclerViewAdapter.RecycleViewHolder> {
 
     private final Map<Integer, Boolean> selected = new HashMap<>();
 
     private final boolean multiselect;
 
+    @Setter
     private OnSelectListener onSelectListener;
-
-    public void setOnSelectListener(OnSelectListener onSelectListener) {
-        this.onSelectListener = onSelectListener;
-    }
 
     public DeliveryExecutorSelectorRecyclerViewAdapter(boolean multiselect) {
         this.multiselect = multiselect;

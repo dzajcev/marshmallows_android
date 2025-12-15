@@ -58,7 +58,8 @@ public class OrderRecyclerViewAdapter extends AbstractRecyclerViewAdapter<Order,
             createDate.setText(dateTimeFormatter.format(getItem().getCreateDate()));
             double sumOrder = getItem().getOrderLines().stream()
                     .mapToDouble(m -> m.getPrice() * m.getCount()).sum();
-            toPay.setText(MoneyUtils.moneyWithCurrencyToString(sumOrder - Optional.ofNullable(getItem().getPrePaymentSum()).orElse(0d)));
+            toPay.setText(MoneyUtils.moneyWithCurrencyToString(sumOrder - Optional.ofNullable(getItem().getPrePaymentSum()).orElse(0d)
+                    - Optional.ofNullable(getItem().getPaySum()).orElse(0d)));
             status.setText(getItem().getOrderStatus().getText());
         }
     }

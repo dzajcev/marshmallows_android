@@ -67,7 +67,7 @@ public abstract class AbstractRecyclerViewHolder<T> extends RecyclerView.ViewHol
     }
 
     public void changeBackgroundTintColor(int color) {
-        getViewsForChangeColor().forEach(v -> v.setBackgroundColor(color));
+//        getViewsForChangeColor().forEach(v -> v.setBackgroundColor(color));
     }
 
     protected List<View> getViewsForChangeColor() {

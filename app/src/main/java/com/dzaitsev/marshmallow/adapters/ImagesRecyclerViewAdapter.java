@@ -22,7 +22,6 @@ import lombok.Getter;
 public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerView.ViewHolder> {
 
     private static final int TYPE_IMAGE = 0;
-    private static final int TYPE_UPLOAD = 1;
 
     private final OnImagePickListener listener;
     private final Context context;
@@ -41,24 +40,12 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
         this.context = context;
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        Attachment image = getItem(position);
-        return (image == null) ? TYPE_UPLOAD : TYPE_IMAGE;
-    }
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-
-        if (viewType == TYPE_UPLOAD) {
-            View view = inflater.inflate(R.layout.item_upload, parent, false);
-            return new UploadViewHolder(view);
-        } else {
-            View view = inflater.inflate(R.layout.item_image, parent, false);
-            return new ImageViewHolder(view);
-        }
+        View view = inflater.inflate(R.layout.item_image, parent, false);
+        return new ImageViewHolder(view);
     }
 
     @Override
@@ -76,7 +63,7 @@ public class ImagesRecyclerViewAdapter extends ListAdapter<Attachment, RecyclerV
                     .error(R.drawable.error)
                     .into(iv.imageViewItem);
             holder.itemView.setOnClickListener(v -> {
-                Attachment a = getItem(holder.getAdapterPosition());
+                Attachment a = getItem(holder.getBindingAdapterPosition());
                 if (a != null && a.getUrl() != null) {
                     FullScreenImageDialogFragment dialog = FullScreenImageDialogFragment
                             .newInstance(image.getUrl());

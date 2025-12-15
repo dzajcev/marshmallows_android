@@ -1,137 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/orderItemLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="3sp"
-    android:layout_marginEnd="3sp"
-    android:layout_marginBottom="1sp"
-    android:layout_marginTop="1sp"
-    android:orientation="horizontal">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
-    <ImageView
-        android:id="@+id/imageGood"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:minHeight="80sp"
-        android:scaleType="centerCrop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <TextView
-        android:id="@+id/order_line_name"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:text=""
-        android:textSize="24sp"
-        android:paddingStart="2sp"
-        android:paddingEnd="2sp"
-        android:layout_marginStart="10dp"
-        app:layout_constraintLeft_toRightOf="@id/imageGood"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/order_line_price"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:gravity="bottom|end"
-
-        android:text="TextView"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="@id/guideline11"
-        app:layout_constraintRight_toRightOf="@id/guideline12"
-        app:layout_constraintTop_toBottomOf="@id/order_line_name"
-
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/order_line_count"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:gravity="bottom|start"
-        android:text=""
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/guideline14"
-        app:layout_constraintRight_toLeftOf="@id/guideline13"
-        app:layout_constraintTop_toBottomOf="@id/order_line_name"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/order_line_sum"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="ап"
-        android:paddingStart="2sp"
-        android:paddingEnd="2sp"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:gravity="bottom|start"
-        android:layout_gravity="bottom|start"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toRightOf="@id/imageGood"
-        app:layout_constraintRight_toLeftOf="@id/guideline11"
-        app:layout_constraintTop_toBottomOf="@id/order_line_name"
-        android:layout_marginStart="10dp"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:textSize="20sp"
-        app:layout_constraintLeft_toRightOf="@id/guideline12"
-        app:layout_constraintRight_toLeftOf="@id/guideline14"
-        android:gravity="bottom|center"
-        app:layout_constraintTop_toBottomOf="@id/order_line_name"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="x" />
-
-    <ImageButton
-        android:id="@+id/orderLineDone"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="bottom|center"
-        android:foregroundGravity="bottom"
-        android:src="@drawable/done_32"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/order_line_name"
-        app:layout_constraintLeft_toRightOf="@id/guideline13"/>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline11"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.53" />
+        android:padding="12dp">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline12"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.77037036" />
+        <!-- Картинка товара (в закругленном контейнере) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/imageContainer"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline13"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.89382714" />
+            <ImageView
+                android:id="@+id/imageGood"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#F5F5F5"
+                android:scaleType="centerCrop"
+                tools:srcCompat="@tools:sample/avatars" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline14"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.82" />
+        </androidx.cardview.widget.CardView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Название товара -->
+        <TextView
+            android:id="@+id/order_line_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/orderLineDone"
+            app:layout_constraintStart_toEndOf="@+id/imageContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Торт 'Наполеон' классический 1кг" />
+
+        <!-- Цена за единицу (серым) -->
+        <TextView
+            android:id="@+id/order_line_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="@+id/order_line_name"
+            app:layout_constraintTop_toBottomOf="@+id/order_line_name"
+            tools:text="1500 ₽" />
+
+        <!-- Крестик умножения -->
+        <TextView
+            android:id="@+id/x_separator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="×"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            app:layout_constraintBaseline_toBaselineOf="@+id/order_line_price"
+            app:layout_constraintStart_toEndOf="@+id/order_line_price" />
+
+        <!-- Количество -->
+        <TextView
+            android:id="@+id/order_line_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@+id/x_separator"
+            app:layout_constraintStart_toEndOf="@+id/x_separator"
+            tools:text="2 шт" />
+
+        <!-- Итоговая сумма (крупно и цветным) -->
+        <TextView
+            android:id="@+id/order_line_sum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/order_line_name"
+            app:layout_constraintTop_toBottomOf="@+id/order_line_price"
+            tools:text="3 000 ₽" />
+
+        <!-- Кнопка действия (галочка) -->
+        <!-- Используем MaterialButton в стиле icon-only -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/orderLineDone"
+            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tooltipText="Отметить как готовое"
+            app:icon="@drawable/done_32"
+            app:iconTint="?attr/colorPrimary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

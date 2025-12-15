@@ -1,79 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="3sp"
-    android:layout_marginEnd="3sp"
-    android:layout_marginBottom="1sp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp"
+    android:background="?attr/selectableItemBackground">
 
+    <!-- Название товара (слева) -->
     <TextView
         android:id="@+id/orderLinesSimpleGoodName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="5sp"
+        android:layout_marginEnd="16dp"
+        android:ellipsize="end"
         android:gravity="start|center_vertical"
-        android:minHeight="30sp"
+        android:maxLines="2"
+        android:textColor="@android:color/black"
         android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline3"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/orderLinesSimpleSum"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Зефир ванильный (коробка 1кг)" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="203dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.7" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.80" />
-
-
-    <TextView
-        android:id="@+id/orderLinesSimplePrice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5sp"
-        android:gravity="center_vertical|end"
-        android:minHeight="30sp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline5"
-        app:layout_constraintStart_toStartOf="@+id/guideline3"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/orderLinesSimpleCount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5sp"
-        android:gravity="center_horizontal|center_vertical"
-        android:minHeight="30sp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@+id/guideline4"
-        app:layout_constraintStart_toStartOf="@+id/guideline5"
-        app:layout_constraintTop_toTopOf="parent" />
-
+    <!-- Итоговая сумма (справа, акцент) -->
     <TextView
         android:id="@+id/orderLinesSimpleSum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@id/orderLinesSimpleGoodName"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="1 500 ₽" />
+
+    <!-- Вторая строка: Цена шт. х Количество -->
+    <LinearLayout
+        android:id="@+id/layout_prices"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical|end"
-        android:minHeight="30sp"
-        android:textSize="14sp"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline4"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/orderLinesSimpleGoodName">
+
+        <TextView
+            android:id="@+id/orderLinesSimplePrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            tools:text="500 ₽" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4dp"
+            android:text="×"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/orderLinesSimpleCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp"
+            tools:text="3 шт" />
+
+    </LinearLayout>
+
+    <!-- Разделитель снизу (опционально, для визуального разделения строк) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+
+        android:background="#F0F0F0"
+        app:layout_constraintTop_toBottomOf="@+id/layout_prices"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

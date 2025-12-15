@@ -1,52 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/orderSelectorCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal|center_vertical"
-    android:orientation="horizontal"
-    android:paddingTop="3sp"
-    android:paddingBottom="3sp">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
-    <TextView
-        android:id="@+id/orderSelectorItemId"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_margin="5sp"
-        android:gravity="center_horizontal|center_vertical" />
-
-    <TextView
-        android:id="@+id/orderSelectorClientName"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_margin="5sp"
-        android:layout_weight="1"
-        android:gravity="start|center_vertical"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/orderSelectorToPay"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_margin="5sp"
-        android:gravity="center_vertical|end"
-        android:text=""
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/orderSelectorDeliveryDate"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_margin="5sp"
-        android:gravity="center_vertical|end"
-        android:text=""
-        android:textSize="14sp" />
-
-    <CheckBox
-        android:id="@+id/orderSelectorSelect"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5sp"
-        android:layout_marginEnd="5sp"
-        android:layout_marginBottom="5sp" />
+        android:padding="12dp">
 
-</LinearLayout>
+        <!-- Чекбокс (Справа или Слева).
+             Здесь справа, чтобы основная инфо читалась слева направо. -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/orderSelectorSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- ID заказа -->
+        <TextView
+            android:id="@+id/orderSelectorItemId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="#1055" />
+
+        <!-- Цена (К оплате) -->
+        <TextView
+            android:id="@+id/orderSelectorToPay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/rounded_background"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:textColor="@color/design_default_color_error"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@id/orderSelectorItemId"
+            app:layout_constraintStart_toEndOf="@id/orderSelectorItemId"
+            tools:text="12 500 ₽" />
+        <!-- Примечание: Если нет rounded_bg_gray_light, можно убрать background
+             или создать простой shape (см. ниже) -->
+
+        <!-- Имя клиента -->
+        <TextView
+            android:id="@+id/orderSelectorClientName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+            app:layout_constraintEnd_toStartOf="@+id/orderSelectorSelect"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/orderSelectorItemId"
+            tools:text="Константинопольский Константин" />
+
+        <!-- Дата доставки -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toStartOf="@+id/orderSelectorSelect"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/orderSelectorClientName">
+
+            <ImageView
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_date_range_24"
+                app:tint="@android:color/darker_gray" />
+
+            <TextView
+                android:id="@+id/orderSelectorDeliveryDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="13sp"
+                tools:text="20.05.2023" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,121 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:selector="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginStart="5sp"
-    android:layout_marginEnd="5sp"
-    android:layout_marginBottom="5sp"
-    android:orientation="vertical"
+    android:background="@color/bg_primary"
     tools:context=".fragments.ClientCardFragment">
 
-    <EditText
-        android:id="@+id/clientCardName"
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/buttonsContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Card for Form Fields -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="Данные клиента"
+                        android:textColor="@android:color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <!-- Name Field -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutName"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Имя клиента"
+                        app:startIconDrawable="@drawable/ic_person_24">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/clientCardName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textPersonName|textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Phone Field -->
+                    <!-- Note: MaskedEditText isn't a direct child of TIL usually, but wrapping it often provides consistent styling or use a FrameLayout inside TIL if needed.
+                         However, standard Material way is TextInputEditText. Since you use a library, let's keep it clean but wrapped to look similar or just styled.
+                         Ideally, migrate to standard Input with a TextWatcher for mask, but for now we will style it as a standalone field with a label above. -->
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:layout_marginStart="4dp"
+                        android:text="Телефон"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="12sp" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_bg_white_border"
+                        android:padding="4dp"
+                        android:layout_marginBottom="12dp">
+
+                        <!-- Ensure you have a drawable 'rounded_bg_white_border' or similar,
+                             or just use standard TIL if the library supports it.
+                             Assuming simple integration here: -->
+                        <com.arefbhrn.maskededittext.MaskedEditText
+                            android:id="@+id/clientCardPhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="center_vertical"
+                            android:hint="9001234567"
+                            android:inputType="phone"
+                            android:paddingHorizontal="12dp"
+                            android:textSize="16sp"
+                            android:typeface="monospace"
+                            app:allowed_chars="1234567890"
+                            app:keep_hint="true"
+                            app:mask="+7(###)###-##-##" />
+                    </FrameLayout>
+
+                    <!-- Delivery Address -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutDelivery"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:hint="Адрес доставки"
+                        app:startIconDrawable="@drawable/ic_location_on_24">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/clientCardDelivery"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:minLines="2" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Comment -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutComment"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Комментарий">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/clientCardComment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top|start"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:minLines="3" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Channels Section -->
+            <TextView
+                android:id="@+id/tx1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="8dp"
+                android:text="Каналы связи"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="16dp">
+
+                    <com.dzaitsev.marshmallow.components.LinkChannelSelector
+                        android:id="@+id/link_channel_selector"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        selector:iconHeight="48dp"
+                        selector:iconWidth="48dp"
+                        selector:mode="checkbox" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Buttons -->
+    <LinearLayout
+        android:id="@+id/buttonsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="3sp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="Имя клиента"
-        android:inputType="textMultiLine"
-        android:minHeight="50sp"
-        android:textSize="14sp" />
-
-    <com.arefbhrn.maskededittext.MaskedEditText
-        android:id="@+id/clientCardPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/clientCardName"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="3sp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="9001234567"
-        android:inputType="phone"
-        android:minHeight="50sp"
-        android:textSize="14sp"
-        android:typeface="monospace"
-        app:allowed_chars="1234567890"
-        app:keep_hint="true"
-        app:mask="+7(###)###-##-##" />
-
-    <EditText
-        android:id="@+id/clientCardDelivery"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/clientCardPhone"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="3sp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="Адрес доставки"
-        android:inputType="textMultiLine"
-        android:minHeight="50sp"
-        android:textSize="14sp" />
-
-    <EditText
-        android:id="@+id/clientCardComment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/clientCardDelivery"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="3sp"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="Комментарий"
-        android:inputType="textMultiLine"
-        android:minHeight="50sp"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/tx1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/clientCardComment"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="5sp"
-        android:gravity="center_horizontal|center_vertical"
-        android:text="Каналы связи"
-        android:textSize="18sp" />
-
-    <com.dzaitsev.marshmallow.components.LinkChannelSelector
-        android:id="@+id/link_channel_selector"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tx1"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_gravity="center_horizontal"
-        selector:iconHeight="40dp"
-        selector:iconWidth="40dp"
-        selector:mode="checkbox" />
+        android:background="@android:color/white"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
 
-    <Button
-        android:id="@+id/clientCardCancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:text="Отмена" />
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/clientCardSave"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/btn_issue_bg"
+            android:text="Сохранить изменения"
+            android:textColor="@android:color/white"
+            app:cornerRadius="28dp" />
 
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/clientCardSave"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:text="Сохранить" />
-
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

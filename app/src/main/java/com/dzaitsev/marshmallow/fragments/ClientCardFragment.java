@@ -11,7 +11,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuHost;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.AlertDialogComponent;
@@ -80,46 +83,7 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         return !client.equals(incomingClient);
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-        MenuItem deleteClient = menu.add("Удалить");
-        if (incomingClient.isActive()) {
-            deleteClient.setTitle("Удалить");
-        } else {
-            deleteClient.setTitle("Восстановить");
-        }
-        deleteClient.setOnMenuItemClickListener(item -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(ClientCardFragment.this.getActivity());
-            builder.setTitle((incomingClient.isActive() ? "Удаление" : "Восстановление") + " клиента?");
-            new NetworkExecutorHelper<>(requireActivity(),
-                    NetworkService.getInstance().getClientsApi().checkClientOnOrdersAvailability(client.getId()))
-                    .invoke(booleanResponse -> {
-                        if (!booleanResponse.isSuccessful()) {
-                            return;
-                        }
-                        String text = "";
-                        if (incomingClient.isActive() && Boolean.FALSE.equals(booleanResponse.body())) {
-                            text = "\nЗапись будет удалена безвозвратно";
-                        }
-                        builder.setMessage("Вы уверены?" + text);
-                        builder.setPositiveButton("Да", (dialog, id) -> {
-                            ClientsApi clientsApi = NetworkService.getInstance().getClientsApi();
-                            new NetworkExecutorHelper<>(requireActivity(),
-                                    incomingClient.isActive() ? clientsApi.deleteClient(client.getId()) : clientsApi.restoreClient(client.getId()))
-                                    .invoke(response -> {
-                                        if (response.isSuccessful()) {
-                                            Navigation.getNavigation().back();
-                                        }
-                                    });
-
-                        });
-                        builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-                        builder.create().show();
-                    });
-            return false;
-        });
-        super.onCreateOptionsMenu(menu, inflater);
-    }
+    // Старый метод onCreateOptionsMenu удален
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -130,11 +94,12 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         client = GsonHelper.deserialize(requireArguments().getString("client"), Client.class);
         Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
-        setHasOptionsMenu(client.getId() != null);
+
+        // setHasOptionsMenu(client.getId() != null); // УДАЛЯЕМ ЭТО, логика перенесена в onViewCreated
+
         incomingClient = Objects.requireNonNull(client).clone();
         binding = FragmentClientCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
-
     }
 
     private final View.OnKeyListener keyListener = (v, keyCode, event) -> {
@@ -142,11 +107,40 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         return false;
     };
 
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка клиента");
-        binding.clientCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
         Navigation.getNavigation().addOnBackListener(backListener);
+
+        // --- НОВЫЙ КОД ДЛЯ МЕНЮ ---
+        // Добавляем меню только если клиент существует (id != null)
+        if (client.getId() != null) {
+            MenuHost menuHost = requireActivity();
+            menuHost.addMenuProvider(new MenuProvider() {
+                @Override
+                public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                    MenuItem deleteClient = menu.add("Удалить");
+                    if (incomingClient.isActive()) {
+                        deleteClient.setTitle("Удалить");
+                    } else {
+                        deleteClient.setTitle("Восстановить");
+                    }
+                    deleteClient.setOnMenuItemClickListener(item -> {
+                        // Логика удаления (без изменений)
+                        handleDeleteClient();
+                        return true;
+                    });
+                }
+
+                @Override
+                public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                    return false; // Мы обработали клик внутри onCreateMenu, поэтому false
+                }
+            }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        }
+        // ---------------------------
+
         binding.clientCardName.setText(client.getName());
         binding.clientCardName.setOnKeyListener(keyListener);
 
@@ -161,6 +155,36 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         binding.linkChannelSelector.setChecked(client.getLinkChannels());
         binding.linkChannelSelector.setOnCheckedChangeListener((linkChannelSelector, channels)
                 -> linkChannelSelector.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.transparent)));
+    }
+
+    private void handleDeleteClient() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(ClientCardFragment.this.getActivity());
+        builder.setTitle((incomingClient.isActive() ? "Удаление" : "Восстановление") + " клиента?");
+        new NetworkExecutorHelper<>(requireActivity(),
+                NetworkService.getInstance().getClientsApi().checkClientOnOrdersAvailability(client.getId()))
+                .invoke(booleanResponse -> {
+                    if (!booleanResponse.isSuccessful()) {
+                        return;
+                    }
+                    String text = "";
+                    if (incomingClient.isActive() && Boolean.FALSE.equals(booleanResponse.body())) {
+                        text = "\nЗапись будет удалена безвозвратно";
+                    }
+                    builder.setMessage("Вы уверены?" + text);
+                    builder.setPositiveButton("Да", (dialog, id) -> {
+                        ClientsApi clientsApi = NetworkService.getInstance().getClientsApi();
+                        new NetworkExecutorHelper<>(requireActivity(),
+                                incomingClient.isActive() ? clientsApi.deleteClient(client.getId()) : clientsApi.restoreClient(client.getId()))
+                                .invoke(response -> {
+                                    if (response.isSuccessful()) {
+                                        Navigation.getNavigation().back();
+                                    }
+                                });
+
+                    });
+                    builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+                    builder.create().show();
+                });
     }
 
     private void save() {
