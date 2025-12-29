@@ -2,23 +2,24 @@ package com.dzaitsev.marshmallow.fragments;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.NumberPicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.DeliveryOrderRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.components.DatePicker;
-import com.dzaitsev.marshmallow.components.TimePicker;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryCardBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
@@ -31,6 +32,7 @@ import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,8 +49,6 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     private FragmentDeliveryCardBinding binding;
     private DeliveryOrderRecyclerViewAdapter mAdapter;
 
-    //    private final OrderSelectorFragment orderSelectorFragment = new OrderSelectorFragment();
-//    private final DeliveryExecutorFragment deliveryExecutorFragment = new DeliveryExecutorFragment(false);
     private final Navigation.OnBackListener backListener = fragment -> {
         if (DeliveryCardFragment.IDENTITY.equals(fragment.identity())) {
             if (DeliveryCardFragment.this.hasChanges()) {
@@ -130,40 +130,89 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             orders.putString("delivery", GsonHelper.serialize(delivery));
             Navigation.getNavigation().forward(OrderSelectorFragment.IDENTITY, orders);
         });
+
         binding.deliveryCardDateDelivery.setOnClickListener(v -> {
             DatePicker datePicker = new DatePicker(requireActivity(),
                     date -> {
                         delivery.setDeliveryDate(date);
                         binding.deliveryCardDateDelivery.setText(dateTimeFormatter.format(date));
-                        binding.deliveryCardDateDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
+                        binding.layoutDate.setError(null); // Сброс ошибки
                     }, "Выбор даты", "Укажите дату доставки");
             datePicker.show();
         });
+
         binding.deliveryCardStart.setOnClickListener(v -> {
-            TimePicker datePicker = new TimePicker(requireActivity(),
-                    time -> {
-                        delivery.setStart(time);
-                        binding.deliveryCardStart.setText(timeFormatter.format(time));
-                        binding.deliveryCardStart.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
-                    }, "Выбор времени", "Укажите время начала доставки");
-            datePicker.show();
+            NumberPicker numberPicker = new NumberPicker(requireActivity());
+            numberPicker.setMinValue(0);
+            numberPicker.setMaxValue(23);
+            Optional.ofNullable(delivery.getStart()).ifPresent(d -> numberPicker.setValue(d.getHour()));
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+            builder.setTitle("Выбор времени");
+            builder.setMessage("Укажите время начала доставки");
+            builder.setView(numberPicker);
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                LocalTime time = LocalTime.of(numberPicker.getValue(), 0);
+                delivery.setStart(time);
+                binding.deliveryCardStart.setText(timeFormatter.format(time));
+                binding.layoutStart.setError(null); // Сброс ошибки
+            });
+            builder.setNegativeButton("Отмена", null);
+            builder.create().show();
         });
+
         binding.deliveryCardEnd.setOnClickListener(v -> {
-            TimePicker datePicker = new TimePicker(requireActivity(),
-                    time -> {
-                        delivery.setEnd(time);
-                        binding.deliveryCardEnd.setText(timeFormatter.format(time));
-                        binding.deliveryCardEnd.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_background));
-                    }, "Выбор времени", "Укажите время окончания доставки");
-            datePicker.show();
+            NumberPicker numberPicker = new NumberPicker(requireActivity());
+            numberPicker.setMinValue(0);
+            numberPicker.setMaxValue(23);
+            Optional.ofNullable(delivery.getEnd()).ifPresent(d -> numberPicker.setValue(d.getHour()));
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+            builder.setTitle("Выбор времени");
+            builder.setMessage("Укажите время окончания доставки");
+            builder.setView(numberPicker);
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                LocalTime time = LocalTime.of(numberPicker.getValue(), 0);
+                delivery.setEnd(time);
+                binding.deliveryCardEnd.setText(timeFormatter.format(time));
+                binding.layoutEnd.setError(null); // Сброс ошибки
+            });
+            builder.setNegativeButton("Отмена", null);
+            builder.create().show();
         });
+
+        binding.deliveryParametersHeader.setOnClickListener(v -> {
+            if (binding.deliveryParametersContent.getVisibility() == View.VISIBLE) {
+                binding.deliveryParametersContent.setVisibility(View.GONE);
+                binding.expandIcon.setImageResource(R.drawable.ic_expand_more_24);
+            } else {
+                binding.deliveryParametersContent.setVisibility(View.VISIBLE);
+                binding.expandIcon.setImageResource(R.drawable.ic_expand_less_24);
+            }
+        });
+
+        binding.deliveryCardComment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                delivery.setComment(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
         Optional.ofNullable(delivery)
                 .ifPresent(d -> {
                     binding.deliveryCardStart.setText(Optional.ofNullable(d.getStart()).map(timeFormatter::format).orElse(""));
                     binding.deliveryCardEnd.setText(Optional.ofNullable(d.getEnd()).map(timeFormatter::format).orElse(""));
                     binding.deliveryCardDateDelivery.setText(Optional.ofNullable(d.getDeliveryDate()).map(dateTimeFormatter::format).orElse(""));
+                    binding.deliveryCardComment.setText(d.getComment());
                     mAdapter.setItems(d.getOrders());
                 });
+
         binding.deliveryCardSave.setOnClickListener(v -> save(true));
         if (delivery.isMy()) {
             binding.txtDeliveryCardExecutor.setOnClickListener(v -> {
@@ -177,7 +226,6 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                         .invoke(new Consumer<Response<Void>>() {
                             @Override
                             public void accept(Response<Void> voidResponse) {
-
                             }
                         });
                 delivery.getOrders().remove(item);
@@ -185,6 +233,7 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 mAdapter.setItems(delivery.getOrders());
             });
         }
+
         mAdapter.setSaveOrderListener(item -> new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(item)).
                 invoke(response -> {
@@ -220,39 +269,59 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
                 }).orElse(""));
     }
 
-    private void save(boolean withBack) {
-        boolean fail = false;
+    private boolean validateData() {
+        // Сброс предыдущих ошибок
+        binding.layoutDate.setError(null);
+        binding.layoutStart.setError(null);
+        binding.layoutEnd.setError(null);
+
+        boolean isValid = true;
         if (delivery.getDeliveryDate() == null) {
-            binding.deliveryCardDateDelivery.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
-            fail = true;
+            binding.layoutDate.setError("Укажите дату");
+            isValid = false;
         }
         if (delivery.getStart() == null) {
-            binding.deliveryCardStart.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
-            fail = true;
+            binding.layoutStart.setError("Укажите время");
+            isValid = false;
         }
         if (delivery.getEnd() == null) {
-            binding.deliveryCardEnd.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
-            fail = true;
+            binding.layoutEnd.setError("Укажите время");
+            isValid = false;
         }
+
+        if (!isValid) {
+            return false; // Нет смысла проверять дальше, если базовые поля не заполнены
+        }
+
+        if (delivery.getStart().isAfter(delivery.getEnd())) {
+            binding.layoutStart.setError("Начало не может быть позже окончания");
+            binding.layoutEnd.setError("Время окончания не может быть раньше времени начала");
+            isValid = false;
+        }
+
         if (mAdapter.getOriginalItems().isEmpty()) {
             Toast.makeText(requireContext(), "Невозможно сохранить доставку. Она пуста", Toast.LENGTH_SHORT).show();
-            fail = true;
+            isValid = false;
         }
-        if (fail) {
+
+        return isValid;
+    }
+
+    private void save(boolean withBack) {
+        if (!validateData()) {
             return;
         }
-        if (delivery.getStart().isAfter(delivery.getEnd())) {
-            binding.deliveryCardEnd.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
-            binding.deliveryCardStart.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.field_error));
-            Toast.makeText(requireContext(), "Время начала позже времени окончания", Toast.LENGTH_SHORT).show();
-            return;
-        }
+
         new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getDeliveryApi().saveDelivery(delivery)).
                 invoke(response -> {
-                    incomingDelivery = delivery;
-                    if (withBack) {
-                        Navigation.getNavigation().back();
+                    if (response.isSuccessful()) {
+                        incomingDelivery = delivery;
+                        if (withBack) {
+                            Navigation.getNavigation().back();
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Ошибка сохранения", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

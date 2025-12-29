@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -17,9 +16,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.arefbhrn.maskededittext.MaskedEditText;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.OrderSharedViewModel;
+import com.dzaitsev.marshmallow.databinding.FragmentOrderInfoBinding;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
@@ -37,25 +36,7 @@ import java.util.Optional;
 
 public class OrderInfoFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardInfoFragment";
-    private TextView tvClient;
-    private TextView tvCreated;
-    private TextView etIssueDate;
-    private MaskedEditText tvPhone;
-
-    private EditText tvAddress;
-    private CheckBox cbDelivery;
-
-    private ImageButton btnShare;
-    private MaterialButton btnPaid;
-
-    private TextView tvTotal;
-
-    private TextView etPrePay;
-
-    private TextView tvToPay;
-
-    private EditText etComment;
-
+    private FragmentOrderInfoBinding binding;
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public OrderInfoFragment() {
@@ -75,56 +56,56 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
 
         viewModel.getSumsChanged().observe(getViewLifecycleOwner(), unused -> bindSums());
         boolean editable = getOrderCardBundle().getOrder().getOrderStatus().isEditable();
-        etIssueDate.setEnabled(editable);
-        tvPhone.setEnabled(editable);
-        tvAddress.setEnabled(editable);
-        cbDelivery.setEnabled(editable);
-        etComment.setEnabled(editable);
-        etPrePay.setEnabled(editable);
-        btnPaid.setEnabled(editable);
+        binding.etIssueDate.setEnabled(editable);
+        binding.phoneNumber.setEnabled(editable);
+        binding.tvAddress.setEnabled(editable);
+        binding.cbDelivery.setEnabled(editable);
+        binding.etComment.setEnabled(editable);
+        binding.etPrePay.setEnabled(editable);
+        binding.btnPaid.setEnabled(editable);
         if (order.getId() == null) {
-            tvClient.setOnClickListener(v -> {
+            binding.tvClient.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
                 bundle.putString("orderCardBundle", GsonHelper.serialize(getOrderCardBundle()));
                 Navigation.getNavigation().forward(ClientsFragment.IDENTITY, bundle);
             });
         }
-        tvClient.setText(Optional.ofNullable(order.getClient())
+        binding.tvClient.setText(Optional.ofNullable(order.getClient())
                 .map(NsiItem::getName)
                 .orElse(null));
-        EditTextUtil.setText(tvPhone, order.getPhone());
-        EditTextUtil.setText(etComment, order.getComment());
-        EditTextUtil.setText(tvAddress, order.getDeliveryAddress());
-        tvCreated.setText(dateTimeFormatter.format(order.getCreateDate()));
-        etIssueDate.setText(dateTimeFormatter.format(Optional.ofNullable(order.getDeadline())
+        EditTextUtil.setText(binding.phoneNumber, order.getPhone());
+        EditTextUtil.setText(binding.etComment, order.getComment());
+        EditTextUtil.setText(binding.tvAddress, order.getDeliveryAddress());
+        binding.tvCreated.setText(dateTimeFormatter.format(order.getCreateDate()));
+        binding.etIssueDate.setText(dateTimeFormatter.format(Optional.ofNullable(order.getDeadline())
                 .orElseGet(() -> {
                     order.setDeadline(LocalDate.now().plusDays(1));
                     return order.getDeadline();
                 })));
-        cbDelivery.setChecked(order.isNeedDelivery());
-        etPrePay.setText(MoneyUtils.moneyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
+        binding.cbDelivery.setChecked(order.isNeedDelivery());
+        binding.etPrePay.setText(MoneyUtils.moneyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
         bindSums();
-        btnPaid.setOnClickListener(v -> {
-            boolean paid = btnPaid.isSelected();
+        binding.btnPaid.setOnClickListener(v -> {
+            boolean paid = binding.btnPaid.isSelected();
 
-            btnPaid.setSelected(!paid);
+            binding.btnPaid.setSelected(!paid);
 
             if (!paid) {
-                btnPaid.setText("Оплачено");
+                binding.btnPaid.setText("Оплачено");
                 order.setPaySum(calcToPay(getOrderCardBundle()));
-                etPrePay.setEnabled(false);
+                binding.etPrePay.setEnabled(false);
             } else {
-                btnPaid.setText("Оплатить");
+                binding.btnPaid.setText("Оплатить");
                 order.setPaySum(0d);
-                etPrePay.setEnabled(true);
+                binding.etPrePay.setEnabled(true);
             }
             bindSums();
         });
-        etIssueDate.setOnClickListener(v -> {
+        binding.etIssueDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(requireContext(),
                     (view, year, month, dayOfMonth) -> {
-                        etIssueDate.setText(String.format(Locale.getDefault(), "%02d.%02d.%d", dayOfMonth, month + 1, year));
+                        binding.etIssueDate.setText(String.format(Locale.getDefault(), "%02d.%02d.%d", dayOfMonth, month + 1, year));
                         order.setDeadline(LocalDate.of(year, month + 1, dayOfMonth));
                     },
                     calendar.get(Calendar.YEAR),
@@ -132,10 +113,10 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                     calendar.get(Calendar.DAY_OF_MONTH));
             dialog.show();
         });
-        tvPhone.addTextChangedListener(new TextWatcher() {
+        binding.phoneNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
-                getOrderCardBundle().getOrder().setPhone(tvPhone.getRawText());
+                getOrderCardBundle().getOrder().setPhone(binding.phoneNumber.getRawText());
             }
 
             @Override
@@ -147,7 +128,7 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             }
         });
 
-        etComment.addTextChangedListener(new TextWatcher() {
+        binding.etComment.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 getOrderCardBundle().getOrder().setComment(s.toString());
@@ -161,18 +142,18 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
-        cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        binding.cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> {
             getOrderCardBundle().getOrder().setNeedDelivery(isChecked);
             viewModel.notifyDeliveryChanged();
 
         });
-        etPrePay.addTextChangedListener(new TextWatcher() {
+        binding.etPrePay.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 double prePay = s.toString().isEmpty() ? 0 : Double.parseDouble(s.toString());
                 double totalSum = calcTotalSum(getOrderCardBundle());
                 double toPay = totalSum - prePay;
-                tvToPay.setText(String.format(Locale.getDefault(), "%.0f ₽", toPay));
+                binding.tvToPay.setText(String.format(Locale.getDefault(), "%.0f ₽", toPay));
                 order.setPrePaymentSum(prePay);
                 bindSums();
             }
@@ -198,35 +179,23 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        tvClient = view.findViewById(R.id.tvClient);
-        tvPhone = view.findViewById(R.id.phoneNumber);
-        tvCreated = view.findViewById(R.id.tvCreated);
-        etIssueDate = view.findViewById(R.id.etIssueDate);
-        tvAddress = view.findViewById(R.id.tvAddress);
-        cbDelivery = view.findViewById(R.id.cbDelivery);
-        btnShare = view.findViewById(R.id.btnShare);
-        tvTotal = view.findViewById(R.id.tvTotal);
-        etPrePay = view.findViewById(R.id.etPrePay);
-        tvToPay = view.findViewById(R.id.tvToPay);
-        etComment = view.findViewById(R.id.etComment);
-        btnPaid = view.findViewById(R.id.btnPaid);
-
+        binding = FragmentOrderInfoBinding.bind(view);
         updateUI();
     }
 
     private void bindSums() {
-        tvTotal.setText(MoneyUtils.moneyWithCurrencyToString(calcTotalSum(getOrderCardBundle())));
+        binding.tvTotal.setText(MoneyUtils.moneyWithCurrencyToString(calcTotalSum(getOrderCardBundle())));
         Double calcToPay = calcToPay(getOrderCardBundle());
-        tvToPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay));
+        binding.tvToPay.setText(MoneyUtils.moneyWithCurrencyToString(calcToPay));
         if (calcToPay.equals(0d)) {
-            tvToPay.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
+            binding.tvToPay.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         }
         if (calcToPay > 0d) {
-            btnPaid.setSelected(false);
-            btnPaid.setText("Оплатить");
+            binding.btnPaid.setSelected(false);
+            binding.btnPaid.setText("Оплатить");
         } else {
-            btnPaid.setSelected(true);
-            btnPaid.setText("Оплачено");
+            binding.btnPaid.setSelected(true);
+            binding.btnPaid.setText("Оплачено");
         }
     }
 

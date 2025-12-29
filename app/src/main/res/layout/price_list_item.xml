@@ -1,45 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"> <!-- Эффект нажатия (Ripple) -->
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white"
+    android:clickable="true"
+    android:focusable="true">
 
-    <!-- Дата изменения -->
-    <TextView
-        android:id="@+id/priceListDateCreate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/priceListPrice"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="12.05.2023" />
-
-    <!-- Цена -->
-    <TextView
-        android:id="@+id/priceListPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@id/priceListDateCreate"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:text="1 500 ₽" />
-
-    <!-- Нижний разделитель -->
-    <View
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#F0F0F0"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:layout_height="wrap_content"
+        android:padding="12dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Дата изменения -->
+        <TextView
+            android:id="@+id/priceListDateCreate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/priceListPrice"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="12.05.2023" />
+
+        <!-- Цена -->
+        <TextView
+            android:id="@+id/priceListPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBaseline_toBaselineOf="@+id/priceListDateCreate"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="1 500 ₽" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

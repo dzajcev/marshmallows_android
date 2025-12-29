@@ -66,45 +66,25 @@
                             android:inputType="textPersonName|textCapWords" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Phone Field -->
-                    <!-- Note: MaskedEditText isn't a direct child of TIL usually, but wrapping it often provides consistent styling or use a FrameLayout inside TIL if needed.
-                         However, standard Material way is TextInputEditText. Since you use a library, let's keep it clean but wrapped to look similar or just styled.
-                         Ideally, migrate to standard Input with a TextWatcher for mask, but for now we will style it as a standalone field with a label above. -->
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:layout_marginStart="4dp"
-                        android:text="Телефон"
-                        android:textColor="?attr/colorPrimary"
-                        android:textSize="12sp" />
-
-                    <FrameLayout
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutPhone"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/rounded_bg_white_border"
-                        android:padding="4dp"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="12dp"
+                        android:hint="Телефон"
+                        app:startIconDrawable="@drawable/ic_phone_24">
 
-                        <!-- Ensure you have a drawable 'rounded_bg_white_border' or similar,
-                             or just use standard TIL if the library supports it.
-                             Assuming simple integration here: -->
                         <com.arefbhrn.maskededittext.MaskedEditText
                             android:id="@+id/clientCardPhone"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:background="@android:color/transparent"
-                            android:gravity="center_vertical"
+                            android:layout_height="wrap_content"
                             android:hint="9001234567"
                             android:inputType="phone"
-                            android:paddingHorizontal="12dp"
-                            android:textSize="16sp"
-                            android:typeface="monospace"
                             app:allowed_chars="1234567890"
                             app:keep_hint="true"
                             app:mask="+7(###)###-##-##" />
-                    </FrameLayout>
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Delivery Address -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -161,7 +141,7 @@
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="1dp">
+                app:cardElevation="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"

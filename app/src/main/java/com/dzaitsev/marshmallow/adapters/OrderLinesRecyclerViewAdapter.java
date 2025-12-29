@@ -18,7 +18,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.bumptech.glide.Glide;
 import com.dzaitsev.marshmallow.R;
@@ -89,7 +88,6 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
             TextView currency = itemView.findViewById(R.id.curr_txt);
             minus = itemView.findViewById(R.id.minus);
             plus = itemView.findViewById(R.id.plus);
-            ConstraintLayout priceLayout = itemView.findViewById(R.id.price_layout);
             itemView.setOnClickListener(v -> {
                 if (lock) {
                     return;
@@ -114,7 +112,7 @@ public class OrderLinesRecyclerViewAdapter extends AbstractRecyclerViewAdapter<O
                     imm.showSoftInput(price, InputMethodManager.SHOW_IMPLICIT);
                 });
             };
-            priceLayout.setOnClickListener(editPriceClickListener);
+            price.setOnClickListener(editPriceClickListener);
             currency.setOnClickListener(editPriceClickListener);
             done = itemView.findViewById(R.id.done);
 

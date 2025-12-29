@@ -32,6 +32,7 @@ public class Delivery implements Serializable, Cloneable {
     private LocalDate deliveryDate;
     private LocalTime start;
     private LocalTime end;
+    private String comment;
     private List<Order> orders=new ArrayList<>();
 
     private DeliveryStatus deliveryStatus;
@@ -51,12 +52,13 @@ public class Delivery implements Serializable, Cloneable {
         return Objects.equals(deliveryDate, delivery.deliveryDate)
                 && Objects.equals(executor, delivery.executor)
                 && Objects.equals(start, delivery.start) && Objects.equals(end, delivery.end)
+                && Objects.equals(comment, delivery.comment)
                 && new HashSet<>(getOrders()).equals(new HashSet<>(delivery.getOrders()));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(deliveryDate, start, end, executor,
+        return Objects.hash(deliveryDate, start, end, executor, comment,
                 getOrders().stream().sorted(Comparator.comparingInt(Order::hashCode)).collect(Collectors.toList()));
     }
 

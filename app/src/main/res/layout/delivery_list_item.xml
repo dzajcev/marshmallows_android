@@ -7,11 +7,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="6dp"
+    android:layout_marginVertical="8dp"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@android:color/white"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
     app:rippleColor="#20000000">
 
@@ -32,20 +32,28 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="#121" />
 
-        <TextView
+        <com.google.android.material.chip.Chip
             android:id="@+id/deliveryStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/rounded_background"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="2dp"
-            android:textColor="@android:color/darker_gray"
+            android:clickable="false"
+            android:minHeight="32dp"
+            android:textColor="@android:color/black"
             android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintBaseline_toBaselineOf="@id/deliveryItemId"
+            app:chipBackgroundColor="#F5F5F5"
+            app:chipCornerRadius="8dp"
+            app:chipMinTouchTargetSize="0dp"
+            app:ensureMinTouchTargetSize="false"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="В пути" />
-        <!-- Примечание: для фона статуса можно использовать shape drawable или Chip программно -->
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/headerBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="deliveryItemId,deliveryStatus" />
 
         <!-- Дата и Время (Крупно) -->
         <TextView
@@ -57,7 +65,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deliveryItemId"
+            app:layout_constraintTop_toBottomOf="@+id/headerBarrier"
             tools:text="12.05.2023" />
 
         <LinearLayout
@@ -67,7 +75,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/deliveryDate">
+            app:layout_constraintTop_toBottomOf="@+id/deliveryDate">
 
 
 
@@ -103,7 +111,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
             android:background="#F0F0F0"
-            app:layout_constraintTop_toBottomOf="@id/timeContainer" />
+            app:layout_constraintTop_toBottomOf="@+id/timeContainer" />
 
         <!-- Статистика заказов (справа или отдельным блоком) -->
         <!-- Сделаем визуально понятный блок с прогрессом -->
@@ -140,7 +148,7 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            app:layout_constraintBaseline_toBaselineOf="@id/txOrders"
+            app:layout_constraintBaseline_toBaselineOf="@+id/txOrders"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="5 / 10" />
         <!-- В коде можно сетить текст как deliveredOrders + " / " + totalOrders -->

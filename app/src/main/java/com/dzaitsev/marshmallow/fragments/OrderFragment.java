@@ -14,6 +14,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.dzaitsev.marshmallow.components.OrderSharedViewModel;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderBinding;
+import com.dzaitsev.marshmallow.databinding.FragmentOrderInfoBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
@@ -95,26 +96,45 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         return !incomingOrder.equals(orderCardBundle.getOrder());
     }
 
-    private void save(boolean withNotification) {
-        boolean fail = orderCardBundle.getOrder().getClient() == null;
-        if (StringUtils.isEmpty(orderCardBundle.getOrder().getPhone())
-                || orderCardBundle.getOrder().getPhone().length() != 10) {
-            fail = true;
+    private boolean validateData() {
+        OrderInfoFragment fragment = (OrderInfoFragment) getChildFragmentManager().getFragments().get(0);
+        FragmentOrderInfoBinding infoBinding = fragment.getBinding();
+        infoBinding.clientLayout.setError(null);
+        infoBinding.phoneLayout.setError(null);
+        infoBinding.addressLayout.setError(null);
+
+        boolean isValid = true;
+        if (orderCardBundle.getOrder().getClient() == null) {
+            infoBinding.clientLayout.setError("Выберите клиента");
+            isValid = false;
         }
+
+        if (StringUtils.isEmpty(orderCardBundle.getOrder().getPhone()) || orderCardBundle.getOrder().getPhone().length() != 10) {
+            infoBinding.phoneLayout.setError("Некорректный номер телефона");
+            isValid = false;
+        }
+
         if (orderCardBundle.getOrder().isNeedDelivery() && StringUtils.isEmpty(orderCardBundle.getOrder().getDeliveryAddress())) {
-            fail = true;
+            infoBinding.addressLayout.setError("Укажите адрес доставки");
+            isValid = false;
         }
+
         orderCardBundle.getOrderLines().removeIf(g -> g.getGood() == null);
         if (orderCardBundle.getOrderLines().isEmpty()) {
             Toast.makeText(requireContext(), "Невозможно сохранить заказ. Он пуст", Toast.LENGTH_SHORT).show();
-            fail = true;
-        } else {
-            orderCardBundle.getOrder().setOrderLines(orderCardBundle.getOrderLines());
+            isValid = false;
         }
-        if (fail) {
-            Toast.makeText(requireContext(), "Невозможно сохранить заказ. Не все поля заполнены", Toast.LENGTH_SHORT).show();
+
+        return isValid;
+    }
+
+    private void save(boolean withNotification) {
+        if (!validateData()) {
             return;
         }
+
+        orderCardBundle.getOrder().setOrderLines(orderCardBundle.getOrderLines());
+
         if (orderCardBundle.getOrder().getOrderStatus() != OrderStatus.ISSUED) {
             if (orderCardBundle.getOrder().getOrderLines().stream().allMatch(OrderLine::isDone)) {
                 orderCardBundle.getOrder().setOrderStatus(OrderStatus.DONE);
