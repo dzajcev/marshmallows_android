@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.databinding.FragmentConfirmRegistrationBinding;
-import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
@@ -21,6 +20,7 @@ import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import retrofit2.Response;
@@ -85,7 +85,7 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
         binding.btnSend.setOnClickListener(v -> {
             NetworkService.getInstance().refreshToken(token);
             new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getAuthorizationApi()
-                    .verify(new VerificationCodeRequest(binding.txtCode.getText().toString())))
+                    .verify(new VerificationCodeRequest(Objects.requireNonNull(binding.txtCode.getText()).toString())))
                     .invoke(jwtAuthenticationResponseResponse -> {
                         if (jwtAuthenticationResponseResponse.isSuccessful()) {
                             Optional.ofNullable(jwtAuthenticationResponseResponse.body())
@@ -95,18 +95,19 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
                                         NetworkService.getInstance().refreshToken(s);
                                         timer.cancel();
                                         new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getUsersApi()
-                                                .getMyInfo()).invoke(userInfoResponseResponse -> Optional.ofNullable(userInfoResponseResponse)
-                                                .map(Response::body)
-                                                .map(UserInfoResponse::getUser)
-                                                .map(User::getRole)
-                                                .ifPresent(userRole -> {
-                                                    switch (userRole) {
-                                                        case DEVELOPER ->
-                                                                Navigation.getNavigation().forward(OrdersFragment.IDENTITY);
-                                                        case DELIVERYMAN ->
-                                                                Navigation.getNavigation().forward(DeliveriesFragment.IDENTITY);
-                                                    }
-                                                }));
+                                                .getMyInfo()).invoke(userInfoResponseResponse ->
+                                                Optional.ofNullable(userInfoResponseResponse)
+                                                        .map(Response::body)
+                                                        .map(UserInfoResponse::getUser)
+                                                        .ifPresent(user -> {
+                                                            AuthorizationHelper.getInstance().updateUserData(user);
+                                                            switch (user.getRole()) {
+                                                                case DEVELOPER ->
+                                                                        Navigation.getNavigation().forward(OrdersFragment.IDENTITY);
+                                                                case DELIVERYMAN ->
+                                                                        Navigation.getNavigation().forward(DeliveriesFragment.IDENTITY);
+                                                            }
+                                                        }));
 
                                     });
                         }

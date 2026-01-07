@@ -18,7 +18,7 @@ public class DatePicker extends View {
 
         Locale.setDefault(new Locale("RU", "ru"));
         datePicker = new android.widget.DatePicker(context);
-        datePicker.setMinDate(System.currentTimeMillis());
+        datePicker.setMinDate(0);
         datePicker.setFirstDayOfWeek(Calendar.MONDAY);
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
 
@@ -26,9 +26,8 @@ public class DatePicker extends View {
         builder.setTitle(title);
         builder.setMessage(message);
 
-        builder.setPositiveButton("OK", (dialog, which) -> {
-            dateConsumer.accept(LocalDate.of(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth()));
-        });
+        builder.setPositiveButton("OK", (dialog, which)
+                -> dateConsumer.accept(LocalDate.of(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth())));
 
         builder.setNegativeButton("CANCEL", (dialog, which) -> {
 

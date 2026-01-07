@@ -4,6 +4,7 @@ import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.fragments.ClientCardFragment;
 import com.dzaitsev.marshmallow.fragments.ClientsFragment;
+import com.dzaitsev.marshmallow.fragments.ConfirmRegistrationFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveryCardFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveryExecutorFragment;
@@ -39,6 +40,7 @@ public final class FragmentFactory {
             case DeliveryFilterFragment.IDENTITY -> new DeliveryFilterFragment();
             case UserCardFragment.IDENTITY -> new UserCardFragment();
             case RegistrationFragment.IDENTITY -> new RegistrationFragment();
+            case ConfirmRegistrationFragment.IDENTITY -> new ConfirmRegistrationFragment();
             default -> throw new IllegalStateException("Unknown fragment: " + id);
         };
     }

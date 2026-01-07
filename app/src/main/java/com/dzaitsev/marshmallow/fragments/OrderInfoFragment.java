@@ -7,9 +7,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -26,7 +23,6 @@ import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
-import com.google.android.material.button.MaterialButton;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,14 +30,19 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Optional;
 
+import lombok.Getter;
+
 public class OrderInfoFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardInfoFragment";
+
+    @Getter
     private FragmentOrderInfoBinding binding;
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public OrderInfoFragment() {
 
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
