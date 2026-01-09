@@ -26,6 +26,8 @@ import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.util.Optional;
+
 import lombok.Getter;
 
 public class OrderFragment extends Fragment implements IdentityFragment {
@@ -90,39 +92,62 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         orderCardBundle.getOrderLines()
                 .removeIf(orderLine -> orderLine.getGood() == null || orderLine.getCount() == 0);
 
-        if (incomingOrder == null) {
+        if (incomingOrder == null && !orderCardBundle.getOrderLines().isEmpty()) {
             return true;
         }
-        return !incomingOrder.equals(orderCardBundle.getOrder());
+        return incomingOrder != null && !incomingOrder.equals(orderCardBundle.getOrder());
     }
 
     private boolean validateData() {
-        OrderInfoFragment fragment = (OrderInfoFragment) getChildFragmentManager().getFragments().get(0);
-        FragmentOrderInfoBinding infoBinding = fragment.getBinding();
+        Optional<OrderInfoFragment> infoFragmentOpt = getChildFragmentManager().getFragments().stream()
+                .filter(f -> f instanceof OrderInfoFragment)
+                .map(f -> (OrderInfoFragment) f)
+                .findFirst();
+
+        if (infoFragmentOpt.isEmpty()) {
+            return true; // Если фрагмент еще не создан, считаем данные валидными (или обрабатываем иначе)
+        }
+
+        OrderInfoFragment infoFragment = infoFragmentOpt.get();
+        FragmentOrderInfoBinding infoBinding = infoFragment.getBinding();
+        if (infoBinding == null) return true;
+
         infoBinding.clientLayout.setError(null);
         infoBinding.phoneLayout.setError(null);
         infoBinding.addressLayout.setError(null);
 
         boolean isValid = true;
+        boolean needsSwitchTab = false;
+
         if (orderCardBundle.getOrder().getClient() == null) {
             infoBinding.clientLayout.setError("Выберите клиента");
             isValid = false;
+            needsSwitchTab = true;
         }
 
         if (StringUtils.isEmpty(orderCardBundle.getOrder().getPhone()) || orderCardBundle.getOrder().getPhone().length() != 10) {
             infoBinding.phoneLayout.setError("Некорректный номер телефона");
             isValid = false;
+            needsSwitchTab = true;
         }
 
         if (orderCardBundle.getOrder().isNeedDelivery() && StringUtils.isEmpty(orderCardBundle.getOrder().getDeliveryAddress())) {
             infoBinding.addressLayout.setError("Укажите адрес доставки");
             isValid = false;
+            needsSwitchTab = true;
+        }
+
+        if (needsSwitchTab) {
+            binding.viewPager.setCurrentItem(0, true);
         }
 
         orderCardBundle.getOrderLines().removeIf(g -> g.getGood() == null);
         if (orderCardBundle.getOrderLines().isEmpty()) {
             Toast.makeText(requireContext(), "Невозможно сохранить заказ. Он пуст", Toast.LENGTH_SHORT).show();
             isValid = false;
+            if (!needsSwitchTab) {
+                binding.viewPager.setCurrentItem(1, true);
+            }
         }
 
         return isValid;
@@ -145,30 +170,31 @@ public class OrderFragment extends Fragment implements IdentityFragment {
 
         new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getOrdersApi().saveOrder(orderCardBundle.getOrder())).invoke(response -> {
-            if (withNotification && orderCardBundle.getOrder().getOrderStatus() == OrderStatus.DONE) {
-                new NetworkExecutorHelper<>(requireActivity(),
-                        NetworkService.getInstance().getOrdersApi().clientIsNotificated(orderCardBundle.getOrder().getId())).invoke(booleanResponse -> {
-                    if (Boolean.FALSE.equals(booleanResponse.body())) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-                        builder.setTitle("Заказ полностью выполнен");
-                        builder.setMessage("Оповестить клиента?");
-                        builder.setPositiveButton("Да", (dialog, id) -> {
-                            sendNotification(orderCardBundle.getOrder());
-                            Navigation.getNavigation().back();
-                            dialog.dismiss();
-                        });
-                        builder.setNegativeButton("Нет", (dialog, id) -> {
-                            Navigation.getNavigation().back();
-                            dialog.dismiss();
-                        });
-                        builder.create().show();
-                    } else {
-                        Navigation.getNavigation().back();
-                    }
-                });
-            } else {
-                Navigation.getNavigation().back();
-            }
+            Navigation.getNavigation().back();
+//            if (withNotification && orderCardBundle.getOrder().getOrderStatus() == OrderStatus.DONE) {
+//                new NetworkExecutorHelper<>(requireActivity(),
+//                        NetworkService.getInstance().getOrdersApi().clientIsNotificated(orderCardBundle.getOrder().getId())).invoke(booleanResponse -> {
+//                    if (Boolean.FALSE.equals(booleanResponse.body())) {
+//                        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+//                        builder.setTitle("Заказ полностью выполнен");
+//                        builder.setMessage("Оповестить клиента?");
+//                        builder.setPositiveButton("Да", (dialog, id) -> {
+//                            sendNotification(orderCardBundle.getOrder());
+//                            Navigation.getNavigation().back();
+//                            dialog.dismiss();
+//                        });
+//                        builder.setNegativeButton("Нет", (dialog, id) -> {
+//                            Navigation.getNavigation().back();
+//                            dialog.dismiss();
+//                        });
+//                        builder.create().show();
+//                    } else {
+//                        Navigation.getNavigation().back();
+//                    }
+//                });
+//            } else {
+//                Navigation.getNavigation().back();
+//            }
         });
 
     }
@@ -212,6 +238,7 @@ public class OrderFragment extends Fragment implements IdentityFragment {
         OrderTabsPagerAdapter adapter = new OrderTabsPagerAdapter(this);
         binding.viewPager.setAdapter(adapter);
         binding.viewPager.setCurrentItem(orderCardBundle.getActiveTab(), false);
+        binding.viewPager.setOffscreenPageLimit(2); // Предзагружаем обе вкладки для корректной валидации
         new TabLayoutMediator(binding.orderTabLayout, binding.viewPager,
                 (tab, position) -> tab.setText(position == 0 ? "Информация" : "Позиции")
         ).attach();

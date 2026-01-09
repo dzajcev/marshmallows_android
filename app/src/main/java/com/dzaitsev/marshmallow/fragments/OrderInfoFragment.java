@@ -32,17 +32,14 @@ import java.util.Optional;
 
 import lombok.Getter;
 
+@Getter
 public class OrderInfoFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardInfoFragment";
-
-    @Getter
     private FragmentOrderInfoBinding binding;
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public OrderInfoFragment() {
-
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,7 +47,6 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
     }
 
     private void updateUI() {
-        assert getView() != null;
         Order order = getOrderCardBundle().getOrder();
         OrderSharedViewModel viewModel = new ViewModelProvider(requireParentFragment())
                 .get(OrderSharedViewModel.class);
@@ -64,6 +60,7 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
         binding.etComment.setEnabled(editable);
         binding.etPrePay.setEnabled(editable);
         binding.btnPaid.setEnabled(editable);
+
         if (order.getId() == null) {
             binding.tvClient.setOnClickListener(v -> {
                 Bundle bundle = new Bundle();
@@ -74,6 +71,7 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
         binding.tvClient.setText(Optional.ofNullable(order.getClient())
                 .map(NsiItem::getName)
                 .orElse(null));
+
         EditTextUtil.setText(binding.phoneNumber, order.getPhone());
         EditTextUtil.setText(binding.etComment, order.getComment());
         EditTextUtil.setText(binding.tvAddress, order.getDeliveryAddress());
@@ -86,11 +84,10 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
         binding.cbDelivery.setChecked(order.isNeedDelivery());
         binding.etPrePay.setText(MoneyUtils.moneyToString(Optional.ofNullable(order.getPrePaymentSum()).orElse(0d)));
         bindSums();
+
         binding.btnPaid.setOnClickListener(v -> {
             boolean paid = binding.btnPaid.isSelected();
-
             binding.btnPaid.setSelected(!paid);
-
             if (!paid) {
                 binding.btnPaid.setText("Оплачено");
                 order.setPaySum(calcToPay(getOrderCardBundle()));
@@ -102,6 +99,7 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             }
             bindSums();
         });
+
         binding.etIssueDate.setOnClickListener(v -> {
             Calendar calendar = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(requireContext(),
@@ -114,19 +112,17 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                     calendar.get(Calendar.DAY_OF_MONTH));
             dialog.show();
         });
+
         binding.phoneNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 getOrderCardBundle().getOrder().setPhone(binding.phoneNumber.getRawText());
+                binding.phoneLayout.setError(null);
             }
-
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
 
         binding.etComment.addTextChangedListener(new TextWatcher() {
@@ -134,20 +130,29 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             public void afterTextChanged(Editable s) {
                 getOrderCardBundle().getOrder().setComment(s.toString());
             }
-
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
+
+        binding.tvAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                getOrderCardBundle().getOrder().setDeliveryAddress(s.toString());
+                binding.addressLayout.setError(null);
+            }
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+
         binding.cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> {
             getOrderCardBundle().getOrder().setNeedDelivery(isChecked);
             viewModel.notifyDeliveryChanged();
-
         });
+
         binding.etPrePay.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
@@ -158,14 +163,10 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                 order.setPrePaymentSum(prePay);
                 bindSums();
             }
-
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
     }
 
@@ -214,7 +215,12 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_order_info, container, false);
+    }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override

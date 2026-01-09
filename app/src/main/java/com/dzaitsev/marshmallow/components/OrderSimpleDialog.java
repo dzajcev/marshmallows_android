@@ -2,10 +2,7 @@ package com.dzaitsev.marshmallow.components;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.os.Build;
 import android.view.View;
-
-import androidx.annotation.RequiresApi;
 
 import com.dzaitsev.marshmallow.dto.OrderLine;
 
@@ -16,7 +13,6 @@ public class OrderSimpleDialog extends View {
 
     final OrderSimpleComponent orderSimpleComponent;
 
-    @RequiresApi(api = Build.VERSION_CODES.S)
     public OrderSimpleDialog(Context context) {
         super(context);
         this.builder = new AlertDialog.Builder(context);
