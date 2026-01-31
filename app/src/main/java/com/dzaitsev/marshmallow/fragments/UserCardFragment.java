@@ -45,8 +45,8 @@ public class UserCardFragment extends Fragment implements IdentityFragment {
             return false;
         });
 
-        MenuItem deleteOrder = menu.add("Выйти");
-        deleteOrder.setOnMenuItemClickListener(item -> {
+        MenuItem exit = menu.add("Выйти");
+        exit.setOnMenuItemClickListener(item -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Вы уверены?");
             builder.setPositiveButton("Да", (dialog, id) -> {

@@ -3,6 +3,9 @@ package com.dzaitsev.marshmallow.fragments;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -63,6 +66,40 @@ public class OrderFragment extends Fragment implements IdentityFragment {
 
     public OrderFragment() {
 
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        if (orderCardBundle != null && orderCardBundle.getOrder().getId() != null) {
+            MenuItem deleteOrder = menu.add("Удалить");
+            deleteOrder.setOnMenuItemClickListener(item -> {
+                double prePay = Optional.ofNullable(orderCardBundle.getOrder().getPrePaymentSum()).orElse(0d);
+                if (prePay > 0) {
+                    Toast.makeText(requireContext(), "Невозможно удалить заказ с предоплатой", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Вы уверены?");
+                builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorHelper<>(requireActivity(),
+                        NetworkService.getInstance().getOrdersApi().deleteOrder(orderCardBundle.getOrder().getId()))
+                        .invoke(response -> {
+                            if (response.isSuccessful()) {
+                                Navigation.getNavigation().back();
+                            }
+                        }));
+                builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+                builder.create().show();
+                return false;
+            });
+        }
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override

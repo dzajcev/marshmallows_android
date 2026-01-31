@@ -15,6 +15,8 @@ import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.IdentityFragment;
 import com.dzaitsev.marshmallow.fragments.LoginFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
+import com.dzaitsev.marshmallow.fragments.RegistrationFragment;
+import com.dzaitsev.marshmallow.fragments.ConfirmRegistrationFragment;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -88,34 +90,38 @@ public final class Navigation {
             return false;
         });
 
-        fragmentManager().addFragmentOnAttachListener((fm, fragment) ->
-                AuthorizationHelper.getInstance().getUserData().ifPresent(user -> {
-                    if (user.getRole() == UserRole.DELIVERYMAN) {
-                        bottomNavigationView.setVisibility(View.GONE);
-                        return;
+        fragmentManager().addFragmentOnAttachListener((fm, fragment) -> {
+            if (bottomNavigationView == null) return;
+
+            AuthorizationHelper.getInstance().getUserData().ifPresentOrElse(user -> {
+                if (user.getRole() == UserRole.DELIVERYMAN) {
+                    bottomNavigationView.setVisibility(View.GONE);
+                    return;
+                }
+
+                if (fragment instanceof IdentityFragment id
+                        && isRoot(id.getUniqueName())
+                        && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
+
+                    bottomNavigationView.setVisibility(View.VISIBLE);
+
+                    switch (id.getUniqueName()) {
+                        case OrdersFragment.IDENTITY ->
+                                nav.getMenu().findItem(R.id.ordersMenu).setChecked(true);
+                        case GoodsFragment.IDENTITY ->
+                                nav.getMenu().findItem(R.id.goodsMenu).setChecked(true);
+                        case ClientsFragment.IDENTITY ->
+                                nav.getMenu().findItem(R.id.clientsMenu).setChecked(true);
+                        case DeliveriesFragment.IDENTITY ->
+                                nav.getMenu().findItem(R.id.deliveryMenu).setChecked(true);
                     }
-
-                    if (fragment instanceof IdentityFragment id
-                            && isRoot(id.getUniqueName())
-                            && (fragment.getArguments() == null || fragment.getArguments().isEmpty())) {
-
-                        bottomNavigationView.setVisibility(View.VISIBLE);
-
-                        switch (id.getUniqueName()) {
-                            case OrdersFragment.IDENTITY ->
-                                    nav.getMenu().findItem(R.id.ordersMenu).setChecked(true);
-                            case GoodsFragment.IDENTITY ->
-                                    nav.getMenu().findItem(R.id.goodsMenu).setChecked(true);
-                            case ClientsFragment.IDENTITY ->
-                                    nav.getMenu().findItem(R.id.clientsMenu).setChecked(true);
-                            case DeliveriesFragment.IDENTITY ->
-                                    nav.getMenu().findItem(R.id.deliveryMenu).setChecked(true);
-                        }
-                    } else {
-                        bottomNavigationView.setVisibility(View.GONE);
-                    }
-                })
-        );
+                } else {
+                    bottomNavigationView.setVisibility(View.GONE);
+                }
+            }, () -> {
+                bottomNavigationView.setVisibility(View.GONE);
+            });
+        });
 
         return this;
     }

@@ -155,8 +155,35 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         return !good.equals(incomingGood);
     }
 
+    private boolean validateData() {
+        if (pagerAdapter == null || pagerAdapter.getInfoViewHolder() == null) {
+            return true;
+        }
+        InfoViewHolder holder = pagerAdapter.getInfoViewHolder();
+        holder.layoutName.setError(null);
+        holder.layoutPrice.setError(null);
+
+        boolean isValid = true;
+        if (StringUtils.isEmpty(good.getName())) {
+            holder.layoutName.setError("Название обязательно");
+            isValid = false;
+        }
+        if (good.getPrice() == null || good.getPrice() <= 0) {
+            holder.layoutPrice.setError("Цена должна быть больше нуля");
+            isValid = false;
+        }
+
+        if (!isValid) {
+            binding.viewPager.setCurrentItem(0, true);
+        }
+        return isValid;
+    }
+
     private void save() {
         fillGood();
+        if (!validateData()) {
+            return;
+        }
         GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
         new NetworkExecutorHelper<>(requireActivity(), goodsApi.saveGood(good))
                 .invoke(response -> {
@@ -254,11 +281,6 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         return binding.getRoot();
     }
 
-    private final View.OnKeyListener keyListener = (v, keyCode, event) -> {
-        v.setBackgroundColor(ContextCompat.getColor(v.getContext(), R.color.field_background));
-        return false;
-    };
-
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -267,6 +289,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
 
         pagerAdapter = new GoodCardPagerAdapter();
         binding.viewPager.setAdapter(pagerAdapter);
+        binding.viewPager.setOffscreenPageLimit(2); // Загружаем обе вкладки для валидации
 
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
             if (position == 0) tab.setText("Инфо");
@@ -289,10 +312,15 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     }
 
     private void fillInfoTab(InfoViewHolder holder) {
-        holder.etName.setOnKeyListener(keyListener);
         holder.etName.setText(good.getName());
+        holder.etName.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                holder.layoutName.setError(null);
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
+        });
 
-        holder.etPrice.setOnKeyListener(keyListener);
         holder.etPrice.setText(MoneyUtils.moneyWithCurrencyToString(good.getPrice()));
         holder.etPrice.setOnClickListener(v -> MoneyPicker.builder(getContext())
                 .setTitle("Укажите сумму")
@@ -302,6 +330,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 .positiveButton(value -> {
                     holder.etPrice.setText(String.format("%s", MoneyUtils.moneyWithCurrencyToString(value)));
                     good.setPrice(value);
+                    holder.layoutPrice.setError(null);
                 })
                 .build()
                 .show());
@@ -347,8 +376,9 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     private void updateHistoryVisibility(InfoViewHolder holder) {
         if (good.getPrices() == null || good.getPrices().isEmpty()) {
             holder.recyclerHistory.setVisibility(View.GONE);
+        } else {
+            holder.recyclerHistory.setVisibility(isHistoryExpanded ? View.VISIBLE : View.GONE);
         }
-        holder.recyclerHistory.setVisibility(View.VISIBLE);
     }
 
     private void fillPhotoTab(PhotoViewHolder holder) {

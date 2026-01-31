@@ -5,18 +5,39 @@
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>
         <item name="colorOnPrimary">@color/white</item>
+        
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
         <item name="colorSecondaryVariant">@color/teal_700</item>
         <item name="colorOnSecondary">@color/black</item>
+        
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+
+        <!-- Цвета поверхностей -->
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@android:color/black</item>
+        
+        <!-- Настройка выпадающего меню (Overflow Menu) в Toolbar -->
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.Marshmallow.Popup</item>
+        
+        <!-- Общие настройки текста -->
+        <item name="android:textColorPrimary">@android:color/black</item>
+
         <!-- Customize your theme here. -->
     </style>
-    <!-- Base application theme. -->
+
+    <!-- Стиль для всплывающих меню -->
+    <style name="ThemeOverlay.Marshmallow.Popup" parent="ThemeOverlay.Material3.Light">
+        <!-- Фон меню -->
+        <item name="android:colorBackground">@android:color/white</item>
+        <!-- Цвет текста в меню -->
+        <item name="android:textColorPrimary">@android:color/black</item>
+        <!-- Цвет иконок в меню (если есть) -->
+        <item name="colorOnSurface">@android:color/black</item>
+    </style>
+
     <style name="Base.Theme.Marshmallow" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 </resources>
