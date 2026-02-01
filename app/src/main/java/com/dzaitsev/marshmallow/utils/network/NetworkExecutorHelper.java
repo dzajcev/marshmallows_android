@@ -2,25 +2,21 @@ package com.dzaitsev.marshmallow.utils.network;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
 
-import com.dzaitsev.marshmallow.dto.ErrorCodes;
-import com.dzaitsev.marshmallow.dto.ErrorDto;
 import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
-import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.OrdersFragment;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonExt;
-import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
@@ -33,15 +29,10 @@ import retrofit2.Response;
 
 public class NetworkExecutorHelper<T> {
     private final FragmentActivity activity;
-
     private final Call<T> call;
-
     private final ScreenCover screenCover;
-
     private OnErrorListener onErrorListener;
-
     private static OnAuthorizeListener onAuthorizeListener;
-
     private static OnErrorListener globalErrorListener;
 
     public NetworkExecutorHelper(FragmentActivity activity, Call<T> call) {
@@ -63,7 +54,7 @@ public class NetworkExecutorHelper<T> {
                                             .invoke(r -> {
                                                 if (r.isSuccessful()) {
                                                     Optional.ofNullable(r.body())
-                                                            .map(UserInfoResponse::getUser)
+                                                            .map(ResultResponse::getData)
                                                             .ifPresent(user -> {
                                                                 AuthorizationHelper.getInstance().updateUserData(user);
                                                                 if (onAuthorizeListener != null) {
@@ -97,12 +88,7 @@ public class NetworkExecutorHelper<T> {
     }
 
     public interface OnErrorListener {
-        default void onError(ErrorCodes code, String text) {
-            onError(new ErrorDto(code, text));
-        }
-
-        default void onError(ErrorDto errorDto) {
-            onError(errorDto.getCode(), errorDto.getMessage());
+        default void onError(String code, String message) {
         }
     }
 
@@ -111,14 +97,12 @@ public class NetworkExecutorHelper<T> {
     }
 
     public static class ScreenCover extends AlertDialog {
-
         protected ScreenCover(Context context) {
             super(context);
             setCancelable(false);
             setView(new ProgressBar(context));
             Optional.ofNullable(getWindow())
                     .ifPresent(window -> window.setBackgroundDrawableResource(android.R.color.transparent));
-
         }
     }
 
@@ -129,43 +113,22 @@ public class NetworkExecutorHelper<T> {
     public void invoke(Consumer<Response<T>> consumer) {
         activity.runOnUiThread(screenCover::show);
         new NetworkExecutor<>(call)
-                .setOnResponseListener(new NetworkExecutor.OnResponseListener<>() {
+                .setOnResponseListener(new NetworkExecutor.OnResponseListener<T>() {
                     @Override
                     public void onResponse(@NonNull Response<T> response) {
                         if (!response.isSuccessful()) {
-                            try {
-                                ErrorDto errorDto = Optional.ofNullable(response.errorBody())
-                                        .map(m -> {
-                                            try {
-                                                String string = m.string();
-                                                Log.e("network error", string);
-                                                return string;
-                                            } catch (IOException e) {
-                                                throw new RuntimeException(e);
-                                            }
-                                        })
-                                        .map(m -> GsonExt.getGson().fromJson(m, ErrorDto.class))
-                                        .orElse(new ErrorDto(ErrorCodes.AUTH000));
-                                if (errorDto.getCode()==null){
-                                    Toast.makeText(activity, "Неожиданная ошибка", Toast.LENGTH_SHORT).show();
-                                }
-                                if (errorDto.getCode() == ErrorCodes.AUTH006) {
-                                    refreshToken(this);
-                                    return;
-                                }
-                                if (onErrorListener != null) {
-                                    onErrorListener.onError(errorDto);
-                                }
-                                if (response.code() == 403 && globalErrorListener != null) {
-                                    globalErrorListener.onError(errorDto);
-                                }
+                            handleHttpError(response);
+                            return;
+                        }
+
+                        T body = response.body();
+                        if (body instanceof ResultResponse<?> result) {
+                            if (!result.isSuccess()) {
+                                activity.runOnUiThread(() -> {
+                                    Toast.makeText(activity, result.getErrorMessage(), Toast.LENGTH_LONG).show();
+                                    screenCover.dismiss();
+                                });
                                 return;
-                            } finally {
-                                screenCover.dismiss();
-                            }
-                        } else {
-                            if (!StringUtils.isEmpty(response.message())) {
-                                Toast.makeText(activity, response.message(), Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -176,11 +139,46 @@ public class NetworkExecutorHelper<T> {
                             screenCover.dismiss();
                         });
                     }
+
+                    private void handleHttpError(Response<T> response) {
+                        try {
+                            ResultResponse<?> resultResponse = Optional.ofNullable(response.errorBody())
+                                    .map(m -> {
+                                        try {
+                                            return m.string();
+                                        } catch (IOException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    })
+                                    .map(m -> GsonExt.getGson().fromJson(m, ResultResponse.class))
+                                    .orElse(new ResultResponse<>(null, false, "Неожиданная ошибка", "AUTH000"));
+
+                            if ("AUTH006".equals(resultResponse.getErrorCode())) {
+                                refreshToken(this);
+                                return;
+                            }
+                            if (onErrorListener != null) {
+                                onErrorListener.onError(resultResponse.getErrorCode(), resultResponse.getErrorMessage());
+                            }
+                            if ((response.code() == 403 || response.code() == 401) && globalErrorListener != null) {
+                                globalErrorListener.onError(resultResponse.getErrorCode(), resultResponse.getErrorMessage());
+                            }
+                            activity.runOnUiThread(() -> {
+                                String msg = resultResponse.getErrorMessage();
+                                Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
+                                if (onErrorListener != null)
+                                    onErrorListener.onError(resultResponse.getErrorCode(), resultResponse.getErrorMessage());
+                                screenCover.dismiss();
+                            });
+                        } catch (Exception e) {
+                            activity.runOnUiThread(screenCover::dismiss);
+                        }
+                    }
                 })
-                .setOnFailListener(throwable -> {
+                .setOnFailListener(throwable -> activity.runOnUiThread(() -> {
                     screenCover.dismiss();
-                    Toast.makeText(activity, throwable.getMessage(), Toast.LENGTH_SHORT).show();
-                })
+                    Toast.makeText(activity, "Ошибка сети: " + throwable.getMessage(), Toast.LENGTH_SHORT).show();
+                }))
                 .invoke();
     }
 
@@ -193,10 +191,7 @@ public class NetworkExecutorHelper<T> {
                         new NetworkExecutor<>(call.clone())
                                 .setOnResponseListener(onResponseListener)
                                 .invoke();
-
                     }
                 }).invoke());
-
     }
-
 }

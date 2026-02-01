@@ -83,8 +83,6 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         return !client.equals(incomingClient);
     }
 
-    // Старый метод onCreateOptionsMenu удален
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,9 +92,6 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         client = GsonHelper.deserialize(requireArguments().getString("client"), Client.class);
         Objects.requireNonNull(client).getLinkChannels().sort(Enum::compareTo);
-
-        // setHasOptionsMenu(client.getId() != null); // УДАЛЯЕМ ЭТО, логика перенесена в onViewCreated
-
         incomingClient = Objects.requireNonNull(client).clone();
         binding = FragmentClientCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -112,9 +107,6 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
         super.onViewCreated(view, savedInstanceState);
         requireActivity().setTitle("Карточка клиента");
         Navigation.getNavigation().addOnBackListener(backListener);
-
-        // --- НОВЫЙ КОД ДЛЯ МЕНЮ ---
-        // Добавляем меню только если клиент существует (id != null)
         if (client.getId() != null) {
             MenuHost menuHost = requireActivity();
             menuHost.addMenuProvider(new MenuProvider() {
@@ -127,7 +119,6 @@ public class ClientCardFragment extends Fragment implements IdentityFragment {
                         deleteClient.setTitle("Восстановить");
                     }
                     deleteClient.setOnMenuItemClickListener(item -> {
-                        // Логика удаления (без изменений)
                         handleDeleteClient();
                         return true;
                     });

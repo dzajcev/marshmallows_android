@@ -1,6 +1,7 @@
 package com.dzaitsev.marshmallow.service.api;
 
 import com.dzaitsev.marshmallow.dto.Attachment;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 
 import okhttp3.MultipartBody;
 import retrofit2.Call;
@@ -11,17 +12,11 @@ import retrofit2.http.Part;
 import retrofit2.http.Path;
 
 public interface FilesApi {
-//    @GET("files")
-//    Call<GoodsResponse> getGoods(@Query("is-active") Boolean bool);
-//
-//    @GET("goods/{id}")
-//    Call<GoodsResponse> getGood(@Path("id") Integer goodId);
-
     @POST("files")
     @Multipart
-    Call<Attachment> saveAttachment(@Part MultipartBody.Part file);
+    Call<ResultResponse<Attachment>> saveAttachment(@Part MultipartBody.Part file);
 
     @DELETE("files/{id}")
-    Call<Void> delete(@Path("id") Integer id);
+    Call<ResultResponse<Void>> delete(@Path("id") Integer id);
 
 }

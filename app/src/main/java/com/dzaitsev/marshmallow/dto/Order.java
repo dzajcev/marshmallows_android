@@ -44,6 +44,7 @@ public class Order implements Serializable, Cloneable {
 
     private Client client;
 
+    @Builder.Default
     private List<OrderLine> orderLines=new ArrayList<>();
 
     private Double prePaymentSum;

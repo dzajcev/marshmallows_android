@@ -1,10 +1,13 @@
 package com.dzaitsev.marshmallow.service.api;
 
+import com.dzaitsev.marshmallow.dto.InviteRequest;
 import com.dzaitsev.marshmallow.dto.InviteRequestDirection;
+import com.dzaitsev.marshmallow.dto.User;
 import com.dzaitsev.marshmallow.dto.request.AcceptInviteRequest;
 import com.dzaitsev.marshmallow.dto.request.AddInviteRequest;
-import com.dzaitsev.marshmallow.dto.response.DeliverymenResponse;
-import com.dzaitsev.marshmallow.dto.response.InviteRequestsResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -19,10 +22,10 @@ public interface InviteRequestsApi {
     Call<Void> addInviteRequest(@Body AddInviteRequest request);
 
     @GET("invite-request/get-deliverymen")
-    Call<DeliverymenResponse> getDeliverymen();
+    Call<ResultResponse<List<User>>> getDeliverymen();
 
     @GET("invite-request")
-    Call<InviteRequestsResponse> getInviteRequests(@Query("direction") InviteRequestDirection direction, @Query("is-accepted") Boolean bool);
+    Call<ResultResponse<List<InviteRequest>>> getInviteRequests(@Query("direction") InviteRequestDirection direction, @Query("is-accepted") Boolean bool);
 
     @DELETE("invite-request/{requestId}")
     Call<Void> deleteInviteRequest(@Path("requestId") Integer requestId);

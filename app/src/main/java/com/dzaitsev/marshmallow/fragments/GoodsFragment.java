@@ -7,16 +7,17 @@ import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.dto.Good;
 import com.dzaitsev.marshmallow.dto.OrderLine;
 import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
-import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
+import java.util.List;
 import java.util.Optional;
 
 import retrofit2.Call;
 
-public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, GoodRecyclerViewAdapter> {
+public class GoodsFragment extends AbstractNsiFragment<Good, GoodRecyclerViewAdapter> {
 
     public static final String IDENTITY = "goodsFragment";
 
@@ -91,7 +92,7 @@ public class GoodsFragment extends AbstractNsiFragment<Good, GoodsResponse, Good
     }
 
     @Override
-    protected Call<GoodsResponse> getCall(Boolean bool) {
+    protected Call<ResultResponse<List<Good>>> getCall(Boolean bool) {
         return NetworkService.getInstance().getGoodsApi().getGoods(bool);
     }
 

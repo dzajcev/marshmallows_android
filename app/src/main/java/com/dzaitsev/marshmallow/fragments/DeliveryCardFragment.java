@@ -14,7 +14,10 @@ import android.widget.NumberPicker;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.dzaitsev.marshmallow.R;
@@ -37,12 +40,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import retrofit2.Response;
-
-public class DeliveryCardFragment extends Fragment implements IdentityFragment {
+public class DeliveryCardFragment extends Fragment implements IdentityFragment, MenuProvider {
     public static final String IDENTITY = "deliveryCardFragment";
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private final static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -73,23 +73,29 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
-        MenuItem deleteOrder = menu.add("Удалить");
-        deleteOrder.setOnMenuItemClickListener(item -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Вы уверены?");
-            builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorHelper<>(requireActivity(),
-                    NetworkService.getInstance().getDeliveryApi().deleteDelivery(delivery.getId()))
-                    .invoke(response -> {
-                        if (response.isSuccessful()) {
-                            Navigation.getNavigation().back();
-                        }
-                    }));
-            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-            builder.create().show();
-            return false;
-        });
-        super.onCreateOptionsMenu(menu, inflater);
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        if (delivery != null && delivery.getId() != null && delivery.isMy()) {
+            MenuItem deleteOrder = menu.add("Удалить");
+            deleteOrder.setOnMenuItemClickListener(item -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Вы уверены?");
+                builder.setPositiveButton("Да", (dialog, id) -> new NetworkExecutorHelper<>(requireActivity(),
+                        NetworkService.getInstance().getDeliveryApi().deleteDelivery(delivery.getId()))
+                        .invoke(response -> {
+                            if (response.isSuccessful()) {
+                                Navigation.getNavigation().back();
+                            }
+                        }));
+                builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+                builder.create().show();
+                return false;
+            });
+        }
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 
     @Override
@@ -103,12 +109,13 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             Bundle savedInstanceState
     ) {
         delivery = Objects.requireNonNull(GsonHelper.deserialize(requireArguments().getString("delivery"), Delivery.class));
-        setHasOptionsMenu(delivery.getId() != null && delivery.isMy());
         if (delivery.getId() != null) {
             new NetworkExecutorHelper<>(requireActivity(), NetworkService.getInstance().getDeliveryApi().getDelivery(delivery.getId()))
                     .invoke(deliveryResponse -> {
                         if (deliveryResponse.isSuccessful()) {
-                            incomingDelivery = deliveryResponse.body();
+                            if (deliveryResponse.body() != null) {
+                                incomingDelivery = deliveryResponse.body().getData();
+                            }
                         }
                     });
         }
@@ -117,8 +124,9 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         return binding.getRoot();
     }
 
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         requireActivity().setTitle("Карточка доставки");
         binding.deliveryCardCancel.setOnClickListener(v -> Navigation.getNavigation().callbackBack());
         Navigation.getNavigation().addOnBackListener(backListener);
@@ -223,10 +231,8 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
             mAdapter.setDeleteItemListener(item -> {
                 new NetworkExecutorHelper<>(requireActivity(),
                         NetworkService.getInstance().getDeliveryApi().deleteDeliveryOrder(delivery.getId(), item.getId()))
-                        .invoke(new Consumer<Response<Void>>() {
-                            @Override
-                            public void accept(Response<Void> voidResponse) {
-                            }
+                        .invoke(resultResponseResponse -> {
+
                         });
                 delivery.getOrders().remove(item);
                 binding.deliveryCardOrders.setAdapter(mAdapter);
@@ -290,17 +296,12 @@ public class DeliveryCardFragment extends Fragment implements IdentityFragment {
         }
 
         if (!isValid) {
-            return false; // Нет смысла проверять дальше, если базовые поля не заполнены
+            return false;
         }
 
         if (delivery.getStart().isAfter(delivery.getEnd())) {
             binding.layoutStart.setError("Начало не может быть позже окончания");
             binding.layoutEnd.setError("Время окончания не может быть раньше времени начала");
-            isValid = false;
-        }
-
-        if (mAdapter.getOriginalItems().isEmpty()) {
-            Toast.makeText(requireContext(), "Невозможно сохранить доставку. Она пуста", Toast.LENGTH_SHORT).show();
             isValid = false;
         }
 

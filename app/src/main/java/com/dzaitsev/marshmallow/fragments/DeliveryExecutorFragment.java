@@ -13,7 +13,7 @@ import com.dzaitsev.marshmallow.adapters.DeliveryExecutorSelectorRecyclerViewAda
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveryExecutorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.User;
-import com.dzaitsev.marshmallow.dto.response.DeliverymenResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
@@ -57,11 +57,12 @@ public class DeliveryExecutorFragment extends Fragment implements IdentityFragme
                 .map(m -> GsonHelper.deserialize(m.getString("delivery"), Delivery.class)).orElse(new Delivery());
         mAdapter = new DeliveryExecutorSelectorRecyclerViewAdapter(this.multiSelectMode);
         new NetworkExecutorHelper<>(requireActivity(),
-                NetworkService.getInstance().getInviteRequestsApi().getDeliverymen()).invoke(response -> Optional.ofNullable(response.body())
-                .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
-                        .orElse(new DeliverymenResponse()).getUsers().stream()
-                        .sorted(Comparator.comparing(User::getFullName))
-                        .collect(Collectors.toList()))));
+                NetworkService.getInstance().getInviteRequestsApi().getDeliverymen())
+                .invoke(response -> Optional.ofNullable(response.body())
+                        .map(ResultResponse::getData)
+                        .ifPresent(users -> mAdapter.setItems(users.stream()
+                                .sorted(Comparator.comparing(User::getFullName))
+                                .collect(Collectors.toList()))));
         if (!multiSelectMode) {
             mAdapter.setOnSelectListener(user -> {
                 Bundle bundle = new Bundle();

@@ -159,7 +159,7 @@ public class DeliveryOrderRecyclerViewAdapter extends AbstractRecyclerViewAdapte
                     deleteItemListener.deleteItem(getItem());
                 }
             });
-            if (getItem().getOrderStatus() == OrderStatus.SHIPPED) {
+            if (getItem().getOrderStatus() == OrderStatus.SHIPPED || getItem().getOrderStatus() != OrderStatus.DONE) {
                 deliveryOrderShipped.setVisibility(View.GONE);
                 markDeliveryOrder();
             }

@@ -21,20 +21,21 @@ import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.databinding.FragmentAbstractNsiBinding;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.response.NsiResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.Setter;
 import retrofit2.Call;
 
-public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiResponse<T>,
+public abstract class AbstractNsiFragment<T extends NsiItem,
         A extends AbstractRecyclerViewAdapter<T, AbstractRecyclerViewHolder<T>>>
         extends Fragment implements IdentityFragment {
 
@@ -85,7 +86,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
         }
     }
 
-    protected abstract Call<K> getCall(Boolean bool);
+    protected abstract Call<ResultResponse<List<T>>> getCall(Boolean bool);
 
     private void refresh() {
 
@@ -94,7 +95,7 @@ public abstract class AbstractNsiFragment<T extends NsiItem, K extends NsiRespon
                 .ifPresent(r -> {
                     if (mAdapter != null) {
                         mAdapter.setItems(Optional.of(r)
-                                .map(NsiResponse::getItems)
+                                .map(ResultResponse::getData)
                                 .orElseThrow(() -> new RuntimeException("error of fetching data"))
                                 .stream()
                                 .sorted(Comparator.comparing(NsiItem::getName)).collect(Collectors.toList()));

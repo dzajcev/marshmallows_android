@@ -1,7 +1,9 @@
 package com.dzaitsev.marshmallow.service.api;
 
 import com.dzaitsev.marshmallow.dto.Good;
-import com.dzaitsev.marshmallow.dto.response.GoodsResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -14,20 +16,20 @@ import retrofit2.http.Query;
 
 public interface GoodsApi {
     @GET("goods")
-    Call<GoodsResponse> getGoods(@Query("is-active") Boolean bool);
+    Call<ResultResponse<List<Good>>> getGoods(@Query("is-active") Boolean bool);
 
     @GET("goods/{id}")
-    Call<GoodsResponse> getGood(@Path("id") Integer goodId);
+    Call<ResultResponse<Good>> getGood(@Path("id") Integer goodId);
 
     @POST("goods")
-    Call<Good> saveGood(@Body Good good);
+    Call<ResultResponse<Good>> saveGood(@Body Good good);
 
     @DELETE("goods/{id}")
-    Call<Void> deleteGood(@Path("id") Integer goodId);
+    Call<ResultResponse<Void>> deleteGood(@Path("id") Integer goodId);
 
     @PUT("goods/{id}")
-    Call<Void> restoreGood(@Path("id") Integer goodId);
+    Call<ResultResponse<Void>> restoreGood(@Path("id") Integer goodId);
 
     @GET("goods/good-with-orders-lines/{id}")
-    Call<Boolean> checkGoodOnOrdersAvailability(@Path("id") Integer goodId);
+    Call<ResultResponse<Boolean>> checkGoodOnOrdersAvailability(@Path("id") Integer goodId);
 }

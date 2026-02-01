@@ -1,7 +1,9 @@
 package com.dzaitsev.marshmallow.service.api;
 
 import com.dzaitsev.marshmallow.dto.Client;
-import com.dzaitsev.marshmallow.dto.response.ClientResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -14,10 +16,10 @@ import retrofit2.http.Query;
 
 public interface ClientsApi {
     @GET("clients")
-    Call<ClientResponse> getClients(@Query("is-active") Boolean isActive);
+    Call<ResultResponse<List<Client>>> getClients(@Query("is-active") Boolean isActive);
 
     @GET("clients/{id}")
-    Call<ClientResponse> getClient(@Path("id") Integer clientId);
+    Call<ResultResponse<Client>> getClient(@Path("id") Integer clientId);
 
     @POST("clients")
     Call<Void> saveClient(@Body Client good);

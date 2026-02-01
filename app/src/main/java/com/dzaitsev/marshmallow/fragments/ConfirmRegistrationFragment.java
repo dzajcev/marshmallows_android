@@ -14,7 +14,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentConfirmRegistrationBinding;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
 import com.dzaitsev.marshmallow.dto.authorization.response.JwtAuthenticationResponse;
-import com.dzaitsev.marshmallow.dto.response.UserInfoResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
@@ -98,7 +98,7 @@ public class ConfirmRegistrationFragment extends Fragment implements IdentityFra
                                                 .getMyInfo()).invoke(userInfoResponseResponse ->
                                                 Optional.ofNullable(userInfoResponseResponse)
                                                         .map(Response::body)
-                                                        .map(UserInfoResponse::getUser)
+                                                        .map(ResultResponse::getData)
                                                         .ifPresent(user -> {
                                                             AuthorizationHelper.getInstance().updateUserData(user);
                                                             switch (user.getRole()) {

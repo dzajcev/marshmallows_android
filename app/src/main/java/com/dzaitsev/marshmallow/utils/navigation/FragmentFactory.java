@@ -9,6 +9,7 @@ import com.dzaitsev.marshmallow.fragments.DeliveriesFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveryCardFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveryExecutorFragment;
 import com.dzaitsev.marshmallow.fragments.DeliveryFilterFragment;
+import com.dzaitsev.marshmallow.fragments.DeliverySelectorFragment;
 import com.dzaitsev.marshmallow.fragments.GoodCardFragment;
 import com.dzaitsev.marshmallow.fragments.GoodsFragment;
 import com.dzaitsev.marshmallow.fragments.LoginFragment;
@@ -36,6 +37,7 @@ public final class FragmentFactory {
             case GoodCardFragment.IDENTITY -> new GoodCardFragment();
             case DeliveryCardFragment.IDENTITY -> new DeliveryCardFragment();
             case OrderSelectorFragment.IDENTITY -> new OrderSelectorFragment();
+            case DeliverySelectorFragment.IDENTITY -> new DeliverySelectorFragment();
             case DeliveryExecutorFragment.IDENTITY -> new DeliveryExecutorFragment();
             case DeliveryFilterFragment.IDENTITY -> new DeliveryFilterFragment();
             case UserCardFragment.IDENTITY -> new UserCardFragment();

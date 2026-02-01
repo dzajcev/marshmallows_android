@@ -3,6 +3,7 @@ package com.dzaitsev.marshmallow.dto;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.utils.GsonExt;
+import com.dzaitsev.marshmallow.utils.StringUtils;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
 import com.google.gson.Gson;
 
@@ -33,7 +34,7 @@ public class Delivery implements Serializable, Cloneable {
     private LocalTime start;
     private LocalTime end;
     private String comment;
-    private List<Order> orders=new ArrayList<>();
+    private List<Order> orders = new ArrayList<>();
 
     private DeliveryStatus deliveryStatus;
 
@@ -52,7 +53,7 @@ public class Delivery implements Serializable, Cloneable {
         return Objects.equals(deliveryDate, delivery.deliveryDate)
                 && Objects.equals(executor, delivery.executor)
                 && Objects.equals(start, delivery.start) && Objects.equals(end, delivery.end)
-                && Objects.equals(comment, delivery.comment)
+                && Objects.equals(StringUtils.normalize(comment), StringUtils.normalize(delivery.comment))
                 && new HashSet<>(getOrders()).equals(new HashSet<>(delivery.getOrders()));
     }
 

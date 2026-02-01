@@ -14,7 +14,7 @@ import com.dzaitsev.marshmallow.databinding.FragmentOrdersBinding;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
-import com.dzaitsev.marshmallow.dto.response.OrderResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
@@ -55,8 +55,8 @@ public class OrdersFragment extends Fragment implements IdentityFragment {
                         NetworkService.getInstance().getOrdersApi().getOrders(filter.getStart(), filter.getEnd(),
                                 filter.getStatuses()))
                         .invoke(response -> Optional.ofNullable(response.body())
-                                .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
-                                        .orElse(new OrderResponse()).getOrders().stream()
+                                .map(ResultResponse::getData)
+                                .ifPresent(orderResponse -> mAdapter.setItems(orderResponse.stream()
                                         .sorted(Comparator.comparing(Order::getOrderStatus)
                                                 .thenComparing(Order::getDeadline))
                                         .collect(Collectors.toList())))));

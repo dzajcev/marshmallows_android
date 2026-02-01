@@ -21,8 +21,9 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -65,7 +66,7 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
-public class GoodCardFragment extends Fragment implements IdentityFragment {
+public class GoodCardFragment extends Fragment implements IdentityFragment, MenuProvider {
 
     public static final String IDENTITY = "goodCardFragment";
 
@@ -189,7 +190,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 .invoke(response -> {
                     if (response.isSuccessful()) {
                         if (good.getId() == null && response.body() != null) {
-                            good.setId(response.body().getId());
+                            good.setId(response.body().getData().getId());
                         }
                         try {
                             incomingGood = good.clone();
@@ -207,49 +208,54 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        MenuItem deleteClient = menu.add("Удалить");
-        if (incomingGood.isActive()) {
-            deleteClient.setTitle("Удалить");
-        } else {
-            deleteClient.setTitle("Восстановить");
-        }
-        deleteClient.setOnMenuItemClickListener(item -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
-            builder.setTitle((incomingGood.isActive() ? "Удаление" : "Восстановление") + " товара?");
-            new NetworkExecutorHelper<>(requireActivity(),
-                    NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()))
-                    .invoke(booleanResponse -> {
-                        if (!booleanResponse.isSuccessful()) {
-                            return;
-                        }
-                        String text = "";
-                        if (incomingGood.isActive() && Boolean.FALSE.equals(booleanResponse.body())) {
-                            text = "\nЗапись будет удалена безвозвратно";
-                        }
-                        builder.setMessage("Вы уверены?" + text);
-                        builder.setPositiveButton("Да", (dialog, id) -> {
-                            GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
-                            new NetworkExecutorHelper<>(requireActivity(),
-                                    incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
-                                    .invoke(response -> {
-                                        if (response.isSuccessful()) {
-                                            Navigation.getNavigation().back();
-                                        }
-                                    });
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        if (good != null && good.getId() != null) {
+            MenuItem deleteClient = menu.add("Удалить");
+            if (incomingGood.isActive()) {
+                deleteClient.setTitle("Удалить");
+            } else {
+                deleteClient.setTitle("Восстановить");
+            }
+            deleteClient.setOnMenuItemClickListener(item -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(GoodCardFragment.this.getActivity());
+                builder.setTitle((incomingGood.isActive() ? "Удаление" : "Восстановление") + " товара?");
+                new NetworkExecutorHelper<>(requireActivity(),
+                        NetworkService.getInstance().getGoodsApi().checkGoodOnOrdersAvailability(good.getId()))
+                        .invoke(booleanResponse -> {
+                            if (!booleanResponse.isSuccessful()) {
+                                return;
+                            }
+                            String text = "";
+                            if (incomingGood.isActive() && Boolean.FALSE.equals(booleanResponse.body())) {
+                                text = "\nЗапись будет удалена безвозвратно";
+                            }
+                            builder.setMessage("Вы уверены?" + text);
+                            builder.setPositiveButton("Да", (dialog, id) -> {
+                                GoodsApi goodsApi = NetworkService.getInstance().getGoodsApi();
+                                new NetworkExecutorHelper<>(requireActivity(),
+                                        incomingGood.isActive() ? goodsApi.deleteGood(good.getId()) : goodsApi.restoreGood(good.getId()))
+                                        .invoke(response -> {
+                                            if (response.isSuccessful()) {
+                                                Navigation.getNavigation().back();
+                                            }
+                                        });
+                            });
+                            builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
+                            builder.create().show();
                         });
-                        builder.setNegativeButton("Нет", (dialog, id) -> dialog.cancel());
-                        builder.create().show();
-                    });
-            return false;
-        });
-        super.onCreateOptionsMenu(menu, inflater);
+                return false;
+            });
+        }
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -276,7 +282,6 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException(e);
         }
-        setHasOptionsMenu(good.getId() != null);
         binding = FragmentGoodCardBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -284,6 +289,7 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         requireActivity().setTitle("Карточка товара");
         Navigation.getNavigation().addOnBackListener(backListener);
 
@@ -314,11 +320,18 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
     private void fillInfoTab(InfoViewHolder holder) {
         holder.etName.setText(good.getName());
         holder.etName.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 holder.layoutName.setError(null);
             }
-            @Override public void afterTextChanged(android.text.Editable s) {}
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
         });
 
         holder.etPrice.setText(MoneyUtils.moneyWithCurrencyToString(good.getPrice()));
@@ -449,13 +462,14 @@ public class GoodCardFragment extends Fragment implements IdentityFragment {
                 NetworkService.getInstance().getFilesApi().saveAttachment(body))
                 .invoke(response -> requireActivity().runOnUiThread(() -> {
                     if (response.isSuccessful() && response.body() != null) {
-                        good.getImages().add(response.body());
+                        Attachment data = response.body().getData();
+                        good.getImages().add(data);
                         if (imagesAdapter != null) {
                             List<Attachment> currentList = new ArrayList<>(imagesAdapter.getCurrentList());
                             if (currentPosition != -1 && currentPosition < currentList.size()) {
-                                currentList.set(currentPosition, response.body());
+                                currentList.set(currentPosition, data);
                             } else {
-                                currentList.add(response.body());
+                                currentList.add(data);
                             }
                             imagesAdapter.submitList(currentList);
                             currentPosition = -1;

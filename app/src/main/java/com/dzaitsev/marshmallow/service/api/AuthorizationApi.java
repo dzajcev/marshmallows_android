@@ -5,6 +5,7 @@ import com.dzaitsev.marshmallow.dto.authorization.response.JwtSignUpResponse;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignUpRequest;
 import com.dzaitsev.marshmallow.dto.authorization.request.VerificationCodeRequest;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

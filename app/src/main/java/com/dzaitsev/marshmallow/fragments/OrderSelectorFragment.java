@@ -14,7 +14,7 @@ import com.dzaitsev.marshmallow.adapters.OrderSelectorRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderSelectorBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.Order;
-import com.dzaitsev.marshmallow.dto.response.OrderResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
@@ -79,13 +79,14 @@ public class OrderSelectorFragment extends Fragment implements IdentityFragment 
                 .map(m -> GsonHelper.deserialize(m.getString("delivery"), Delivery.class)).orElse(new Delivery());
         mAdapter = new OrderSelectorRecyclerViewAdapter();
         new NetworkExecutorHelper<>(requireActivity(),
-                NetworkService.getInstance().getOrdersApi().getOrdersForDelivery()).invoke(response -> Optional.ofNullable(response.body())
-                .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
-                        .orElse(new OrderResponse()).getOrders().stream()
-                        .filter(f -> delivery.getOrders().stream().noneMatch(f1 -> f1.getId().equals(f.getId())))
-                        .sorted(Comparator.comparing(Order::getOrderStatus)
-                                .thenComparing(p -> p.getClient().getName()))
-                        .collect(Collectors.toList()))));
+                NetworkService.getInstance().getOrdersApi().getOrdersForDelivery())
+                .invoke(response -> Optional.ofNullable(response.body())
+                        .map(ResultResponse::getData)
+                        .ifPresent(orderResponse -> mAdapter.setItems(orderResponse.stream()
+                                .filter(f -> delivery.getOrders().stream().noneMatch(f1 -> f1.getId().equals(f.getId())))
+                                .sorted(Comparator.comparing(Order::getOrderStatus)
+                                        .thenComparing(p -> p.getClient().getName()))
+                                .collect(Collectors.toList()))));
         binding.orderSelectorItems.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.orderSelectorItems.setAdapter(mAdapter);
 

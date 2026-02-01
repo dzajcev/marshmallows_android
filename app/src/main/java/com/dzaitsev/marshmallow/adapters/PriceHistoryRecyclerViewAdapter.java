@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.dzaitsev.marshmallow.R;
-import com.dzaitsev.marshmallow.dto.response.Price;
+import com.dzaitsev.marshmallow.dto.Price;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 
 import java.time.format.DateTimeFormatter;

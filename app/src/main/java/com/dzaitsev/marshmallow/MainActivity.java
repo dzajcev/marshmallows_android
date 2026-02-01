@@ -17,7 +17,6 @@ import androidx.fragment.app.Fragment;
 
 import com.dzaitsev.marshmallow.dto.DeliveryFilter;
 import com.dzaitsev.marshmallow.dto.DeliveryStatus;
-import com.dzaitsev.marshmallow.dto.ErrorCodes;
 import com.dzaitsev.marshmallow.dto.OrderStatus;
 import com.dzaitsev.marshmallow.dto.OrdersFilter;
 import com.dzaitsev.marshmallow.dto.authorization.request.SignInRequest;
@@ -110,13 +109,13 @@ public class MainActivity extends AppCompatActivity {
         });
         NetworkExecutorHelper.setGlobalErrorListener(new NetworkExecutorHelper.OnErrorListener() {
             @Override
-            public void onError(ErrorCodes code, String text) {
+            public void onError(String code, String text) {
                 switch (code) {
-                    case AUTH006 -> {//обновление токена
+                    case "AUTH006" -> {//обновление токена
                     }
-                    case AUTH001 -> //код неверный
+                    case "AUTH001" -> //код неверный
                             Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-                    case AUTH008 -> {
+                    case "AUTH008" -> {
                         NetworkService.getInstance().refreshToken(null);
                         AuthorizationHelper.getInstance().getSignInRequest()
                                 .ifPresent(r -> new NetworkExecutorHelper<>(MainActivity.this, NetworkService.getInstance().getAuthorizationApi()

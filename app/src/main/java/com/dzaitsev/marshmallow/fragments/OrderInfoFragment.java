@@ -16,13 +16,16 @@ import androidx.lifecycle.ViewModelProvider;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.components.OrderSharedViewModel;
 import com.dzaitsev.marshmallow.databinding.FragmentOrderInfoBinding;
+import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.NsiItem;
 import com.dzaitsev.marshmallow.dto.Order;
 import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
+import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.EditTextUtil;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.MoneyUtils;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
+import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -37,6 +40,9 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
     public static final String IDENTITY = "orderCardInfoFragment";
     private FragmentOrderInfoBinding binding;
     private final static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+    private Delivery currentDelivery;
 
     public OrderInfoFragment() {
     }
@@ -119,10 +125,14 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                 getOrderCardBundle().getOrder().setPhone(binding.phoneNumber.getRawText());
                 binding.phoneLayout.setError(null);
             }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
 
         binding.etComment.addTextChangedListener(new TextWatcher() {
@@ -130,10 +140,14 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
             public void afterTextChanged(Editable s) {
                 getOrderCardBundle().getOrder().setComment(s.toString());
             }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
 
         binding.tvAddress.addTextChangedListener(new TextWatcher() {
@@ -142,15 +156,33 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                 getOrderCardBundle().getOrder().setDeliveryAddress(s.toString());
                 binding.addressLayout.setError(null);
             }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
 
         binding.cbDelivery.setOnCheckedChangeListener((buttonView, isChecked) -> {
             getOrderCardBundle().getOrder().setNeedDelivery(isChecked);
             viewModel.notifyDeliveryChanged();
+            binding.deliveryCard.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            if (isChecked) checkDeliveryStatus();
+        });
+
+        binding.btnBindDelivery.setOnClickListener(v -> {
+            if (currentDelivery != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("delivery", GsonHelper.serialize(currentDelivery));
+                Navigation.getNavigation().forward(DeliveryCardFragment.IDENTITY, bundle);
+            } else {
+                Bundle bundle = new Bundle();
+                bundle.putString("orderCardBundle", GsonHelper.serialize(getOrderCardBundle()));
+                Navigation.getNavigation().forward(DeliverySelectorFragment.IDENTITY, bundle);
+            }
         });
 
         binding.etPrePay.addTextChangedListener(new TextWatcher() {
@@ -163,11 +195,52 @@ public class OrderInfoFragment extends Fragment implements IdentityFragment {
                 order.setPrePaymentSum(prePay);
                 bindSums();
             }
+
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
+
+        binding.deliveryCard.setVisibility(order.isNeedDelivery() ? View.VISIBLE : View.GONE);
+        if (order.isNeedDelivery()) checkDeliveryStatus();
+    }
+
+    private void checkDeliveryStatus() {
+        Order order = getOrderCardBundle().getOrder();
+        if (order.getId() == null) return;
+
+        new NetworkExecutorHelper<>(requireActivity(),
+                NetworkService.getInstance().getDeliveryApi().getDeliveryByOrderId(order.getId()))
+                .invoke(response -> {
+                    if (response.isSuccessful() && response.body() != null) {
+                        currentDelivery = response.body().getData();
+                        updateDeliveryCardUI();
+                    }
+                });
+    }
+
+    private void updateDeliveryCardUI() {
+        if (currentDelivery != null) {
+            String info = String.format("Привязан к доставке #%d\nДата: %s\nВремя: %s - %s\nИсполнитель: %s",
+                    currentDelivery.getId(),
+                    dateTimeFormatter.format(currentDelivery.getDeliveryDate()),
+                    timeFormatter.format(currentDelivery.getStart()),
+                    timeFormatter.format(currentDelivery.getEnd()),
+                    currentDelivery.getExecutor() != null ? currentDelivery.getExecutor().getFullName() : "Не назначен");
+            binding.tvDeliveryInfo.setText(info);
+            binding.tvDeliveryInfo.setTextColor(ContextCompat.getColor(requireContext(), R.color.black));
+            binding.btnBindDelivery.setText("Перейти к доставке");
+            binding.btnBindDelivery.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_expand_more_24));
+        } else {
+            binding.tvDeliveryInfo.setText("Заказ не привязан к доставке");
+            binding.tvDeliveryInfo.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_400));
+            binding.btnBindDelivery.setText("Добавить в доставку");
+            binding.btnBindDelivery.setIcon(ContextCompat.getDrawable(requireContext(), R.drawable.ic_add_24));
+        }
     }
 
     private OrderCardBundle getOrderCardBundle() {

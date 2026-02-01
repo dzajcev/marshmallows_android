@@ -6,16 +6,17 @@ import com.dzaitsev.marshmallow.adapters.ClientRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.adapters.listeners.SelectItemListener;
 import com.dzaitsev.marshmallow.dto.Client;
 import com.dzaitsev.marshmallow.dto.bundles.OrderCardBundle;
-import com.dzaitsev.marshmallow.dto.response.ClientResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 
+import java.util.List;
 import java.util.Optional;
 
 import retrofit2.Call;
 
-public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse, ClientRecyclerViewAdapter> {
+public class ClientsFragment extends AbstractNsiFragment<Client, ClientRecyclerViewAdapter> {
     public static final String IDENTITY = "clientsFragment";
 
     @Override
@@ -47,7 +48,7 @@ public class ClientsFragment extends AbstractNsiFragment<Client, ClientResponse,
     }
 
     @Override
-    protected Call<ClientResponse> getCall(Boolean bool) {
+    protected Call<ResultResponse<List<Client>>> getCall(Boolean bool) {
         return NetworkService.getInstance().getClientsApi().getClients(bool);
     }
 

@@ -2,7 +2,6 @@ package com.dzaitsev.marshmallow.dto;
 
 import androidx.annotation.NonNull;
 
-import com.dzaitsev.marshmallow.dto.response.Price;
 import com.dzaitsev.marshmallow.utils.GsonExt;
 import com.google.gson.Gson;
 

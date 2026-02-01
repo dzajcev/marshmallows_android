@@ -13,7 +13,7 @@ import com.dzaitsev.marshmallow.adapters.DeliveryRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentDeliveriesBinding;
 import com.dzaitsev.marshmallow.dto.Delivery;
 import com.dzaitsev.marshmallow.dto.UserRole;
-import com.dzaitsev.marshmallow.dto.response.DeliveryResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.utils.GsonHelper;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
@@ -21,6 +21,7 @@ import com.dzaitsev.marshmallow.utils.navigation.Navigation;
 import com.dzaitsev.marshmallow.utils.network.NetworkExecutorHelper;
 import com.dzaitsev.marshmallow.utils.orderfilter.FiltersHelper;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,8 +52,9 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
                 .ifPresent(filter -> new NetworkExecutorHelper<>(requireActivity(),
                         NetworkService.getInstance().getDeliveryApi().getDeliveries(filter.getStart(), filter.getEnd(), filter.getStatuses()))
                         .invoke(response -> Optional.ofNullable(response.body())
-                                .ifPresent(deliveryReposponse -> mAdapter.setItems(Optional.of(deliveryReposponse)
-                                        .orElse(new DeliveryResponse()).getDeliveries().stream()
+                                .map(ResultResponse::getData)
+                                .or(() -> Optional.of(new ArrayList<>()))
+                                .ifPresent(list -> mAdapter.setItems(list.stream()
                                         .sorted(Comparator.comparing(Delivery::getDeliveryStatus)
                                                 .thenComparing(Delivery::getDeliveryDate)
                                                 .thenComparing(Delivery::getStart))
@@ -79,9 +81,9 @@ public class DeliveriesFragment extends Fragment implements IdentityFragment {
         mAdapter.setEditItemListener(item -> new NetworkExecutorHelper<>(requireActivity(),
                 NetworkService.getInstance().getDeliveryApi().getDelivery(item.getId()))
                 .invoke(deliveryResponse -> {
-                    if (deliveryResponse.isSuccessful()) {
+                    if (deliveryResponse.isSuccessful() && deliveryResponse.body() != null) {
                         Bundle bundle = new Bundle();
-                        bundle.putString("delivery", GsonHelper.serialize(deliveryResponse.body()));
+                        bundle.putString("delivery", GsonHelper.serialize(deliveryResponse.body().getData()));
                         Navigation.getNavigation().forward(DeliveryCardFragment.IDENTITY, bundle);
                     }
                 }));

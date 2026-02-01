@@ -17,12 +17,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.dzaitsev.marshmallow.R;
 import com.dzaitsev.marshmallow.adapters.InviteRequestsRecyclerViewAdapter;
 import com.dzaitsev.marshmallow.databinding.FragmentInviteRequestsBinding;
-import com.dzaitsev.marshmallow.dto.ErrorDto;
 import com.dzaitsev.marshmallow.dto.InviteRequestDirection;
 import com.dzaitsev.marshmallow.dto.UserRole;
 import com.dzaitsev.marshmallow.dto.request.AcceptInviteRequest;
 import com.dzaitsev.marshmallow.dto.request.AddInviteRequest;
-import com.dzaitsev.marshmallow.dto.response.InviteRequestsResponse;
+import com.dzaitsev.marshmallow.dto.response.ResultResponse;
 import com.dzaitsev.marshmallow.service.NetworkService;
 import com.dzaitsev.marshmallow.service.api.InviteRequestsApi;
 import com.dzaitsev.marshmallow.utils.authorization.AuthorizationHelper;
@@ -64,8 +63,9 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
                 .ifPresent(filter -> new NetworkExecutorHelper<>(requireActivity(),
                         usersApi.getInviteRequests(direction, val))
                         .invoke(response -> Optional.ofNullable(response.body())
-                                .ifPresent(orderResponse -> mAdapter.setItems(Optional.of(orderResponse)
-                                        .orElse(new InviteRequestsResponse()).getRequests().stream()
+                                .map(ResultResponse::getData)
+                                .ifPresent(data -> mAdapter.setItems(data
+                                        .stream()
                                         .peek(m -> m.setDirection(direction))
                                         .sorted(Comparator.comparing(inviteRequest -> inviteRequest.getUser().getFullName())
                                         )
@@ -118,8 +118,8 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
                                 .getInviteRequestsApi().addInviteRequest(new AddInviteRequest(editText.getText().toString())))
                                 .setOnErrorListener(new NetworkExecutorHelper.OnErrorListener() {
                                     @Override
-                                    public void onError(ErrorDto errorDto) {
-                                        Toast.makeText(requireContext(), errorDto.getMessage(), Toast.LENGTH_SHORT).show();
+                                    public void onError(String code, String message) {
+                                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                                     }
                                 })
                                 .invoke(objectResponse -> fillItems()))
@@ -137,8 +137,8 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
                         .getInviteRequestsApi().acceptInviteRequest(new AcceptInviteRequest(request.getId())))
                         .setOnErrorListener(new NetworkExecutorHelper.OnErrorListener() {
                             @Override
-                            public void onError(ErrorDto errorDto) {
-                                Toast.makeText(requireContext(), errorDto.getMessage(), Toast.LENGTH_SHORT).show();
+                            public void onError(String code, String message) {
+                                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                             }
                         })
                         .invoke(objectResponse -> fillItems()))
@@ -151,8 +151,8 @@ public class InviteRequestsFragment extends Fragment implements IdentityFragment
                         .getInviteRequestsApi().deleteInviteRequest(request.getId()))
                         .setOnErrorListener(new NetworkExecutorHelper.OnErrorListener() {
                             @Override
-                            public void onError(ErrorDto errorDto) {
-                                Toast.makeText(requireContext(), errorDto.getMessage(), Toast.LENGTH_SHORT).show();
+                            public void onError(String code, String message) {
+                                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
                             }
                         })
                         .invoke(objectResponse -> fillItems()))
